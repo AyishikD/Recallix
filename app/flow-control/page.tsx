@@ -59,9 +59,9 @@ const JOBS = [
 function StageList({ stages, timings }: { stages: Stage[]; timings?: Record<string, number> }) {
     const [open, setOpen] = useState<number | null>(0);
     return (
-        <div className="rounded-[28px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] divide-y divide-line/60 overflow-hidden">
+        <div className="rounded-[28px] card-edge divide-y divide-line/60 overflow-hidden">
             {stages.map((s, i) => (
-                <div key={s.title}>
+                <Reveal key={s.title} from={i % 2 === 0 ? "left" : "right"} delay={Math.min(i, 6) * 0.05}>
                     <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center gap-5 px-6 md:px-8 py-5 text-left hover:bg-cloud/60 transition-colors">
                         <span className="w-6 text-[13px] text-ink-3 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                         <span className="flex-1 text-[19px] font-semibold">{s.title}</span>
@@ -77,7 +77,7 @@ function StageList({ stages, timings }: { stages: Stage[]; timings?: Record<stri
                             <pre className="text-[13px] bg-cloud rounded-[14px] p-4 overflow-x-auto whitespace-pre-wrap">{s.code}</pre>
                         </div>
                     )}
-                </div>
+                </Reveal>
             ))}
         </div>
     );
@@ -89,7 +89,7 @@ export default function HowItWorksPage() {
     return (
         <main>
             <Nav />
-            <Section className="text-center">
+            <Section hero className="text-center">
                 <Reveal>
                     <Eyebrow>How it works</Eyebrow>
                     <Headline as="h1">No LLM.<br />Every step explained.</Headline>
@@ -108,13 +108,13 @@ export default function HowItWorksPage() {
                 {timings && <p className="mt-4 text-[13px] text-ink-3">Times are averages measured over the evaluation run, including the embedding model.</p>}
                 {ex && (
                     <div className="mt-10 grid gap-3 md:grid-cols-2">
-                        {ex.stores.map(s => (
-                            <div key={s.content} className="rounded-[20px] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                        {ex.stores.map((s, i) => (
+                            <Reveal key={s.content} from={i % 2 === 0 ? "left" : "right"} delay={0.05}><div className="rounded-[20px] card-edge p-5">
                                 <p className="font-medium">{s.content}</p>
                                 <p className="mt-2 text-[13px] text-ink-2">
                                     importance {s.importance} · {s.schemas.join(", ")}{s.slots.length ? ` · ${s.slots.join("; ")}` : ""}
                                 </p>
-                            </div>
+                            </div></Reveal>
                         ))}
                     </div>
                 )}

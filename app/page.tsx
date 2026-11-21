@@ -2,7 +2,8 @@
 
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { ButtonLink, CodeBlock, Eyebrow, Headline, Lede, Reveal, Section, Stat, Tile } from "@/components/site/ui";
+import { ButtonLink, CodeBlock, CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
+import { AgentsHub, MemoryField, MemoryStory } from "@/components/site/story";
 import { headline, headlineBenchmark, largestClustered, lift, ms, pct, results } from "@/lib/results";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
@@ -19,6 +20,34 @@ out["status"]                 # "CONSISTENT" or "ABSTAINED"
 out["memories"][0]["answer"]  # "July 14"
 out["memories"][0]["explain"] # why it ranked first`;
 
+/** A real recall from the evaluation run, rendered like a terminal session. */
+function HeroTerminal() {
+    const ex = headline?.example;
+    const top = ex?.recall?.memories?.[0];
+    return (
+        <div className="mx-auto max-w-[820px] text-left rounded-[18px] bg-card overflow-hidden">
+            <div className="flex items-center gap-2 px-4 h-10 border-b border-line">
+                <span className="h-3 w-3 rounded-full bg-[#ff5f57]" /><span className="h-3 w-3 rounded-full bg-[#febc2e]" /><span className="h-3 w-3 rounded-full bg-[#28c840]" />
+                <span className="ml-3 font-mono text-[12px] text-ink-3">recallix — python</span>
+            </div>
+            <pre className="p-5 md:p-6 text-[13px] leading-[1.7] overflow-x-auto">
+                <code>
+                    <span className="text-ink-3">import</span> os{"\n"}
+                    <span className="text-ink-3">from</span> memoryos <span className="text-ink-3">import</span> Memory{"\n"}
+                    mem = Memory(api_key=os.environ[<span className="text-good">&quot;RECALLIX_API_KEY&quot;</span>]){"\n\n"}
+                    {ex?.stores?.slice(0, 3).map(s => (
+                        <span key={s.content}>mem.store(<span className="text-good">&quot;{s.content}&quot;</span>){"\n"}</span>
+                    ))}
+                    {ex && <>{"\n"}out = mem.recall(<span className="text-good">&quot;{ex.query}&quot;</span>){"\n"}</>}
+                    {ex && <><span className="text-ink-3"># status </span><span className="text-good">{ex.recall.status}</span>{"\n"}</>}
+                    {top && <><span className="text-ink-3"># top    </span><span className="text-ink">{top.content}</span>{"  "}<span className="text-accent">relevance {top.relevance.toFixed(2)}</span></>}
+                </code>
+            </pre>
+            <div className="px-5 md:px-6 py-3 border-t border-line font-mono text-[11.5px] text-ink-3">Output from the evaluation run — not a mock-up.</div>
+        </div>
+    );
+}
+
 function FactTimeline() {
     const steps = [
         { when: "March", text: "Project Alpha deadline is December 12.", state: "superseded" },
@@ -28,9 +57,9 @@ function FactTimeline() {
     return (
         <div className="grid gap-4 md:grid-cols-3">
             {steps.map((s, i) => (
-                <Reveal key={s.when} delay={i * 0.1}>
-                    <div className={`rounded-[22px] p-6 h-full ${s.state === "current" ? "bg-white text-ink" : "bg-night-2 text-white"}`}>
-                        <div className={`type-caption mb-3 ${s.state === "current" ? "text-accent" : "text-night-ink-2"}`}>
+                <Reveal key={s.when} from={(["left", "up", "right"] as const)[i]} delay={i * 0.12}>
+                    <div className={`rounded-[22px] p-6 h-full ${s.state === "current" ? "bg-ink text-black" : "bg-card text-white"}`}>
+                        <div className={`type-caption mb-3 ${s.state === "current" ? "text-[#0066cc]" : "text-night-ink-2"}`}>
                             {s.when} · {s.state === "current" ? "kept" : s.state === "negation" ? "invalidates Dec 12 only" : "superseded"}
                         </div>
                         <p className={`text-[19px] leading-snug font-medium ${s.state === "superseded" ? "line-through decoration-1 opacity-60" : ""}`}>{s.text}</p>
@@ -70,26 +99,51 @@ function ExplainBars() {
 export default function HomePage() {
     const bench = headlineBenchmark();
     const gain = lift(bench?.recallix, bench?.dense);
+    const ex = headline?.example;
+    const story = ex && {
+        query: ex.query, status: ex.recall.status,
+        memories: ex.stores.map(s => ({
+            content: s.content, importance: s.importance, schemas: s.schemas,
+            relevance: ex.recall.memories.find(m => m.content === s.content)?.relevance ?? 0,
+        })),
+    };
 
     return (
         <main>
             <Nav />
 
             {/* Hero */}
-            <Section className="text-center">
-                <Reveal>
-                    <Eyebrow>Recallix</Eyebrow>
-                    <Headline as="h1">Memory for AI agents.<br /><span className="text-sheen">Without the guesswork.</span></Headline>
-                    <Lede className="mx-auto mt-6">
+            <Section hero className="text-center" backdrop={<MemoryField />}>
+                <ScrollFade>
+                <Reveal from="fade"><p className="mb-3 text-[17px] font-semibold text-ink-2">Recallix</p></Reveal>
+                <Headline as="h1">
+                    <Reveal as="span" delay={0.08}>Memory for AI agents.</Reveal>
+                    <Reveal as="span" delay={0.22} className="text-sheen">Without the guesswork.</Reveal>
+                </Headline>
+                <Reveal delay={0.36}>
+                    <Lede className="mx-auto mt-5 max-w-[560px]">
                         Store what users tell any of their agents. Recall it by meaning. Keep facts current.
                         And decline when nothing answers — without calling an LLM.
                     </Lede>
-                    <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+                </Reveal>
+                <Reveal delay={0.48}>
+                    <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
                         <ButtonLink href="/sdk">Get started</ButtonLink>
                         <ButtonLink href="/benchmark" variant="link">See the measurements</ButtonLink>
                     </div>
                 </Reveal>
+                </ScrollFade>
+                <ScrollZoom className="mt-16 md:mt-20"><Reveal from="scale" delay={0.6}><HeroTerminal /></Reveal></ScrollZoom>
             </Section>
+
+            {/* Statement — words light up as you scroll */}
+            <Section>
+                <ScrollWords className="type-headline max-w-[900px]"
+                    text="Recallix remembers what your users tell their agents, keeps every fact current, and says “I don’t know” when nothing it holds is an answer." />
+            </Section>
+
+            {/* Pinned, scroll-scrubbed walk through one real run */}
+            {story && <MemoryStory query={story.query} status={story.status} memories={story.memories} />}
 
             {/* Measured, not claimed */}
             <Section tone="cloud">
@@ -102,19 +156,19 @@ export default function HomePage() {
                     </Lede>
                 </Reveal>
                 <div className="mt-14 grid gap-5 md:grid-cols-2">
-                    <Reveal><Tile>
-                        <Stat value={gain !== undefined ? `+${Math.round(gain * 100)}%` : "—"} label="more evidence found than vector search"
+                    {bench && <><Reveal from="left"><Tile>
+                        <Stat value={gain !== undefined ? <CountUp value={`+${Math.round(gain * 100)}%`} /> : "—"} label="more evidence found than vector search"
                             sub={bench ? `recall@10 ${pct(bench.recallix, 1)} vs ${pct(bench.dense, 1)} with the same embeddings (BM25: ${pct(bench.bm25, 1)}).` : undefined} />
                     </Tile></Reveal>
-                    <Reveal delay={0.08}><Tile>
-                        <Stat value={pct(bench?.declined)} label="of unanswerable questions declined"
+                    <Reveal from="right" delay={0.08}><Tile>
+                        <Stat value={<CountUp value={pct(bench?.declined)} />} label="of unanswerable questions declined"
                             sub={bench ? `while wrongly declining ${pct(bench.wronglyDeclined, 1)} of answerable ones (${bench.nUnanswerable} unanswerable questions).` : undefined} />
-                    </Tile></Reveal>
-                    <Reveal delay={0.16}><Tile>
-                        <Stat value={largestClustered ? ms(largestClustered.search_avg_ms, 2) : "—"} label={`vector search at ${largestClustered ? (largestClustered.n / 1e6).toFixed(0) + " million" : "—"} memories`}
+                    </Tile></Reveal></>}
+                    <Reveal from="left" delay={0.12}><Tile>
+                        <Stat value={largestClustered ? <CountUp value={ms(largestClustered.search_avg_ms, 2)} /> : "—"} label={`vector search at ${largestClustered ? (largestClustered.n / 1e6).toFixed(0) + " million" : "—"} memories`}
                             sub={largestClustered ? `recall@10 ${pct(largestClustered.recall_at_10, 1)} against exact search, one CPU thread.` : undefined} />
                     </Tile></Reveal>
-                    <Reveal delay={0.24}><Tile>
+                    <Reveal from="right" delay={0.2}><Tile>
                         <Stat value="0" label="LLM calls to store or recall"
                             sub="Facts, importance and ranking are rules and small fitted models. You only need an embedding model." />
                     </Tile></Reveal>
@@ -134,10 +188,25 @@ export default function HomePage() {
                 <div className="mt-14"><FactTimeline /></div>
             </Section>
 
+            {/* One memory layer, many agents */}
+            <Section tone="cloud">
+                <div className="grid gap-12 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+                    <Reveal from="left">
+                        <Eyebrow>Multi-agent</Eyebrow>
+                        <Headline>One memory layer. Every agent.</Headline>
+                        <Lede className="mt-5">
+                            All of a user’s agents read and write the same memory. Mark a memory shared and every agent sees it;
+                            keep it private and only the agent that wrote it can.
+                        </Lede>
+                    </Reveal>
+                    <Reveal from="scale" delay={0.1}><AgentsHub /></Reveal>
+                </div>
+            </Section>
+
             {/* Reads before it answers */}
             <Section>
                 <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                    <Reveal>
+                    <Reveal from="left">
                         <Eyebrow>Answer check</Eyebrow>
                         <Headline>It reads before it answers.</Headline>
                         <Lede className="mt-5">
@@ -148,7 +217,7 @@ export default function HomePage() {
                             It runs locally on the CPU. The trade-off between declining and answering is a single, documented setting.
                         </p>
                     </Reveal>
-                    <Reveal delay={0.1}><ExplainBars /></Reveal>
+                    <Reveal from="right" delay={0.12}><ExplainBars /></Reveal>
                 </div>
             </Section>
 
@@ -168,7 +237,7 @@ export default function HomePage() {
                         { t: "Searchable instantly", d: "New memories are found the moment they are written, while the index links them in the background." },
                         { t: "Runs offline", d: "Embeddings can run in-process. No API key, no network, no per-call cost." },
                     ].map((f, i) => (
-                        <Reveal key={f.t} delay={i * 0.08}><Tile className="h-full">
+                        <Reveal key={f.t} from={i === 1 ? "scale" : i === 0 ? "left" : "right"} delay={i * 0.12}><Tile className="h-full">
                             <h3 className="type-title mb-3">{f.t}</h3>
                             <p className="text-ink-2">{f.d}</p>
                         </Tile></Reveal>
@@ -188,7 +257,7 @@ export default function HomePage() {
                         { t: "Nothing leaks across", d: "Every user has a separate index. Private memories are visible only to the agent that wrote them — enforced in the database." },
                         { t: "Delete means delete", d: "Removing a memory removes its vector, its long-term copy and its timeline entry." },
                     ].map((f, i) => (
-                        <Reveal key={f.t} delay={i * 0.08}>
+                        <Reveal key={f.t} delay={i * 0.14}>
                             <h3 className="type-title mb-3">{f.t}</h3>
                             <p className="text-ink-2">{f.d}</p>
                         </Reveal>
@@ -199,7 +268,7 @@ export default function HomePage() {
             {/* Developers */}
             <Section tone="cloud">
                 <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                    <Reveal>
+                    <Reveal from="left">
                         <Eyebrow>Developers</Eyebrow>
                         <Headline>A few lines to remember.</Headline>
                         <Lede className="mt-5">Python and TypeScript SDKs, a small REST API, and one config file.</Lede>
@@ -208,13 +277,13 @@ export default function HomePage() {
                             <ButtonLink href="/flow-control" variant="link">How it works</ButtonLink>
                         </div>
                     </Reveal>
-                    <Reveal delay={0.1}><CodeBlock code={quickstart} label="Python" /></Reveal>
+                    <Reveal from="right" delay={0.12}><CodeBlock code={quickstart} label="Python" /></Reveal>
                 </div>
             </Section>
 
             {/* Honest limits */}
             <Section className="text-center">
-                <Reveal>
+                <Reveal from="scale">
                     <Eyebrow tone="muted">Honest limits</Eyebrow>
                     <Headline className="mx-auto max-w-[760px]">What it doesn’t do yet.</Headline>
                     <Lede className="mx-auto mt-5">
@@ -223,6 +292,18 @@ export default function HomePage() {
                         We publish all of it.
                     </Lede>
                     <div className="mt-8"><ButtonLink href="/roadmap" variant="link">See the roadmap</ButtonLink></div>
+                </Reveal>
+            </Section>
+
+            {/* Closing call to action */}
+            <Section tone="night" className="text-center" backdrop={<MemoryField density={0.7} />}>
+                <Reveal from="scale">
+                    <Headline className="mx-auto max-w-[720px]">Give your agents a memory.</Headline>
+                    <Lede dark className="mx-auto mt-5">Open source. Self-hosted. A few lines of code.</Lede>
+                    <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+                        <ButtonLink href="/sdk">Get started</ButtonLink>
+                        <ButtonLink href="https://github.com/AyishikD/Recallix" variant="link">View on GitHub</ButtonLink>
+                    </div>
                 </Reveal>
             </Section>
 

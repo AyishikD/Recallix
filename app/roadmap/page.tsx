@@ -64,7 +64,7 @@ export default function RoadmapPage() {
     return (
         <main>
             <Nav />
-            <Section className="text-center">
+            <Section hero className="text-center">
                 <Reveal>
                     <Eyebrow>Roadmap</Eyebrow>
                     <Headline as="h1">What’s done.<br />What isn’t.</Headline>
@@ -75,11 +75,11 @@ export default function RoadmapPage() {
             {GROUPS.map((g, gi) => (
                 <Section key={g.title} tone={gi % 2 === 0 ? "cloud" : "paper"}>
                     <div className="grid gap-10 md:grid-cols-[1fr_2fr]">
-                        <Reveal>
+                        <Reveal from="left">
                             <Headline>{g.title}.</Headline>
                             <Lede className="mt-4">{g.lede}</Lede>
                         </Reveal>
-                        <div className={`rounded-[28px] ${gi % 2 === 0 ? "bg-white" : "bg-cloud"} divide-y divide-line/60 overflow-hidden`}>
+                        <Reveal from="right" delay={0.1}><div className={`rounded-[28px] card-edge divide-y divide-line/60 overflow-hidden`}>
                             {g.items.map(it => (
                                 <div key={it.name} className="px-6 md:px-8 py-5 flex gap-4 items-start">
                                     <div className="flex-1">
@@ -89,7 +89,7 @@ export default function RoadmapPage() {
                                     <span className={`shrink-0 rounded-full px-3 py-1 text-[12px] font-medium ${STATUS_STYLE[it.status]}`}>{it.status}</span>
                                 </div>
                             ))}
-                        </div>
+                        </div></Reveal>
                     </div>
                 </Section>
             ))}

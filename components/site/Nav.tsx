@@ -29,7 +29,7 @@ export function Nav() {
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
     return (
-        <header className="sticky top-0 z-50 nav-glass border-b border-black/[0.06]">
+        <header className="sticky top-0 z-50 nav-glass border-b border-white/[0.07]">
             <nav className="mx-auto flex h-12 max-w-[1024px] items-center justify-between px-5">
                 <Logo />
                 <ul className="hidden md:flex items-center gap-7">
@@ -54,11 +54,11 @@ export function Nav() {
                 </button>
             </nav>
             {open && (
-                <ul className="md:hidden border-t border-black/[0.06] px-5 pb-4">
+                <ul className="md:hidden border-t border-white/[0.07] px-5 pb-4">
                     {NAV_LINKS.map(l => (
                         <li key={l.href}>
                             <Link href={l.href} onClick={() => setOpen(false)}
-                                className="block py-3 text-[17px] font-semibold text-ink border-b border-black/[0.06]">
+                                className="block py-3 text-[17px] font-semibold text-ink border-b border-white/[0.07]">
                                 {l.label}
                             </Link>
                         </li>

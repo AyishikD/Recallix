@@ -14,7 +14,7 @@ const HISTORY = 20;
 
 function Metric({ label, value }: { label: string; value: React.ReactNode }) {
     return (
-        <div className="rounded-[24px] bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+        <div className="rounded-[24px] card-edge p-6">
             <p className="text-[13px] text-ink-2">{label}</p>
             <p className="mt-2 text-[34px] font-semibold tracking-tight tabular-nums">{value ?? "—"}</p>
         </div>
@@ -56,14 +56,14 @@ export default function DashboardPage() {
     return (
         <main>
             <Nav />
-            <Section>
+            <Section hero>
                 <div className="flex flex-wrap items-end justify-between gap-6">
                     <div>
                         <Eyebrow>Dashboard</Eyebrow>
                         <Headline as="h1">Your memory, live.</Headline>
                     </div>
                     <div className="flex items-center gap-2 text-[14px] text-ink-2 pb-3">
-                        <span className={`h-2 w-2 rounded-full ${reachable ? "bg-[#34c759]" : reachable === false ? "bg-[#ff3b30]" : "bg-ink-3"}`} />
+                        <span className={`h-2 w-2 rounded-full ${reachable ? "bg-good" : reachable === false ? "bg-[#ff5d5d]" : "bg-ink-3"}`} />
                         {reachable ? "Connected" : reachable === false ? "Not connected" : "Connecting"} · <code>{API_BASE}</code>
                     </div>
                 </div>
@@ -86,7 +86,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="mt-6 grid gap-6 lg:grid-cols-3">
-                    <div className="lg:col-span-2 rounded-[28px] bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] h-[340px] flex flex-col">
+                    <div className="lg:col-span-2 rounded-[28px] card-edge p-6 h-[340px] flex flex-col">
                         <p className="text-[17px] font-semibold">Growth</p>
                         <p className="text-[13px] text-ink-2 mb-4">Memories and timeline events, polled every {POLL_MS / 1000} s.</p>
                         <div className="flex-1">
@@ -95,16 +95,16 @@ export default function DashboardPage() {
                                     <AreaChart data={history}>
                                         <defs>
                                             <linearGradient id="mem" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#0071e3" stopOpacity={0.18} />
-                                                <stop offset="100%" stopColor="#0071e3" stopOpacity={0} />
+                                                <stop offset="0%" stopColor="#2997ff" stopOpacity={0.18} />
+                                                <stop offset="100%" stopColor="#2997ff" stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e8e8ed" />
-                                        <XAxis dataKey="time" stroke="#86868b" fontSize={11} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#86868b" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
-                                        <Tooltip contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }} />
-                                        <Area type="monotone" dataKey="memories" name="Memories" stroke="#0071e3" strokeWidth={2} fill="url(#mem)" isAnimationActive={false} />
-                                        <Area type="monotone" dataKey="timeline" name="Timeline" stroke="#86868b" strokeWidth={1.5} fill="none" isAnimationActive={false} />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
+                                        <XAxis dataKey="time" stroke="#6e6e73" fontSize={11} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#6e6e73" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                                        <Tooltip contentStyle={{ background: "#1d1d1f", borderRadius: 12, border: "1px solid #2c2c2e", color: "#f5f5f7" }} />
+                                        <Area type="monotone" dataKey="memories" name="Memories" stroke="#2997ff" strokeWidth={2} fill="url(#mem)" isAnimationActive={false} />
+                                        <Area type="monotone" dataKey="timeline" name="Timeline" stroke="#6e6e73" strokeWidth={1.5} fill="none" isAnimationActive={false} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             ) : (
@@ -113,7 +113,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-[28px] bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                    <div className="rounded-[28px] card-edge p-6">
                         <p className="text-[17px] font-semibold mb-4">Vector engine</p>
                         <dl className="divide-y divide-line/60 text-[15px]">
                             {[
@@ -133,7 +133,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                <div className="mt-6 rounded-[28px] bg-white p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                <div className="mt-6 rounded-[28px] card-edge p-6">
                     <p className="text-[17px] font-semibold mb-4">Reflections</p>
                     {insights.length > 0 ? (
                         <ul className="divide-y divide-line/60">

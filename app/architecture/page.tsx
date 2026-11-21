@@ -48,7 +48,7 @@ const STACK = [
 ];
 
 function FlowDiagram() {
-    const box = "rounded-[18px] bg-white px-5 py-4 text-center shadow-[0_2px_12px_rgba(0,0,0,0.04)]";
+    const box = "rounded-[18px] card-edge px-5 py-4 text-center";
     const arrow = <div className="text-ink-3 text-center text-[20px] leading-none py-1" aria-hidden="true">↓</div>;
     return (
         <div className="max-w-[560px] mx-auto">
@@ -71,7 +71,7 @@ export default function ArchitecturePage() {
     return (
         <main>
             <Nav />
-            <Section className="text-center">
+            <Section hero className="text-center">
                 <Reveal>
                     <Eyebrow>Architecture</Eyebrow>
                     <Headline as="h1">Three layers.<br />Each does one thing well.</Headline>
@@ -81,17 +81,17 @@ export default function ArchitecturePage() {
                 </Reveal>
             </Section>
 
-            <Section tone="cloud"><Reveal><FlowDiagram /></Reveal></Section>
+            <Section tone="cloud"><Reveal from="scale"><FlowDiagram /></Reveal></Section>
 
             {LAYERS.map((layer, i) => (
                 <Section key={layer.name} tone={i === 1 ? "night" : "paper"}>
                     <div className="grid gap-12 md:grid-cols-[1fr_1.3fr]">
-                        <Reveal>
+                        <Reveal from={i % 2 === 0 ? "left" : "right"}>
                             <Eyebrow>{layer.lang}</Eyebrow>
                             <Headline>{layer.name}.</Headline>
                             <Lede dark={i === 1} className="mt-5">{layer.summary}</Lede>
                             {i === 1 && largestClustered && (
-                                <div className="mt-10 grid grid-cols-2 gap-6">
+                                <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                                     <Stat dark value={ms(largestClustered.search_avg_ms, 2)} label="average search"
                                         sub={`${(largestClustered.n / 1e6).toFixed(0)}M vectors, one thread`} />
                                     <Stat dark value={pct(largestClustered.recall_at_10, 1)} label="recall@10" sub="against exact search" />
@@ -100,7 +100,7 @@ export default function ArchitecturePage() {
                         </Reveal>
                         <div className="grid gap-4 sm:grid-cols-2">
                             {layer.parts.map(([name, detail], j) => (
-                                <Reveal key={name} delay={j * 0.06}>
+                                <Reveal key={name} from={i % 2 === 0 ? "right" : "left"} delay={j * 0.1}>
                                     <Tile dark={i === 1} className="h-full !p-7">
                                         <h3 className="text-[19px] font-semibold mb-2">{name}</h3>
                                         <p className={`text-[15px] ${i === 1 ? "text-night-ink-2" : "text-ink-2"}`}>{detail}</p>
@@ -119,8 +119,8 @@ export default function ArchitecturePage() {
                 </Reveal>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     {STACK.map(([t, d], i) => (
-                        <Reveal key={t} delay={i * 0.06}>
-                            <div className="rounded-[24px] bg-white p-6 h-full shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                        <Reveal key={t} delay={i * 0.1}>
+                            <div className="rounded-[24px] card-edge p-6 h-full">
                                 <h3 className="text-[19px] font-semibold mb-2">{t}</h3>
                                 <p className="text-[14px] text-ink-2">{d}</p>
                             </div>

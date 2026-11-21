@@ -1,0 +1,246 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { prefersReducedMotion } from "./motion";
+
+const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
+const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+
+/* ------------------------------------------------------------------------------------------
+ * MemoryField — a slow, living field of memory points behind the hero (canvas, no library).
+ * Pauses when off-screen or in a background tab; draws one still frame under reduced motion.
+ * ---------------------------------------------------------------------------------------- */
+export function MemoryField({ density = 1 }: { density?: number }) {
+    const ref = useRef<HTMLCanvasElement>(null);
+    useEffect(() => {
+        const canvas = ref.current;
+        const ctx = canvas?.getContext("2d");
+        if (!canvas || !ctx) return;
+        const reduce = prefersReducedMotion();
+        let seed = 11;
+        const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+        const count = Math.round((window.innerWidth < 640 ? 34 : 70) * density);
+        const nodes = Array.from({ length: count }, (_, i) => ({
+            x: rnd(), y: rnd(), z: 0.25 + rnd() * 0.75,
+            vx: (rnd() - 0.5) * 0.00011, vy: (rnd() - 0.5) * 0.00011,
+            accent: i % 11 === 0, phase: rnd() * Math.PI * 2,
+        }));
+        let w = 0, h = 0, mx = 0, my = 0, tx = 0, ty = 0;
+        const resize = () => {
+            const dpr = Math.min(2, window.devicePixelRatio || 1);
+            w = canvas.clientWidth; h = canvas.clientHeight;
+            canvas.width = w * dpr; canvas.height = h * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
+        const draw = (t: number) => {
+            ctx.clearRect(0, 0, w, h);
+            mx += (tx - mx) * 0.04; my += (ty - my) * 0.04;
+            const pts = nodes.map(n => {
+                if (!reduce) {
+                    n.x += n.vx; n.y += n.vy;
+                    if (n.x < -0.05) n.x = 1.05; else if (n.x > 1.05) n.x = -0.05;
+                    if (n.y < -0.05) n.y = 1.05; else if (n.y > 1.05) n.y = -0.05;
+                }
+                return { X: n.x * w + mx * 36 * n.z, Y: n.y * h + my * 36 * n.z, n };
+            });
+            const maxD = Math.min(170, Math.max(90, w * 0.13));
+            ctx.lineWidth = 1;
+            for (let i = 0; i < pts.length; i++) {
+                for (let j = i + 1; j < pts.length; j++) {
+                    const dx = pts[i].X - pts[j].X, dy = pts[i].Y - pts[j].Y;
+                    const d2 = dx * dx + dy * dy;
+                    if (d2 > maxD * maxD) continue;
+                    const a = (1 - Math.sqrt(d2) / maxD) * 0.16 * Math.min(pts[i].n.z, pts[j].n.z);
+                    ctx.strokeStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+                    ctx.beginPath(); ctx.moveTo(pts[i].X, pts[i].Y); ctx.lineTo(pts[j].X, pts[j].Y); ctx.stroke();
+                }
+            }
+            for (const { X, Y, n } of pts) {
+                const pulse = 0.6 + 0.4 * Math.sin(t * 0.0011 + n.phase);
+                ctx.fillStyle = n.accent
+                    ? `rgba(41,151,255,${(0.55 + 0.45 * pulse).toFixed(3)})`
+                    : `rgba(255,255,255,${((0.18 + 0.5 * n.z) * pulse).toFixed(3)})`;
+                ctx.beginPath(); ctx.arc(X, Y, (n.accent ? 1.6 : 0.9) + n.z * 1.4, 0, Math.PI * 2); ctx.fill();
+            }
+        };
+        let raf = 0, running = false, visible = true;
+        const loop = (t: number) => { draw(t); raf = requestAnimationFrame(loop); };
+        const start = () => { if (!running && !reduce && visible && !document.hidden) { running = true; raf = requestAnimationFrame(loop); } };
+        const stop = () => { running = false; cancelAnimationFrame(raf); };
+        const onResize = () => { resize(); if (!running) draw(0); };
+        const onMove = (e: PointerEvent) => { tx = e.clientX / window.innerWidth - 0.5; ty = e.clientY / window.innerHeight - 0.5; };
+        const onVisibility = () => (document.hidden ? stop() : start());
+        resize(); draw(0);
+        const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); else stop(); });
+        io.observe(canvas);
+        window.addEventListener("resize", onResize);
+        window.addEventListener("pointermove", onMove, { passive: true });
+        document.addEventListener("visibilitychange", onVisibility);
+        return () => {
+            stop(); io.disconnect();
+            window.removeEventListener("resize", onResize);
+            window.removeEventListener("pointermove", onMove);
+            document.removeEventListener("visibilitychange", onVisibility);
+        };
+    }, [density]);
+    return (
+        <canvas ref={ref} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full"
+            style={{ maskImage: "radial-gradient(ellipse 75% 70% at 50% 45%, #000 35%, transparent 100%)", WebkitMaskImage: "radial-gradient(ellipse 75% 70% at 50% 45%, #000 35%, transparent 100%)" }} />
+    );
+}
+
+/* ------------------------------------------------------------------------------------------
+ * MemoryStory — a pinned, scroll-scrubbed walk through one real store → recall run.
+ * Scrolling drives every frame (and reverses it); all data comes from the evaluation run.
+ * ---------------------------------------------------------------------------------------- */
+export interface StoryMemory { content: string; importance: number; schemas: string[]; relevance: number }
+
+const SLOTS = [
+    { x: 22, y: 20 }, { x: 78, y: 24 }, { x: 18, y: 78 }, { x: 80, y: 76 }, { x: 50, y: 92 },
+];
+
+export function MemoryStory({ query, status, memories }: { query: string; status: string; memories: StoryMemory[] }) {
+    const ref = useRef<HTMLDivElement>(null);
+    const [p, setP] = useState(0);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        let frame = 0;
+        const update = () => {
+            frame = 0;
+            const r = el.getBoundingClientRect();
+            const total = r.height - window.innerHeight;
+            setP(total > 0 ? clamp01(-r.top / total) : 1);
+        };
+        const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+        update();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll);
+        return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); cancelAnimationFrame(frame); };
+    }, []);
+
+    const mems = memories.slice(0, SLOTS.length);
+    const top = mems.reduce((best, m, i) => (m.relevance > mems[best].relevance ? i : best), 0);
+    const answered = status === "CONSISTENT";
+    const seg = (a: number, b: number) => clamp01((p - a) / (b - a));
+    const arrive = seg(0.03, 0.22), understand = seg(0.28, 0.45), recall = seg(0.52, 0.7), answer = seg(0.77, 0.92);
+    const step = p < 0.25 ? 0 : p < 0.5 ? 1 : p < 0.75 ? 2 : 3;
+
+    const steps = [
+        { t: "Store.", d: "Messages from any of a user’s agents arrive as memories." },
+        { t: "Understand.", d: "Each gets its facts, a topic and an importance score. Here, size is importance." },
+        { t: "Recall.", d: `A question arrives. Every candidate is scored for relevance; the lines show how strongly.` },
+        {
+            t: answered ? "Answer." : "Decline.",
+            d: answered
+                ? "A reading model confirms the top memory actually answers. If none had, Recallix would return nothing."
+                : "No memory contains an answer, so Recallix returns nothing rather than a guess.",
+        },
+    ];
+
+    return (
+        <section ref={ref} className="relative bg-paper text-ink" style={{ height: "420vh" }}>
+            <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+                <div className="mx-auto grid w-full max-w-[1080px] gap-8 px-5 md:grid-cols-[0.8fr_1.2fr] md:items-center">
+                    <div>
+                        <p className="type-eyebrow mb-3 text-accent">One real run</p>
+                        <ol className="space-y-5 md:space-y-7">
+                            {steps.map((s, i) => (
+                                <li key={s.t} className="transition-opacity duration-500" style={{ opacity: i === step ? 1 : 0.28 }}>
+                                    <p className="type-title">{s.t}</p>
+                                    <p className={`mt-1 text-[15px] md:text-[17px] text-ink-2 ${i === step ? "" : "hidden md:block"}`}>{s.d}</p>
+                                </li>
+                            ))}
+                        </ol>
+                        <div className="mt-8 h-[2px] w-40 rounded-full bg-line overflow-hidden">
+                            <div className="h-full bg-ink" style={{ width: `${p * 100}%` }} />
+                        </div>
+                    </div>
+
+                    <div className="relative h-[52vh] md:h-[min(68vh,560px)] rounded-[28px] bg-card">
+                        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                            {mems.map((m, i) => {
+                                const isTop = i === top;
+                                const op = recall * (0.12 + 0.88 * m.relevance) * (answer > 0 && !isTop ? 1 - 0.75 * answer : 1);
+                                return (
+                                    <line key={i} x1={50} y1={50}
+                                        x2={50 + (SLOTS[i].x - 50) * easeOut(recall)} y2={50 + (SLOTS[i].y - 50) * easeOut(recall)}
+                                        stroke={isTop && answer > 0 ? "#2997ff" : "#f5f5f7"} strokeOpacity={op}
+                                        strokeWidth={1 + 3 * m.relevance} vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+                                );
+                            })}
+                        </svg>
+
+                        {/* the question */}
+                        <div className="absolute left-1/2 top-1/2 z-10 max-w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink px-4 py-2 text-center text-[13px] md:text-[15px] font-medium text-black"
+                            style={{ opacity: easeOut(recall), transform: `translate(-50%, -50%) scale(${0.8 + 0.2 * easeOut(recall)})` }}>
+                            “{query}”
+                        </div>
+
+                        {mems.map((m, i) => {
+                            const a = easeOut(clamp01(arrive * 1.7 - i * 0.17));
+                            const fromX = i % 2 === 0 ? -30 : 130;
+                            const x = fromX + (SLOTS[i].x - fromX) * a;
+                            const isTop = i === top;
+                            const scale = (0.86 + 0.28 * (m.importance / 10) * easeOut(understand)) * (isTop ? 1 + 0.08 * easeOut(answer) : 1);
+                            const dim = answer > 0 && !isTop ? 1 - 0.7 * answer : 1;
+                            return (
+                                <div key={m.content}
+                                    className={`absolute w-[42%] md:w-[38%] rounded-[16px] px-3 py-2.5 md:px-4 md:py-3 text-[12px] md:text-[14px] leading-snug transition-colors duration-500 ${isTop && answer > 0.5 ? "bg-ink text-black" : "bg-[#2c2c2e] text-ink"}`}
+                                    style={{ left: `${x}%`, top: `${SLOTS[i].y}%`, opacity: a * dim, transform: `translate(-50%, -50%) scale(${scale})` }}>
+                                    <p className="font-medium">{m.content}</p>
+                                    <p className={`mt-1 text-[11px] md:text-[12px] ${isTop && answer > 0.5 ? "text-[#0066cc]" : "text-ink-2"}`}>
+                                        <span style={{ opacity: easeOut(understand) }}>importance {m.importance.toFixed(1)} · {m.schemas[0] ?? "general"}</span>
+                                        <span style={{ opacity: easeOut(recall) }}> · relevance {m.relevance.toFixed(2)}</span>
+                                    </p>
+                                </div>
+                            );
+                        })}
+
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-[12px] text-ink-2"
+                            style={{ opacity: easeOut(answer) }}>
+                            status <span className={answered ? "text-good" : "text-warn"}>{status}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/* ------------------------------------------------------------------------------------------
+ * AgentsHub — several agents reading and writing one memory layer (SVG, SMIL motion).
+ * ---------------------------------------------------------------------------------------- */
+const AGENTS = [
+    { name: "Support agent", x: 105, y: 70 },
+    { name: "Planner", x: 495, y: 70 },
+    { name: "Coding agent", x: 105, y: 290 },
+    { name: "Research agent", x: 495, y: 290 },
+];
+
+export function AgentsHub() {
+    const cx = 300, cy = 180;
+    return (
+        <svg viewBox="0 0 600 360" className="w-full h-auto" role="img" aria-label="Four agents connected to one Recallix memory">
+            {AGENTS.map((a, i) => {
+                const path = `M${a.x},${a.y} L${cx},${cy}`;
+                return (
+                    <g key={a.name}>
+                        <path d={path} stroke="#2c2c2e" strokeWidth="1.5" fill="none" />
+                        <circle r="3.5" fill="#2997ff">
+                            <animateMotion dur="2.6s" repeatCount="indefinite" begin={`${i * 0.65}s`} path={path} />
+                        </circle>
+                        <circle r="3" fill="#f5f5f7" opacity="0.8">
+                            <animateMotion dur="2.6s" repeatCount="indefinite" begin={`${1.3 + i * 0.65}s`} path={path} keyPoints="1;0" keyTimes="0;1" calcMode="linear" />
+                        </circle>
+                        <rect x={a.x - 78} y={a.y - 22} width="156" height="44" rx="22" fill="#1d1d1f" stroke="#2c2c2e" />
+                        <text x={a.x} y={a.y + 5} textAnchor="middle" fill="#f5f5f7" fontSize="14" fontWeight="500">{a.name}</text>
+                    </g>
+                );
+            })}
+            <rect x={cx - 96} y={cy - 40} width="192" height="80" rx="24" fill="#f5f5f7" />
+            <text x={cx} y={cy - 4} textAnchor="middle" fill="#000" fontSize="19" fontWeight="600">Recallix</text>
+            <text x={cx} y={cy + 18} textAnchor="middle" fill="#6e6e73" fontSize="12">one memory per user</text>
+        </svg>
+    );
+}

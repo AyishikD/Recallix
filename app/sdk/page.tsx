@@ -56,9 +56,17 @@ curl -X POST http://localhost:8000/memory/recall \\
 const multiUser = `# A service key may act for its end users.
 app = Memory(api_key=os.environ["RECALLIX_SERVICE_KEY"])
 
-app.store("Prefers vegetarian food.", user_id="customer-42",
-          agent_id="concierge", memory_type="shared")
-app.recall("Any dietary preferences?", user_id="customer-42", agent_id="booking")`;
+app.store(
+    "Prefers vegetarian food.",
+    user_id="customer-42",
+    agent_id="concierge",
+    memory_type="shared",
+)
+app.recall(
+    "Any dietary preferences?",
+    user_id="customer-42",
+    agent_id="booking",
+)`;
 
 const SETUP = [
     { t: "Install", c: `python -m venv .venv && source .venv/bin/activate
@@ -90,7 +98,7 @@ export default function DevelopersPage() {
     return (
         <main>
             <Nav />
-            <Section className="text-center">
+            <Section hero className="text-center">
                 <Reveal>
                     <Eyebrow>Developers</Eyebrow>
                     <Headline as="h1">Store. Recall.<br />That’s the API.</Headline>
@@ -103,10 +111,10 @@ export default function DevelopersPage() {
             <Section tone="cloud">
                 <Reveal>
                     <div className="flex justify-center mb-8">
-                        <div className="inline-flex rounded-full bg-white p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                        <div className="inline-flex rounded-full card-edge p-1">
                             {Object.entries(SAMPLES).map(([k, s]) => (
                                 <button key={k} onClick={() => setLang(k as keyof typeof SAMPLES)}
-                                    className={`px-5 h-9 rounded-full text-[14px] transition-colors ${lang === k ? "bg-ink text-white" : "text-ink-2 hover:text-ink"}`}>
+                                    className={`px-5 h-9 rounded-full text-[14px] transition-colors ${lang === k ? "bg-accent text-white" : "text-ink-2 hover:text-ink"}`}>
                                     {s.label}
                                 </button>
                             ))}
@@ -122,7 +130,7 @@ export default function DevelopersPage() {
 
             <Section>
                 <div className="grid gap-12 md:grid-cols-2 md:items-center">
-                    <Reveal>
+                    <Reveal from="left">
                         <Eyebrow>Many users, many agents</Eyebrow>
                         <Headline>Built for products, not demos.</Headline>
                         <Lede className="mt-5">
@@ -130,7 +138,7 @@ export default function DevelopersPage() {
                             index. Mark a memory <code>shared</code> to make it visible to all of that user’s agents, or keep it <code>private</code> to one.
                         </Lede>
                     </Reveal>
-                    <Reveal delay={0.1}><CodeBlock code={multiUser} label="Python · service key" /></Reveal>
+                    <Reveal from="right" delay={0.12}><CodeBlock code={multiUser} label="Python · service key" /></Reveal>
                 </div>
             </Section>
 
@@ -139,13 +147,13 @@ export default function DevelopersPage() {
                     <Eyebrow>Set up</Eyebrow>
                     <Headline className="mb-12">Running in four steps.</Headline>
                 </Reveal>
-                <div className="grid gap-5 md:grid-cols-2">
+                <div className="grid gap-5">
                     {SETUP.map((s, i) => (
-                        <Reveal key={s.t} delay={i * 0.06}>
-                            <div className="rounded-[28px] bg-white p-7 h-full shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                        <Reveal key={s.t} from={i % 2 === 0 ? "left" : "right"} delay={0.05}>
+                            <div className="rounded-[28px] card-edge p-7 h-full">
                                 <p className="text-[13px] text-ink-3 mb-1">Step {i + 1}</p>
                                 <h3 className="type-title mb-4">{s.t}</h3>
-                                <pre className="text-[12.5px] bg-cloud rounded-[14px] p-4 overflow-x-auto">{s.c}</pre>
+                                <pre className="text-[12.5px] bg-cloud border border-line rounded-[14px] p-4 whitespace-pre-wrap break-words">{s.c}</pre>
                             </div>
                         </Reveal>
                     ))}
@@ -161,7 +169,7 @@ export default function DevelopersPage() {
                     <Eyebrow>Reference</Eyebrow>
                     <Headline className="mb-10">Endpoints.</Headline>
                 </Reveal>
-                <div className="rounded-[28px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] divide-y divide-line/60 overflow-hidden">
+                <div className="rounded-[28px] card-edge divide-y divide-line/60 overflow-hidden">
                     {ENDPOINTS.map(([m, p, d]) => (
                         <div key={p + m} className="grid md:grid-cols-[80px_220px_1fr] gap-1 md:gap-4 px-6 md:px-8 py-4 items-baseline">
                             <span className="text-[12px] font-semibold text-accent">{m}</span>

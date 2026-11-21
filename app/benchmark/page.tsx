@@ -3,7 +3,7 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { DataTable, Eyebrow, Headline, Lede, Reveal, Section, Stat, Tile } from "@/components/site/ui";
+import { CountUp, DataTable, Eyebrow, Headline, Lede, Reveal, Section, Stat, Tile } from "@/components/site/ui";
 import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, ms, pct, results } from "@/lib/results";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
@@ -24,7 +24,7 @@ export default function BenchmarkPage() {
         <main>
             <Nav />
 
-            <Section className="text-center">
+            <Section hero className="text-center">
                 <Reveal>
                     <Eyebrow>Benchmarks</Eyebrow>
                     <Headline as="h1">Measured. In the open.</Headline>
@@ -46,9 +46,9 @@ export default function BenchmarkPage() {
                         </Lede>
                     </Reveal>
                     <div className="mt-12 grid gap-5 md:grid-cols-2">
-                        <Reveal><Tile><Stat value={pct(longMemEval.systems.recallix?.overall?.["recall@10"], 1)} label="evidence recall@10"
+                        <Reveal from="left"><Tile><Stat value={<CountUp value={pct(longMemEval.systems.recallix?.overall?.["recall@10"], 1)} />} label="evidence recall@10"
                             sub={`Vector search: ${pct(longMemEval.systems.dense?.overall?.["recall@10"], 1)} · BM25: ${pct(longMemEval.systems.bm25?.overall?.["recall@10"], 1)}`} /></Tile></Reveal>
-                        <Reveal delay={0.08}><Tile><Stat value={pct(longMemEval.abstention.unanswerable_declined)} label="of unanswerable questions declined"
+                        <Reveal from="right" delay={0.08}><Tile><Stat value={<CountUp value={pct(longMemEval.abstention.unanswerable_declined)} />} label="of unanswerable questions declined"
                             sub={`Wrongly declined ${pct(longMemEval.abstention.answerable_wrongly_declined, 1)} of ${longMemEval.abstention.n_answerable} answerable questions.`} /></Tile></Reveal>
                     </div>
                     <div className="mt-8">
@@ -71,11 +71,11 @@ export default function BenchmarkPage() {
                     </Reveal>
                     <div className="mt-10">
                         <DataTable head={["Split", "System", "recall@5", "recall@10", "hit@10"]}
-                            rows={locomoRuns.flatMap(run => Object.entries(run.systems).map(([name, r]) => [run.split, SYSTEM_LABEL[name] ?? name,
+                            rows={locomoRuns.flatMap(run => Object.entries(run.systems).map(([name, r]) => [run.split ?? "all", SYSTEM_LABEL[name] ?? name,
                                 pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)]))} />
                     </div>
                     <p className="mt-5 text-[14px] text-ink-2">
-                        {locomoRuns.map(run => `${run.split}: declined ${pct(run.abstention.adversarial_declined)} of ${run.abstention.n_adversarial} adversarial questions, wrongly declined ${pct(run.abstention.answerable_wrongly_declined, 1)} of ${run.abstention.n_answerable} answerable.`).join("  ")}
+                        {locomoRuns.map(run => `${run.split ?? "All conversations"}: declined ${pct(run.abstention.adversarial_declined)} of ${run.abstention.n_adversarial} adversarial questions, wrongly declined ${pct(run.abstention.answerable_wrongly_declined, 1)} of ${run.abstention.n_answerable} answerable.`).join("  ")}
                     </p>
                 </Section>
             )}
@@ -91,21 +91,21 @@ export default function BenchmarkPage() {
                 </Reveal>
                 {largestClustered && (
                     <div className="mt-12 grid gap-5 md:grid-cols-3">
-                        <Tile dark><Stat dark value={`${(largestClustered.n / 1e6).toFixed(0)}M`} label="vectors" sub={`${largestClustered.dim} dimensions, clustered`} /></Tile>
-                        <Tile dark><Stat dark value={pct(largestClustered.recall_at_10, 1)} label="recall@10" sub="vs exact search" /></Tile>
-                        <Tile dark><Stat dark value={ms(largestClustered.search_avg_ms, 2)} label="average search" sub={`p99 ${ms(largestClustered.search_p99_ms, 2)}`} /></Tile>
+                        <Reveal from="left"><Tile dark className="h-full"><Stat dark value={`${(largestClustered.n / 1e6).toFixed(0)}M`} label="vectors" sub={`${largestClustered.dim} dimensions, clustered`} /></Tile></Reveal>
+                        <Reveal from="scale" delay={0.1}><Tile dark className="h-full"><Stat dark value={<CountUp value={pct(largestClustered.recall_at_10, 1)} />} label="recall@10" sub="vs exact search" /></Tile></Reveal>
+                        <Reveal from="right" delay={0.2}><Tile dark className="h-full"><Stat dark value={<CountUp value={ms(largestClustered.search_avg_ms, 2)} />} label="average search" sub={`p99 ${ms(largestClustered.search_p99_ms, 2)}`} /></Tile></Reveal>
                     </div>
                 )}
                 {chart.length > 0 && (
                     <div className="mt-8 h-72 rounded-[20px] bg-night-2 p-5">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chart} barGap={6}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
                                 <XAxis dataKey="name" stroke="#a1a1a6" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#a1a1a6" fontSize={12} unit="%" domain={[0, 100]} tickLine={false} axisLine={false} />
-                                <Tooltip contentStyle={{ background: "#1d1d1f", border: "none", borderRadius: 12, color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                                <Bar dataKey="Recallix" fill="#2997ff" radius={[6, 6, 0, 0]} />
-                                <Bar dataKey="hnswlib" fill="#86868b" radius={[6, 6, 0, 0]} />
+                                <Tooltip contentStyle={{ background: "#1d1d1f", border: "1px solid #2c2c2e", borderRadius: 12, color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                                <Bar dataKey="Recallix" fill="#2997ff" radius={[6, 6, 0, 0]} isAnimationActive={false} />
+                                <Bar dataKey="hnswlib" fill="#48484a" radius={[6, 6, 0, 0]} isAnimationActive={false} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
