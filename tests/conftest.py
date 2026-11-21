@@ -102,6 +102,9 @@ def hermetic(tmp_path, monkeypatch):
     deps.reset()
     keys._cache.update(mtime=None, keys={})
     monkeypatch.setattr(auth, "_limiter", auth._RateLimiter())
+    # The answer checker downloads a model; tests use it only through explicit fakes.
+    from backend.brain.features import answer_check
+    monkeypatch.setattr(answer_check.AnswerChecker, "from_config", classmethod(lambda cls: None))
     monkeypatch.setattr(mr.ModelRouter, "get_embedding", lambda self, text: hash_embedding(text))
 
     def no_llm(self, *a, **k):

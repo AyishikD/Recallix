@@ -1,225 +1,183 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-    Brain, Cpu, Database, ArrowLeft, Search, RefreshCw, Zap, Users, Shield, TrendingUp, Eye,
-    Archive, Sparkles, Target, GitBranch, Filter, Scale, Copy,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { headline, ms, pct, results } from "@/lib/results";
+import { useState } from "react";
+import { Nav } from "@/components/site/Nav";
+import { Footer } from "@/components/site/Footer";
+import { Eyebrow, Headline, Lede, Reveal, Section } from "@/components/site/ui";
+import { headline, ms, results } from "@/lib/results";
 
-/* Every description below matches the code; every number comes from eval/results/summary.json. */
+/* Every description matches the code; every number comes from eval/results/summary.json. */
 
-type System = "python" | "cpp" | "sqlite" | "embedding";
-interface Stage {
-    title: string;
-    subtitle: string;
-    detail: string;
-    code: string;
-    icon: React.ReactNode;
-    system: System;
-    logStage?: string; // stage name in the store processing_log, for the measured duration
-}
+interface Stage { title: string; detail: string; code: string; where: string; logStage?: string }
 
 const STORE: Stage[] = [
-    { title: "Authenticate", subtitle: "Key → user", system: "python", icon: <Shield className="w-5 h-5" />,
-      detail: "The X-API-Key is hashed (SHA-256) and looked up. A user key acts only as itself; service/admin keys may pass user_id for an end user. Writes are rate-limited per user.",
-      code: `principal = keys.lookup(request.headers["X-API-Key"])\nuser_id = acting_user(principal, body.user_id)  # 403 if not allowed\nrate_limit_writes(user_id)                       # 429 above the limit` },
-    { title: "Deduplication", subtitle: "Persistent, agent-aware", system: "sqlite", icon: <Copy className="w-5 h-5" />, logStage: "Deduplication",
-      detail: "Identical content already visible to this agent is not stored again (SHA-256 content hash, indexed per user).",
+    { title: "Authenticate", where: "API", detail: "The API key is hashed and looked up. A user key acts only as itself; service and admin keys may act for an end user. Writes are rate-limited per user.",
+      code: `principal = keys.lookup(request.headers["X-API-Key"])\nuser_id = acting_user(principal, body.user_id)\nrate_limit_writes(user_id)` },
+    { title: "Skip duplicates", where: "SQLite", logStage: "Deduplication", detail: "Identical content already visible to this agent is not stored again.",
       code: `SELECT id FROM episodic_events\nWHERE user_id = ? AND content_hash = ?\n  AND (memory_type = 'shared' OR agent_id = ?)` },
-    { title: "Sensory & working memory", subtitle: "Recent context", system: "python", icon: <Eye className="w-5 h-5" />, logStage: "Sensory & Working Memory",
-      detail: "The message enters a per-user ring buffer (TTL from config) and a sliding window of recent messages stored as one SQLite row per user.",
-      code: `sensory.add(user_id, message)\nworking.update(user_id, message)   # window = memory.working_window` },
-    { title: "Embedding", subtitle: "Computed once", system: "embedding", icon: <Cpu className="w-5 h-5" />, logStage: "Embedding",
-      detail: "One embedding per message from the configured provider (Ollama, in-process sentence-transformers, or an API). It is reused by every later stage and stored with the model name.",
-      code: `vector = semantic.embed(message)   # unit-normalised, LRU-cached` },
-    { title: "Fact extraction", subtitle: "Rule grammar", system: "python", icon: <GitBranch className="w-5 h-5" />, logStage: "Fact Extraction",
-      detail: "Patterns such as 'my X is Y', 'X's Y is Z', 'the Y of X is Z', 'X deadline moved to Z' produce (entity, relation, value) slots. A precision guard rejects casual statements ('my cat is sleeping').",
-      code: `slots = to_slots(extract_triads(message))\n# "I live in Pune" -> user::location = Pune` },
-    { title: "Schema", subtitle: "Prototype classifier", system: "python", icon: <Target className="w-5 h-5" />, logStage: "Schema Classification",
-      detail: "Cosine similarity to seed-sentence prototypes of each schema (identity, preference, calendar, learning, task, security, social, general), plus small lexical cue bonuses.",
-      code: `score_k = 0.5·cos(v, centroid_k) + 0.5·max_j cos(v, seed_kj) + 0.04·cues_k\nlabel = argmax_k score_k` },
-    { title: "Importance", subtitle: "Learned logistic model", system: "python", icon: <TrendingUp className="w-5 h-5" />, logStage: "Importance Scoring",
-      detail: "Novelty (distance to the user's nearest memory), information content (IDF), specificity and cue words, combined by weights fitted on labelled data.",
-      code: `importance = 1 + 9·sigmoid(w · [novelty, idf, specificity, goal, preference, explicit, small_talk, brevity])` },
-    { title: "Episodic storage", subtitle: "System of record", system: "sqlite", icon: <Database className="w-5 h-5" />, logStage: "Episodic Storage",
-      detail: "Row + embedding + FTS5 entry in SQLite (WAL), plus a timeline event. SQLite is the source of truth; the vector index is derived from it.",
-      code: `INSERT INTO episodic_events (..., embedding, embedding_model, content_hash)\nINSERT INTO episodic_fts (content_id, content, user_id)` },
-    { title: "Vector index", subtitle: "Per-user HNSW", system: "cpp", icon: <Zap className="w-5 h-5" />, logStage: "Vector Engine",
-      detail: "The vector is appended to the user's namespace in the C++ engine. Pending vectors are scanned exactly, so the write is searchable immediately; a background thread links it into the graph.",
+    { title: "Embed once", where: "Embedding model", logStage: "Embedding", detail: "One embedding per message, stored with the model's name and reused by every later step.",
+      code: `vector = semantic.embed(message)` },
+    { title: "Extract facts", where: "Python", logStage: "Fact Extraction", detail: "A rule grammar turns statements into (entity, relation, value) facts. A precision guard skips casual remarks such as “my cat is sleeping”.",
+      code: `"I live in Pune"                  -> user::location = Pune\n"Daedalus reactor core is CRITICAL" -> starshipdaedalus::reactor_core = CRITICAL` },
+    { title: "Tag the topic", where: "Python", logStage: "Schema Classification", detail: "The embedding is compared with example sentences for each topic (identity, preference, calendar, …).",
+      code: `score_k = 0.5·cos(v, centroid_k) + 0.5·max cos(v, example_kj) + cue bonus` },
+    { title: "Score importance", where: "Python", logStage: "Importance Scoring", detail: "Novelty, information content, specificity and cue words, combined by weights fitted on labelled data.",
+      code: `importance = 1 + 9·sigmoid(w · features)` },
+    { title: "Store", where: "SQLite", logStage: "Episodic Storage", detail: "Row, embedding and full-text index in SQLite — the system of record — plus a timeline entry.",
+      code: `INSERT INTO episodic_events (...); INSERT INTO episodic_fts (...)` },
+    { title: "Index", where: "C++ engine", logStage: "Vector Engine", detail: "The vector joins the user's own HNSW index. It is searchable immediately and linked into the graph in the background.",
       code: `POST /add {"namespace": user_id, "id": memory_id, "vector": [...]}` },
-    { title: "Long-term promotion", subtitle: "High importance", system: "python", icon: <Archive className="w-5 h-5" />, logStage: "Long-Term Promotion",
-      detail: "Memories at or above memory.long_term_min_importance are copied to long-term facts with Ebbinghaus decay; deleting the memory deletes the copy.",
-      code: `if importance >= cfg.long_term_min_importance:\n    long_term.promote(user_id, event)` },
 ];
 
 const RECALL: Stage[] = [
-    { title: "Alias expansion", subtitle: "From stored facts", system: "python", icon: <Users className="w-5 h-5" />,
-      detail: "If a stored memory says 'X is also known as Y', a question mentioning either name is expanded with the other.",
-      code: `aliases = slots where relation == "alias_of" and either side occurs in the query` },
-    { title: "Candidates", subtitle: "Lexical + vector", system: "sqlite", icon: <Search className="w-5 h-5" />,
-      detail: "FTS5 BM25 matches and entity-index hits (SQL, filtered to memories visible to the agent) plus the user's HNSW namespace; vector hits are fetched in one batched query.",
-      code: `lexical = episodic.search(user, q, agent, limit=pool)\nvector  = engine /search {namespace: user, top_k: pool}\nrows    = episodic.get_many(user, ids, agent)` },
-    { title: "Relevance model", subtitle: "Learned, explainable", system: "python", icon: <Scale className="w-5 h-5" />,
-      detail: "Each candidate gets interpretable features (semantic, lexical, entity match/conflict, relation match/conflict, slot match, salience, recency, alias bridge). A logistic model fitted with leave-one-scenario-out CV turns them into a probability.",
+    { title: "Resolve aliases", where: "SQLite", detail: "If a memory says “X is also known as Y”, a question using the alias is rewritten to the canonical name.",
+      code: `"What powers 'The Dragon's Breath'?" -> "What powers Galaxy X-77?"` },
+    { title: "Find candidates", where: "SQLite + C++", detail: "Full-text and entity matches, plus the user's vector index, filtered to memories this agent may see.",
+      code: `lexical = fts5 + entity index      # agent-visible, in SQL\nvector  = engine /search {namespace: user}` },
+    { title: "Rank", where: "Python", detail: "A logistic model over explainable signals — meaning, keywords, entity and relation matches, who a statement is about, recency — fitted by cross-validation.",
       code: `relevance = sigmoid(w · features)   # returned per memory as "explain"` },
-    { title: "Truth arbitration", subtitle: "One value per fact", system: "python", icon: <Filter className="w-5 h-5" />,
-      detail: "Memories stating the same fact slot are walked in time order: newer values supersede older ones; 'X is not V' invalidates V only.",
-      code: `deadline is Dec 12  →  moved to Dec 18  →  "is NOT Dec 12"\nresult: Dec 18 (verified)` },
-    { title: "Abstention", subtitle: "Learned threshold", system: "python", icon: <Brain className="w-5 h-5" />,
-      detail: "If the best candidate's relevance is below the threshold chosen on dev data, Recallix returns nothing (status ABSTAINED) instead of a guess.",
-      code: `if top.relevance < threshold: return {"status": "ABSTAINED", "memories": []}` },
-];
-
-const AGENTS: Stage[] = [
-    { title: "Private memory", subtitle: "Owner agent only", system: "sqlite", icon: <Shield className="w-5 h-5" />,
-      detail: "memory_type='private' is visible only to the agent that wrote it. Enforced in SQL on every read, not by a score penalty.",
-      code: `WHERE e.user_id = ? AND (e.memory_type = 'shared' OR e.agent_id = ?)` },
-    { title: "Shared memory", subtitle: "All of the user's agents", system: "sqlite", icon: <Users className="w-5 h-5" />,
-      detail: "memory_type='shared' is visible to every agent of the same user. Users never see each other's memories: each user also has a separate vector index.",
-      code: `POST /agents/store {"agent_id": "planner", "memory_type": "shared", ...}` },
+    { title: "Keep facts current", where: "Python", detail: "Memories stating the same fact are walked in time order: newer values win, and “X is not V” removes V only.",
+      code: `Dec 12  ->  moved to Dec 18  ->  "not Dec 12"   =>   Dec 18` },
+    { title: "Check the answer", where: "QA model", detail: "A small reading-comprehension model (SQuAD 2.0) reads the memories about to be returned, with “I” resolved to whoever said it. Memories that contain an answer come first; if none does, Recallix declines.",
+      code: `margin = best answer span − “no answer”\nmargin < threshold for every memory  =>  status ABSTAINED` },
 ];
 
 const LEARNING: Stage[] = [
-    { title: "Recall log", subtitle: "Features per candidate", system: "sqlite", icon: <Database className="w-5 h-5" />,
-      detail: "Each recall stores the feature vectors of its top candidates under a recall_id.",
-      code: `recall_log.log(recall_id, user_id, ranked[:20])` },
-    { title: "Feedback", subtitle: "Which results helped", system: "python", icon: <Sparkles className="w-5 h-5" />,
-      detail: "POST /memory/feedback marks the useful memories of a recall; the other logged candidates become negatives.",
-      code: `POST /memory/feedback {"recall_id": "...", "relevant_memory_ids": [42]}` },
-    { title: "Refit", subtitle: "MAP logistic regression", system: "python", icon: <RefreshCw className="w-5 h-5" />,
-      detail: "fit_ranker refits weights (L2 prior around documented hand-set values) and the abstention threshold; fit_importance learns importance weights from which memories were ever recalled. Fitted models load without a restart.",
-      code: `python -m backend.brain.memory_ranking.fit_ranker --from-db\npython -m backend.brain.memory_ranking.fit_importance --from-db` },
+    { title: "Log", where: "SQLite", detail: "Each recall records the signals of its top candidates.", code: `recall_log.log(recall_id, user_id, ranked[:20])` },
+    { title: "Feedback", where: "API", detail: "Tell Recallix which results helped; the rest become negatives.", code: `POST /memory/feedback {"recall_id": "...", "relevant_memory_ids": [42]}` },
+    { title: "Refit", where: "Python", detail: "Ranking and importance weights are refit from your own usage, starting from documented priors. New models load without a restart.",
+      code: `python -m backend.brain.memory_ranking.fit_ranker --from-db` },
 ];
 
 const JOBS = [
-    { name: "State inference", key: "workers.state_inference_minutes", desc: "Latest user::<relation> facts and schema shares become the world state." },
-    { name: "Prediction", key: "workers.prediction_minutes", desc: "First-order Markov chain over the user's schema sequence (Laplace-smoothed)." },
-    { name: "Replay", key: "workers.replay_hours", desc: "Extractive reflection (MMR over embeddings) from long-term facts, with theme shares." },
-    { name: "Forgetting", key: "workers.forgetting_hours", desc: "Deletes/archives old, never-recalled, low-importance memories (thresholds in config); removes vectors too." },
+    { name: "World state", key: "workers.state_inference_minutes", desc: "Latest facts about the user and the share of each topic." },
+    { name: "Prediction", key: "workers.prediction_minutes", desc: "Which topic is likely next, from the user's history." },
+    { name: "Reflection", key: "workers.replay_hours", desc: "A short summary of the most representative long-term facts." },
+    { name: "Forgetting", key: "workers.forgetting_hours", desc: "Archives or removes old, never-recalled, low-importance memories — vectors included." },
 ];
 
-const systemStyle: Record<System, string> = {
-    python: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-    cpp: "bg-orange-500/10 text-orange-400 border-orange-500/20",
-    sqlite: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-    embedding: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-};
-
-function StageCard({ stage, index, measured }: { stage: Stage; index: number; measured?: number }) {
-    const [open, setOpen] = useState(false);
+function StageList({ stages, timings }: { stages: Stage[]; timings?: Record<string, number> }) {
+    const [open, setOpen] = useState<number | null>(0);
     return (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}
-            onClick={() => setOpen(!open)}
-            className="cursor-pointer rounded-2xl border border-white/5 bg-zinc-900/40 p-5 hover:border-white/10 transition-colors">
-            <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">{stage.icon}</div>
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-zinc-600">{String(index + 1).padStart(2, "0")}</span>
-                        <h3 className="font-bold text-white">{stage.title}</h3>
-                        <span className="text-xs text-zinc-500">{stage.subtitle}</span>
-                    </div>
+        <div className="rounded-[28px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] divide-y divide-line/60 overflow-hidden">
+            {stages.map((s, i) => (
+                <div key={s.title}>
+                    <button onClick={() => setOpen(open === i ? null : i)} className="w-full flex items-center gap-5 px-6 md:px-8 py-5 text-left hover:bg-cloud/60 transition-colors">
+                        <span className="w-6 text-[13px] text-ink-3 tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="flex-1 text-[19px] font-semibold">{s.title}</span>
+                        {timings && s.logStage && timings[s.logStage] !== undefined && (
+                            <span className="hidden sm:inline text-[13px] text-ink-2 tabular-nums">{ms(timings[s.logStage], 2)}</span>
+                        )}
+                        <span className="text-[13px] text-ink-3 w-28 text-right">{s.where}</span>
+                        <span className={`text-ink-3 transition-transform ${open === i ? "rotate-45" : ""}`} aria-hidden="true">+</span>
+                    </button>
+                    {open === i && (
+                        <div className="px-6 md:px-8 pb-6 pl-[4.25rem] md:pl-[4.75rem]">
+                            <p className="text-ink-2 max-w-[640px] mb-4">{s.detail}</p>
+                            <pre className="text-[13px] bg-cloud rounded-[14px] p-4 overflow-x-auto whitespace-pre-wrap">{s.code}</pre>
+                        </div>
+                    )}
                 </div>
-                {measured !== undefined && <span className="text-[10px] font-mono text-zinc-400">{ms(measured, 2)} avg</span>}
-                <Badge className={`text-[9px] border ${systemStyle[stage.system]}`}>{stage.system}</Badge>
-            </div>
-            {open && (
-                <div className="mt-4 space-y-3">
-                    <p className="text-sm text-zinc-400 leading-relaxed">{stage.detail}</p>
-                    <pre className="text-xs bg-black/60 border border-zinc-800/50 rounded-xl p-3 text-cyan-300 whitespace-pre-wrap">{stage.code}</pre>
-                </div>
-            )}
-        </motion.div>
+            ))}
+        </div>
     );
 }
 
-export default function FlowControlPage() {
-    const [tab, setTab] = useState<"store" | "recall" | "agents" | "learning" | "jobs">("store");
-    const stageMs: Record<string, number> = headline?.retrieval?.store_stage_ms_mean || {};
-    const example = headline?.example;
-    const stages = tab === "store" ? STORE : tab === "recall" ? RECALL : tab === "agents" ? AGENTS : LEARNING;
-    const tabs = [
-        { key: "store" as const, label: "Store", count: `${STORE.length} stages` },
-        { key: "recall" as const, label: "Recall", count: `${RECALL.length} stages` },
-        { key: "agents" as const, label: "Agents", count: `${AGENTS.length} rules` },
-        { key: "learning" as const, label: "Learning loop", count: `${LEARNING.length} steps` },
-        { key: "jobs" as const, label: "Background jobs", count: `${JOBS.length} jobs` },
-    ];
-
+export default function HowItWorksPage() {
+    const timings = headline?.retrieval?.store_stage_ms_mean;
+    const ex = headline?.example;
     return (
-        <div className="min-h-screen bg-black text-white">
-            <nav className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-white/5 flex items-center px-6 glass backdrop-blur-2xl gap-4">
-                <Link href="/" className="flex items-center gap-2 text-zinc-400 hover:text-white"><ArrowLeft className="w-4 h-4" /></Link>
-                <span className="text-sm font-black tracking-tight">HOW RECALLIX WORKS</span>
-                <span className="ml-auto text-[10px] text-zinc-500 font-bold uppercase tracking-widest">No LLM in the memory pipeline</span>
-            </nav>
+        <main>
+            <Nav />
+            <Section className="text-center">
+                <Reveal>
+                    <Eyebrow>How it works</Eyebrow>
+                    <Headline as="h1">No LLM.<br />Every step explained.</Headline>
+                    <Lede className="mx-auto mt-6">
+                        Storing and recalling are made of small, inspectable steps. Here is each one — what it does, and the code that does it.
+                    </Lede>
+                </Reveal>
+            </Section>
 
-            <main className="pt-24 pb-24 container mx-auto px-6 max-w-4xl">
-                <div className="flex flex-wrap gap-2 mb-8">
-                    {tabs.map(t => (
-                        <button key={t.key} onClick={() => setTab(t.key)}
-                            className={`px-4 py-2 rounded-full text-xs font-bold border transition-colors ${tab === t.key ? "bg-white text-black border-white" : "border-white/10 text-zinc-400 hover:text-white"}`}>
-                            {t.label} <span className="opacity-60">· {t.count}</span>
-                        </button>
+            <Section tone="cloud">
+                <Reveal>
+                    <Eyebrow>Store</Eyebrow>
+                    <Headline className="mb-10">From message to memory.</Headline>
+                </Reveal>
+                <StageList stages={STORE} timings={timings} />
+                {timings && <p className="mt-4 text-[13px] text-ink-3">Times are averages measured over the evaluation run, including the embedding model.</p>}
+                {ex && (
+                    <div className="mt-10 grid gap-3 md:grid-cols-2">
+                        {ex.stores.map(s => (
+                            <div key={s.content} className="rounded-[20px] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                                <p className="font-medium">{s.content}</p>
+                                <p className="mt-2 text-[13px] text-ink-2">
+                                    importance {s.importance} · {s.schemas.join(", ")}{s.slots.length ? ` · ${s.slots.join("; ")}` : ""}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Section>
+
+            <Section>
+                <Reveal>
+                    <Eyebrow>Recall</Eyebrow>
+                    <Headline className="mb-10">From question to answer — or to “I don’t know.”</Headline>
+                </Reveal>
+                <StageList stages={RECALL} />
+                {ex && (
+                    <div className="mt-10 rounded-[28px] bg-cloud p-6 md:p-8">
+                        <p className="text-[13px] text-ink-3">Real run · status {ex.recall.status}</p>
+                        <p className="text-[21px] font-semibold mt-1 mb-5">“{ex.query}”</p>
+                        {ex.recall.memories.map(m => (
+                            <div key={m.content} className="py-3 border-t border-line/70">
+                                <p className="font-medium">{m.content} <span className="text-accent font-normal">· relevance {m.relevance.toFixed(2)}</span></p>
+                                <p className="mt-1 text-[13px] text-ink-2">
+                                    {Object.entries(m.explain).filter(([, v]) => v > 0).map(([k, v]) => `${k.replace(/_/g, " ")} ${v.toFixed(2)}`).join(" · ")}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Section>
+
+            <Section tone="night">
+                <Reveal>
+                    <Eyebrow>Agents</Eyebrow>
+                    <Headline>Private or shared. Enforced, not suggested.</Headline>
+                    <Lede dark className="mt-5">
+                        A private memory is visible only to the agent that wrote it; a shared one to every agent of the same user. The rule is
+                        applied in the database on every read — and every user has a separate vector index.
+                    </Lede>
+                </Reveal>
+            </Section>
+
+            <Section tone="cloud">
+                <Reveal>
+                    <Eyebrow>Learning</Eyebrow>
+                    <Headline className="mb-10">It improves from your feedback.</Headline>
+                </Reveal>
+                <StageList stages={LEARNING} />
+            </Section>
+
+            <Section>
+                <Reveal>
+                    <Eyebrow>Background</Eyebrow>
+                    <Headline className="mb-10">Quiet work between conversations.</Headline>
+                </Reveal>
+                <div className="grid gap-5 md:grid-cols-2">
+                    {JOBS.map(j => (
+                        <div key={j.name} className="rounded-[28px] bg-cloud p-8">
+                            <h3 className="type-title mb-2">{j.name}</h3>
+                            <p className="text-ink-2">{j.desc}</p>
+                            <p className="mt-4 text-[12px] text-ink-3"><code>{j.key}</code> in config.yaml</p>
+                        </div>
                     ))}
                 </div>
+            </Section>
 
-                {tab !== "jobs" && (
-                    <div className="space-y-3">
-                        {stages.map((s, i) => (
-                            <StageCard key={s.title} stage={s} index={i} measured={tab === "store" && s.logStage ? stageMs[s.logStage] : undefined} />
-                        ))}
-                    </div>
-                )}
-
-                {tab === "jobs" && (
-                    <div className="grid md:grid-cols-2 gap-4">
-                        {JOBS.map(j => (
-                            <div key={j.name} className="rounded-2xl border border-white/5 bg-zinc-900/40 p-5">
-                                <h3 className="font-bold mb-1">{j.name}</h3>
-                                <p className="text-sm text-zinc-400 mb-2">{j.desc}</p>
-                                <p className="text-[10px] font-mono text-zinc-600">interval: config.yaml {j.key}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {tab === "store" && example && (
-                    <section className="mt-10 rounded-2xl border border-white/5 bg-zinc-900/40 p-6">
-                        <h3 className="font-bold mb-1">Real run</h3>
-                        <p className="text-xs text-zinc-500 mb-4">Output of <code>eval/run_eval.py</code> ({headline?.embedder}, {headline?.engine} engine). Stage timings above are averages over the eval stores.</p>
-                        <div className="space-y-2">
-                            {example.stores.map((s) => (
-                                <div key={s.content} className="text-xs font-mono bg-black/50 rounded-lg p-3">
-                                    <div className="text-zinc-300">{s.content}</div>
-                                    <div className="text-zinc-500 mt-1">importance {s.importance} · schemas {s.schemas.join(", ")} · {s.promoted ? "promoted" : "not promoted"}{s.slots.length ? ` · ${s.slots.join("; ")}` : ""}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {tab === "recall" && example && (
-                    <section className="mt-10 rounded-2xl border border-white/5 bg-zinc-900/40 p-6">
-                        <h3 className="font-bold mb-1">Real run: “{example.query}”</h3>
-                        <p className="text-xs text-zinc-500 mb-4">
-                            status {example.recall.status} · threshold {example.recall.threshold} · held-out test hit@1 {pct(headline?.retrieval?.["hit@1"])}, recall p50 {ms(headline?.retrieval?.recall_ms_p50, 1)} (incl. embedding)
-                        </p>
-                        {example.recall.memories.map((m) => (
-                            <div key={m.content} className="text-xs font-mono bg-black/50 rounded-lg p-3 mb-2">
-                                <div className="text-zinc-300">{m.content} <span className="text-cyan-400">· relevance {m.relevance}</span></div>
-                                <div className="text-zinc-500 mt-1">{Object.entries(m.explain).filter(([, v]) => v > 0).map(([k, v]) => `${k}=${v}`).join("  ")}</div>
-                            </div>
-                        ))}
-                    </section>
-                )}
-
-                <p className="mt-10 text-[10px] text-zinc-600">Results generated {results.generated_at} at commit {results.git_commit}.</p>
-            </main>
-        </div>
+            <Footer note={<p>Results generated {results.generated_at} at commit {results.git_commit}.</p>} />
+        </main>
     );
 }

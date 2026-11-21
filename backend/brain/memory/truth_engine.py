@@ -72,6 +72,9 @@ class TruthEngine:
                 active = m
             if active is not None:
                 active["truth_status"] = "verified"
+                # The surviving version stands for the fact; it inherits the fact's best relevance
+                # (an older wording may have matched the question better than the update).
+                active["relevance"] = max(m.get("relevance", 0.0) for m in history if m.get("truth_status") != "invalidated")
                 resolved.append(active)
 
         resolved.sort(key=lambda x: (x.get("is_hop_result", False), x.get("relevance", 0.0)), reverse=True)

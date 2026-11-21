@@ -1,0 +1,194 @@
+{
+  "dataset": "LoCoMo (locomo10.json)",
+  "split": "dev",
+  "embedder": "st:sentence-transformers/all-MiniLM-L6-v2",
+  "engine": "real",
+  "conversations": 5,
+  "turns": 2760,
+  "questions": 999,
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2 + LoCoMo dev conversations (5)",
+  "systems": {
+    "recallix": {
+      "multi-hop": {
+        "recall@5": 0.2422,
+        "hit@5": 0.4577,
+        "recall@10": 0.3321,
+        "hit@10": 0.5845,
+        "n": 142
+      },
+      "temporal": {
+        "recall@5": 0.7366,
+        "hit@5": 0.7692,
+        "recall@10": 0.7943,
+        "hit@10": 0.8205,
+        "n": 156
+      },
+      "open-domain": {
+        "recall@5": 0.2121,
+        "hit@5": 0.2955,
+        "recall@10": 0.303,
+        "hit@10": 0.4091,
+        "n": 44
+      },
+      "single-hop": {
+        "recall@5": 0.6555,
+        "hit@5": 0.6651,
+        "recall@10": 0.7237,
+        "hit@10": 0.7344,
+        "n": 418
+      },
+      "overall": {
+        "recall@5": 0.5693,
+        "hit@5": 0.6263,
+        "recall@10": 0.6407,
+        "hit@10": 0.7053,
+        "n": 760
+      }
+    },
+    "recallix_ranked": {
+      "multi-hop": {
+        "recall@5": 0.2445,
+        "hit@5": 0.4577,
+        "recall@10": 0.338,
+        "hit@10": 0.5915,
+        "n": 142
+      },
+      "temporal": {
+        "recall@5": 0.7431,
+        "hit@5": 0.7756,
+        "recall@10": 0.8007,
+        "hit@10": 0.8269,
+        "n": 156
+      },
+      "open-domain": {
+        "recall@5": 0.2235,
+        "hit@5": 0.3182,
+        "recall@10": 0.3144,
+        "hit@10": 0.4318,
+        "n": 44
+      },
+      "single-hop": {
+        "recall@5": 0.6579,
+        "hit@5": 0.6675,
+        "recall@10": 0.7261,
+        "hit@10": 0.7368,
+        "n": 418
+      },
+      "overall": {
+        "recall@5": 0.573,
+        "hit@5": 0.6303,
+        "recall@10": 0.6451,
+        "hit@10": 0.7105,
+        "n": 760
+      }
+    },
+    "dense": {
+      "multi-hop": {
+        "recall@5": 0.2332,
+        "hit@5": 0.4296,
+        "recall@10": 0.3298,
+        "hit@10": 0.6197,
+        "n": 142
+      },
+      "temporal": {
+        "recall@5": 0.5625,
+        "hit@5": 0.5833,
+        "recall@10": 0.6544,
+        "hit@10": 0.6795,
+        "n": 156
+      },
+      "open-domain": {
+        "recall@5": 0.161,
+        "hit@5": 0.2727,
+        "recall@10": 0.2822,
+        "hit@10": 0.4091,
+        "n": 44
+      },
+      "single-hop": {
+        "recall@5": 0.494,
+        "hit@5": 0.5024,
+        "recall@10": 0.5965,
+        "hit@10": 0.6029,
+        "n": 418
+      },
+      "overall": {
+        "recall@5": 0.4401,
+        "hit@5": 0.4921,
+        "recall@10": 0.5404,
+        "hit@10": 0.6105,
+        "n": 760
+      }
+    },
+    "bm25": {
+      "multi-hop": {
+        "recall@5": 0.1527,
+        "hit@5": 0.3239,
+        "recall@10": 0.2333,
+        "hit@10": 0.4366,
+        "n": 142
+      },
+      "temporal": {
+        "recall@5": 0.6416,
+        "hit@5": 0.6731,
+        "recall@10": 0.7217,
+        "hit@10": 0.75,
+        "n": 156
+      },
+      "open-domain": {
+        "recall@5": 0.1515,
+        "hit@5": 0.25,
+        "recall@10": 0.2727,
+        "hit@10": 0.3864,
+        "n": 44
+      },
+      "single-hop": {
+        "recall@5": 0.5766,
+        "hit@5": 0.5861,
+        "recall@10": 0.6423,
+        "hit@10": 0.6507,
+        "n": 418
+      },
+      "overall": {
+        "recall@5": 0.4861,
+        "hit@5": 0.5355,
+        "recall@10": 0.5608,
+        "hit@10": 0.6158,
+        "n": 760
+      }
+    }
+  },
+  "abstention": {
+    "adversarial_declined": 0.008438818565400843,
+    "answerable_wrongly_declined": 0.003937007874015748,
+    "n_adversarial": 237,
+    "n_answerable": 762
+  },
+  "abstention_analysis": {
+    "auc": 0.5913956166871546,
+    "operating_points": [
+      {
+        "max_false_decline": 0.05,
+        "adversarial_declined": 0.1350210970464135
+      },
+      {
+        "max_false_decline": 0.1,
+        "adversarial_declined": 0.22362869198312235
+      },
+      {
+        "max_false_decline": 0.2,
+        "adversarial_declined": 0.3459915611814346
+      }
+    ]
+  },
+  "timing_seconds": {
+    "recallix_ingest_s": 30.93,
+    "dense_ingest_s": 0.0,
+    "bm25_ingest_s": 0.02,
+    "recallix_query_s": 29.64,
+    "dense_query_s": 0.05,
+    "bm25_query_s": 0.54
+  },
+  "embedding_calls_during_ingest": 2824,
+  "llm_calls": 0,
+  "api_cost_usd": 0.0
+}

@@ -1,204 +1,182 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { 
-  Terminal, Code2, Cpu, Database, 
-  CheckCircle2, Copy, Zap, ArrowRight,
-  Shield, Network, Brain, Github, Terminal as TerminalIcon
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { useState } from "react";
+import { Nav } from "@/components/site/Nav";
+import { Footer } from "@/components/site/Footer";
+import { ButtonLink, CodeBlock, Eyebrow, Headline, Lede, Reveal, Section } from "@/components/site/ui";
 
-const pythonCode = `import requests
+/* Code samples mirror sdk/python/memoryos, sdk/typescript and docs/quickstart.md. */
 
-# 1. Initialize Memory Substrate
-BASE_URL = "http://localhost:8000"
-headers = {"X-API-Key": "recallix_test_key"}
+const SAMPLES: Record<string, { label: string; code: string }> = {
+    python: {
+        label: "Python",
+        code: `import os
+from memoryos import Memory
 
-# 2. Store Cognitive Intent
-payload = {
-    "agent_id": "researcher_alpha",
-    "user_id": "user_123",
-    "text": "The project anniversary is December 12th.",
-    "importance": 9.5,
-    "metadata": {"category": "events"}
-}
-requests.post(f"{BASE_URL}/memory/store", json=payload, headers=headers)
+mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
 
-# 3. Retrieve Context Across Models
-query = {"query": "When is the anniversary?", "user_id": "user_123"}
-res = requests.post(f"{BASE_URL}/memory/recall", json=query, headers=headers)
-print(res.json()["context"])`;
+mem.store("My name is Priya and I live in Pune.")
+out = mem.recall("Where do I live?")
 
-const curlCode = `curl -X POST "http://localhost:8000/memory/store" \\
-     -H "X-API-Key: recallix_test_key" \\
-     -H "Content-Type: application/json" \\
-     -d '{
-       "agent_id": "agent_01",
-       "user_id": "user_99",
-       "text": "User prefers dark mode interfaces.",
-       "importance": 7.0
-     }'`;
+print(out["status"])                       # CONSISTENT, ABSTAINED or NO_MATCH
+for m in out["memories"]:
+    print(m["content"], m.get("answer"), m["explain"])
 
-export default function SDKPage() {
-  const [copied, setCopied] = useState<string | null>(null);
+# Tell Recallix which results helped — this trains the ranker.
+mem.feedback(out["recall_id"], [out["memories"][0]["id"]])`,
+    },
+    typescript: {
+        label: "TypeScript",
+        code: `import { Memory } from "memoryos-sdk";
 
-  const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(id);
-    setTimeout(() => setCopied(null), 2000);
-  };
+const mem = new Memory({ apiKey: process.env.RECALLIX_API_KEY! });
 
-  return (
-    <div className="min-h-screen bg-[#050506] text-white selection:bg-cyan-500/30">
-      <nav className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-white/5 flex items-center justify-between px-8 glass backdrop-blur-2xl">
-        <div className="flex items-center gap-3 cursor-pointer">
-          <Link href="/" className="flex items-center gap-3">
-            <Brain className="w-6 h-6 text-cyan-400" />
-            <span className="text-xl font-black tracking-tighter">RECALLIX</span>
-          </Link>
-        </div>
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/architecture" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Architecture</Link>
-          <Link href="/benchmark" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Performance Audit</Link>
-          <Link href="/roadmap" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Roadmap</Link>
-          <Link href="/observability" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors">Observability</Link>
-        </div>
-        <Link href="https://github.com/AyishikD/Recallix">
-           <Button className="h-10 px-5 bg-white text-black font-black rounded-full flex items-center gap-2">
-             <Github className="w-4 h-4" /> Star
-           </Button>
-        </Link>
-      </nav>
+await mem.store("My name is Priya and I live in Pune.");
+const out = await mem.recall("Where do I live?");
 
-      <main className="pt-32 pb-24 container mx-auto px-6 max-w-6xl">
-        <header className="mb-20">
-          <Badge className="mb-6 py-1.5 px-4 bg-cyan-500/10 border-cyan-500/20 text-cyan-400 rounded-full font-bold text-xs">
-            DEVELOPER ACCESS
-          </Badge>
-          <h1 className="text-6xl md:text-7xl font-black tracking-tighter leading-[0.85] mb-8">
-            Universal <br />
-            <span className="text-gradient">Integrations.</span>
-          </h1>
-          <p className="text-xl text-zinc-500 font-bold leading-relaxed max-w-2xl">
-            Give any agent persistent memory in minutes. Our REST API and SDKs enable 
-            seamless context propagation across your entire model stack.
-          </p>
-        </header>
+console.log(out.status);
+for (const m of out.memories) console.log(m.content, m.answer);
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Left Column: Code */}
-          <div className="lg:col-span-7 space-y-8">
-            <section className="bg-zinc-900/40 border border-white/5 rounded-[32px] p-8 relative overflow-hidden">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <TerminalIcon className="w-5 h-5 text-cyan-400" />
-                  <span className="text-sm font-black text-white uppercase tracking-widest">Python Implementation</span>
-                </div>
-                <button 
-                  onClick={() => copyToClipboard(pythonCode, "python")}
-                  className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                >
-                  {copied === "python" ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-500" />}
-                </button>
-              </div>
-              <pre className="text-xs md:text-sm font-mono text-cyan-100/80 leading-relaxed overflow-x-auto">
-                {pythonCode}
-              </pre>
-            </section>
+await mem.feedback(out.recall_id, [out.memories[0].id]);`,
+    },
+    curl: {
+        label: "REST",
+        code: `curl -X POST http://localhost:8000/memory/store \\
+  -H "X-API-Key: $RECALLIX_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"content": "I prefer dark mode.", "agent_id": "settings-bot", "memory_type": "shared"}'
 
-            <section className="bg-zinc-900/40 border border-white/5 rounded-[32px] p-8 relative overflow-hidden">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <Code2 className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm font-black text-white uppercase tracking-widest">Raw CURL Request</span>
-                </div>
-                <button 
-                  onClick={() => copyToClipboard(curlCode, "curl")}
-                  className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-                >
-                  {copied === "curl" ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-zinc-500" />}
-                </button>
-              </div>
-              <pre className="text-xs md:text-sm font-mono text-purple-100/80 leading-relaxed overflow-x-auto">
-                {curlCode}
-              </pre>
-            </section>
-          </div>
+curl -X POST http://localhost:8000/memory/recall \\
+  -H "X-API-Key: $RECALLIX_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "Which theme does the user like?", "agent_id": "chat-bot"}'`,
+    },
+};
 
-          {/* Right Column: Setup */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="glass-card rounded-[32px] p-8 border border-white/5">
-              <h3 className="text-xl font-black mb-6">Local Environment</h3>
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-black text-emerald-400">01</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white mb-1">Pull Required Models</h4>
-                    <p className="text-xs text-zinc-500 font-bold leading-relaxed mb-3">Recallix benchmarks require these exact models locally:</p>
-                    <div className="bg-black p-3 rounded-xl border border-white/5 font-mono text-[10px] text-zinc-400 space-y-1">
-                       <div>ollama pull llama3.1:8b</div>
-                       <div>ollama pull mistral:latest</div>
-                       <div>ollama pull mxbai-embed-large</div>
+const multiUser = `# A service key may act for its end users.
+app = Memory(api_key=os.environ["RECALLIX_SERVICE_KEY"])
+
+app.store("Prefers vegetarian food.", user_id="customer-42",
+          agent_id="concierge", memory_type="shared")
+app.recall("Any dietary preferences?", user_id="customer-42", agent_id="booking")`;
+
+const SETUP = [
+    { t: "Install", c: `python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-local.txt   # optional: offline embeddings + answer check
+cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
+cmake --build backend/infra_cpp/build -j` },
+    { t: "Configure", c: `python -m backend.tools.setup_env      # writes .env, prints an admin key once` },
+    { t: "Run", c: `set -a; source .env; set +a
+./backend/infra_cpp/build/memory_service &   # vector engine
+python server.py                             # API on :8000` },
+    { t: "Create a key", c: `python -m backend.tools.keys create --user alice
+python -m backend.tools.keys create --user my-app --role service` },
+];
+
+const ENDPOINTS = [
+    ["POST", "/memory/store", "Store a message. Facts, topic and importance are computed for you."],
+    ["POST", "/memory/recall", "Ranked memories with status, explanations and the answer span."],
+    ["POST", "/memory/feedback", "Mark useful results; used to refit the ranker."],
+    ["DELETE", "/memory/{id}", "Removes the memory, its vector and its timeline entry."],
+    ["GET", "/memory/timeline", "What was stored, in order."],
+    ["GET", "/memory/world-state", "Latest known facts about the user."],
+    ["GET", "/memory/insights", "Reflections written by the background job."],
+    ["GET", "/memory/stats", "Counts for the dashboard."],
+];
+
+export default function DevelopersPage() {
+    const [lang, setLang] = useState<keyof typeof SAMPLES>("python");
+    return (
+        <main>
+            <Nav />
+            <Section className="text-center">
+                <Reveal>
+                    <Eyebrow>Developers</Eyebrow>
+                    <Headline as="h1">Store. Recall.<br />That’s the API.</Headline>
+                    <Lede className="mx-auto mt-6">
+                        Python and TypeScript SDKs over a small REST API. Self-hosted, one config file, no LLM to provision.
+                    </Lede>
+                </Reveal>
+            </Section>
+
+            <Section tone="cloud">
+                <Reveal>
+                    <div className="flex justify-center mb-8">
+                        <div className="inline-flex rounded-full bg-white p-1 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                            {Object.entries(SAMPLES).map(([k, s]) => (
+                                <button key={k} onClick={() => setLang(k as keyof typeof SAMPLES)}
+                                    className={`px-5 h-9 rounded-full text-[14px] transition-colors ${lang === k ? "bg-ink text-white" : "text-ink-2 hover:text-ink"}`}>
+                                    {s.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-black text-blue-400">02</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white mb-1">Initialize Core</h4>
-                    <p className="text-xs text-zinc-500 font-bold leading-relaxed">
-                      Clone the substrate, install dependencies, and run the FastAPI entry point.
+                    <div className="max-w-[760px] mx-auto"><CodeBlock code={SAMPLES[lang].code} label={SAMPLES[lang].label} /></div>
+                    <p className="text-center mt-6 text-[14px] text-ink-2 max-w-[620px] mx-auto">
+                        <strong className="text-ink">status</strong> is CONSISTENT when a memory answers, ABSTAINED when matching memories exist
+                        but none answers the question, and NO_MATCH when nothing matches.
                     </p>
-                    <div className="bg-black p-3 rounded-xl border border-white/5 font-mono text-[10px] text-zinc-400 mt-3">
-                       python server.py
-                    </div>
-                  </div>
+                </Reveal>
+            </Section>
+
+            <Section>
+                <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                    <Reveal>
+                        <Eyebrow>Many users, many agents</Eyebrow>
+                        <Headline>Built for products, not demos.</Headline>
+                        <Lede className="mt-5">
+                            A user key always acts as its own user. A service key can act for any of your end users — each gets a separate
+                            index. Mark a memory <code>shared</code> to make it visible to all of that user’s agents, or keep it <code>private</code> to one.
+                        </Lede>
+                    </Reveal>
+                    <Reveal delay={0.1}><CodeBlock code={multiUser} label="Python · service key" /></Reveal>
                 </div>
+            </Section>
 
-                <div className="flex gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-black text-purple-400">03</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white mb-1">Scale to Production</h4>
-                    <p className="text-xs text-zinc-500 font-bold leading-relaxed">
-                      Deploy the C++ VectorEngine for 10M+ node performance.
-                    </p>
-                  </div>
+            <Section tone="cloud">
+                <Reveal>
+                    <Eyebrow>Set up</Eyebrow>
+                    <Headline className="mb-12">Running in four steps.</Headline>
+                </Reveal>
+                <div className="grid gap-5 md:grid-cols-2">
+                    {SETUP.map((s, i) => (
+                        <Reveal key={s.t} delay={i * 0.06}>
+                            <div className="rounded-[28px] bg-white p-7 h-full shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+                                <p className="text-[13px] text-ink-3 mb-1">Step {i + 1}</p>
+                                <h3 className="type-title mb-4">{s.t}</h3>
+                                <pre className="text-[12.5px] bg-cloud rounded-[14px] p-4 overflow-x-auto">{s.c}</pre>
+                            </div>
+                        </Reveal>
+                    ))}
                 </div>
-              </div>
-            </div>
+                <p className="mt-6 text-[14px] text-ink-2">
+                    Embeddings come from Ollama, sentence-transformers in-process, or any OpenAI-compatible endpoint —
+                    set <code>models.embedding_provider</code> in config.yaml.
+                </p>
+            </Section>
 
-            <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-[32px] p-8">
-               <h3 className="text-lg font-black text-cyan-400 mb-2">SDK Roadmap</h3>
-               <p className="text-xs text-zinc-500 font-bold leading-relaxed mb-6">
-                 We are currently developing official wrappers for TypeScript and Rust.
-               </p>
-               <Button className="w-full h-12 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl gap-2">
-                 Join the Waitlist <ArrowRight className="w-4 h-4" />
-               </Button>
-            </div>
-          </div>
-        </div>
-      </main>
+            <Section>
+                <Reveal>
+                    <Eyebrow>Reference</Eyebrow>
+                    <Headline className="mb-10">Endpoints.</Headline>
+                </Reveal>
+                <div className="rounded-[28px] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] divide-y divide-line/60 overflow-hidden">
+                    {ENDPOINTS.map(([m, p, d]) => (
+                        <div key={p + m} className="grid md:grid-cols-[80px_220px_1fr] gap-1 md:gap-4 px-6 md:px-8 py-4 items-baseline">
+                            <span className="text-[12px] font-semibold text-accent">{m}</span>
+                            <code className="text-[14px]">{p}</code>
+                            <span className="text-ink-2 text-[15px]">{d}</span>
+                        </div>
+                    ))}
+                </div>
+                <div className="mt-8 flex flex-wrap gap-6">
+                    <ButtonLink href="https://github.com/AyishikD/Recallix/blob/main/docs/api_reference.md" variant="link">Full API reference</ButtonLink>
+                    <ButtonLink href="https://github.com/AyishikD/Recallix/blob/main/docs/quickstart.md" variant="link">Quickstart</ButtonLink>
+                </div>
+            </Section>
 
-      <footer className="border-t border-white/5 py-8 px-8 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-zinc-600" />
-          <span className="text-xs font-bold text-zinc-600">RECALLIX SDK</span>
-        </div>
-        <Link href="https://github.com/AyishikD/Recallix">
-           <span className="text-xs text-zinc-700 hover:text-white transition-colors">View Repository</span>
-        </Link>
-      </footer>
-    </div>
-  );
+            <Footer />
+        </main>
+    );
 }

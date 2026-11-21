@@ -1,7 +1,8 @@
 """
-Regression gate: the hermetic eval (hash embedder, dev split) must not fall below
-the published results in eval/results/dev_hash.json. Thresholds are the measured
-numbers themselves (minus float tolerance), never hand-picked.
+Regression gate: the hermetic eval (hash embedder, dev split, answer check off so
+it runs identically without torch) must not fall below eval/results/gate_dev_hash.json,
+which is produced by the same command. Thresholds are the measured numbers
+themselves (minus float tolerance), never hand-picked.
 """
 import json
 import os
@@ -14,9 +15,10 @@ TOL = 1e-6
 
 
 def test_dev_metrics_do_not_regress(tmp_path):
-    baseline = json.load(open(ROOT / "eval" / "results" / "dev_hash.json"))
+    baseline = json.load(open(ROOT / "eval" / "results" / "gate_dev_hash.json"))
     out = tmp_path / "now.json"
     env = {k: v for k, v in os.environ.items() if not k.startswith("RECALLIX_")}
+    env["RECALLIX_ANSWER_CHECK"] = "0"
     proc = subprocess.run([sys.executable, str(ROOT / "eval" / "run_eval.py"), "--split", "dev", "--embedder", "hash",
                            "--only", "facts,schemas,importance,retrieval,legacy", "--json", str(out)],
                           cwd=ROOT, env=env, capture_output=True, text=True, timeout=900)

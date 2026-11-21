@@ -53,9 +53,11 @@ done
 # LoCoMo (public benchmark, retrieval only, no LLM)
 mkdir -p /tmp/locomo && curl -sSfL -o /tmp/locomo/locomo10.json \
   https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json
-python eval/benchmarks/locomo.py --data /tmp/locomo/locomo10.json \
-  --embedder st:sentence-transformers/all-MiniLM-L6-v2 --engine-url http://127.0.0.1:18431 \
-  --json eval/results/locomo_all-MiniLM-L6-v2.json
+for split in test dev; do   # dev = conversations 1-5 (used for fitting), test = 6-10
+  python eval/benchmarks/locomo.py --split $split --data /tmp/locomo/locomo10.json \
+    --embedder st:sentence-transformers/all-MiniLM-L6-v2 --engine-url http://127.0.0.1:18431 \
+    --json eval/results/locomo_${split}_all-MiniLM-L6-v2.json
+done
 kill %1
 
 python eval/publish_results.py     # -> eval/results/summary.json + RESULTS.md
@@ -64,22 +66,45 @@ python eval/publish_results.py     # -> eval/results/summary.json + RESULTS.md
 Without `--engine-url` the harness uses an in-process brute-force engine (hermetic; used by CI).
 `-v` prints every failure.
 
-## Refitting the shipped models
+## Refitting the shipped models (dev data only, in this order)
 
 ```bash
-python eval/run_eval.py --fit-importance --embedder st:sentence-transformers/all-MiniLM-L6-v2
-python eval/run_eval.py --fit-ranker     --embedder st:sentence-transformers/all-MiniLM-L6-v2
+E=st:sentence-transformers/all-MiniLM-L6-v2; L=/tmp/locomo/locomo10.json
+python eval/run_eval.py --fit-importance --embedder $E
+RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --fit-ranker --locomo $L --embedder $E
+python eval/run_eval.py --fit-answer-check deepset/minilm-uncased-squad2,deepset/tinyroberta-squad2,deepset/roberta-base-squad2,deepset/deberta-v3-base-squad2 \
+    --locomo $L --embedder $E          # then set recall.answer_check.model in config.yaml to the chosen model
 ```
 
-Both start from fixed, documented priors (`backend/brain/memory_ranking/*.prior.json`) and write
-`*.default.json` with provenance. The ranker chooses its regularisation strength and abstention
-threshold by leave-one-scenario-out cross-validation on dev. In production, refit from real usage
-instead (`fit_importance --from-db`, `fit_ranker --from-db`; see docs/quickstart.md).
+* Importance and ranker fits start from fixed, documented priors (`backend/brain/memory_ranking/*.prior.json`)
+  and write `*.default.json` with provenance. The ranker uses our dev scenarios plus LoCoMo **dev**
+  conversations (1-5), chooses its regularisation by leave-one-group-out CV on hit@5, and sets its
+  relevance threshold so at most `recall.max_false_abstain_rate` of answerable dev questions are refused.
+* The answer check (`backend/brain/features/answer_check.py`) compares SQuAD 2.0 readers on the same dev data;
+  its threshold uses the same 5% wrong-refusal policy; the model that then declines the most unanswerable dev
+  questions is chosen (`backend/brain/features/answer_check.default.json` records every candidate's numbers).
+* In production, refit from real usage instead (`fit_importance --from-db`, `fit_ranker --from-db`).
+
+## Fresh held-out benchmark: LongMemEval
+
+Never used for fitting or design decisions; run once with the frozen configuration.
+
+```bash
+python -c "from huggingface_hub import hf_hub_download as d; print(d('xiaowu0162/longmemeval-cleaned', \
+    'longmemeval_s_cleaned.json', repo_type='dataset', local_dir='/tmp/lme'))"
+python eval/benchmarks/longmemeval.py --data /tmp/lme/longmemeval_s_cleaned.json --embedder $E \
+    --engine-url http://127.0.0.1:18431 --json eval/results/longmemeval_s_all-MiniLM-L6-v2.json
+```
 
 ## CI
 
-`tests/test_eval_gate.py` reruns the hermetic dev eval (hash embedder) and fails if any metric
-falls below the published `results/dev_hash.json`.
+`tests/test_eval_gate.py` reruns the hermetic dev eval (hash embedder, answer check off so it runs
+without torch) and fails if any metric falls below `results/gate_dev_hash.json`, produced by:
+
+```bash
+RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --split dev --embedder hash \
+    --only facts,schemas,importance,retrieval,legacy --json eval/results/gate_dev_hash.json
+```
 
 ## Slot conventions
 

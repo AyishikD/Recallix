@@ -13,7 +13,9 @@
     "salience": 1.0,
     "recency": 0.5,
     "alias_bridge": -1.5,
-    "own_private": 0.3
+    "own_private": 0.3,
+    "subject_match": 1.0,
+    "subject_conflict": -1.0
   },
   "threshold": 0.2,
   "source": "hand-set prior: signs encode the intended direction of each feature; magnitudes are rough guesses. Used only as the regularisation centre for fitting."

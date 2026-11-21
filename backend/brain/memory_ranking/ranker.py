@@ -7,8 +7,11 @@ Features (all in [0, 1]) for one candidate memory:
   semantic          cosine(query embedding, memory embedding), clipped to [0, 1]
   lexical           BM25 magnitude / max BM25 magnitude among this query's candidates
   entity_index      memory was found through the entity index (its fact is about a named query entity)
-  entity_match      memory mentions a named entity of the question
+  entity_match      memory is about a named entity of the question (owner, non-vocative mention, or fact slot)
   entity_conflict   question names entities; memory only names other ones
+  subject_match     the memory is a first-person statement by an entity the question asks about
+  subject_conflict  the memory is a first-person statement by someone else, and the question's
+                    entities appear in it at most as direct address ("Thanks, Caroline!")
   relation_match    one of the memory's fact slots has the relation asked about
   relation_text     no such slot, but the memory text uses a word of that relation group
   relation_conflict question asks a relation; memory has fact slots, none of them that relation
@@ -24,6 +27,7 @@ POST /memory/feedback. A fitted model in <storage>/ranker_model.json
 overrides the defaults below.
 """
 import json
+import math
 import os
 import re
 import sqlite3
@@ -31,9 +35,9 @@ import time
 
 from backend.utils.paths import get_db_path
 
-FEATURES = ["semantic", "lexical", "entity_index", "entity_match", "entity_conflict", "relation_match",
-            "relation_text", "relation_conflict", "slot_match", "salience", "recency", "alias_bridge",
-            "own_private"]
+FEATURES = ["semantic", "lexical", "entity_index", "entity_match", "entity_conflict", "subject_match",
+            "subject_conflict", "relation_match", "relation_text", "relation_conflict", "slot_match", "salience",
+            "recency", "alias_bridge", "own_private"]
 
 # Shipped default model, produced by `python eval/run_eval.py --fit-ranker` (provenance
 # is recorded inside the file). A deployment-specific fit in <storage>/ranker_model.json
@@ -41,9 +45,22 @@ FEATURES = ["semantic", "lexical", "entity_index", "entity_match", "entity_confl
 DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(__file__), "ranker_model.default.json")
 
 
+PRIOR_MODEL_PATH = os.path.join(os.path.dirname(__file__), "ranker_model.prior.json")
+
+
+def _complete(model):
+    """Fill weights for features the model predates from the documented prior (never crash on new features)."""
+    with open(PRIOR_MODEL_PATH) as f:
+        prior = json.load(f)["weights"]
+    missing = [k for k in ["bias"] + FEATURES if k not in model.get("weights", {})]
+    if missing:
+        model = dict(model, weights={**prior, **model.get("weights", {})}, missing_from_fit=missing)
+    return model
+
+
 def _load_default():
     with open(DEFAULT_MODEL_PATH) as f:
-        return json.load(f)
+        return _complete(json.load(f))
 
 
 DEFAULT_MODEL = _load_default()
@@ -67,8 +84,8 @@ class Ranker:
                 try:
                     with open(path) as f:
                         loaded = json.load(f)
-                    if set(["bias"] + FEATURES) <= set(loaded.get("weights", {})) and "threshold" in loaded:
-                        model = loaded
+                    if "threshold" in loaded and loaded.get("weights"):
+                        model = _complete(loaded)
                 except (OSError, ValueError):
                     pass
             cls._model, cls._mtime = model, mtime
@@ -79,6 +96,7 @@ class Ranker:
         import math
         w = (model or cls.model())["weights"]
         z = w["bias"] + sum(w[k] * features.get(k, 0.0) for k in FEATURES)
+        z = max(-35.0, min(35.0, z))  # numerically stable sigmoid
         return 1.0 / (1.0 + math.exp(-z))
 
     @classmethod
@@ -100,34 +118,60 @@ def memory_slots(memory):
     return slots if isinstance(slots, list) else []
 
 
+def memory_speaker(memory):
+    """Speaker recorded by the client at store time (metadata.client.speaker), if any."""
+    metadata = memory.get("metadata") or {}
+    if isinstance(metadata, str):
+        try:
+            metadata = json.loads(metadata)
+        except ValueError:
+            metadata = {}
+    client = metadata.get("client") if isinstance(metadata, dict) else None
+    speaker = client.get("speaker") if isinstance(client, dict) else None
+    return speaker if isinstance(speaker, str) and speaker.strip() else None
+
+
 def candidate_features(candidates, analysis, agent_id, alias_sources=()):
     """Attaches c["features"] to every candidate (needs c["semantic_score"] set)."""
-    from backend.brain.features.query import (memory_entities, entity_matches, relation_matches,
-                                              slot_matches, RELATION_GROUPS)
-    q_ents = analysis["strong_entities"]
+    from backend.brain.features.query import (entity_matches, spans_match, relation_matches, slot_matches,
+                                              memory_subject, RELATION_GROUPS)
+    q_spans = analysis.get("strong_spans", [])
     asks_rel = analysis["asks_relation"]
     q_rels = analysis["relations"]
     asked_words = set().union(*(g for g in RELATION_GROUPS if g & q_rels)) if asks_rel else set()
     asks_name = bool(q_rels & {"name", "called", "alias"})
 
-    max_bm25 = max((abs(c.get("bm25_score") or 0.0) for c in candidates if not c.get("symbolic_match")), default=0.0)
+    max_bm25 = max((abs(c.get("bm25_score") or 0.0) for c in candidates), default=0.0)
     order = sorted(range(len(candidates)), key=lambda i: float(candidates[i].get("timestamp") or 0.0))
     recency = {i: (rank / (len(order) - 1) if len(order) > 1 else 1.0) for rank, i in enumerate(order)}
 
     for i, c in enumerate(candidates):
         slots = memory_slots(c)
-        m_ents = memory_entities(c.get("content", ""), slots)
-        ent_match = bool(q_ents) and any(entity_matches(q, m) for q in q_ents for m in m_ents)
-        named = {m for m in m_ents if m != "user"}
+        content = c.get("content", "")
+        owner, mentions = memory_subject(content, memory_speaker(c))
+        about = list(mentions) + ([owner] if owner else [])
+        slot_ents = [s.get("entity", "") for s in slots if s.get("entity")]
+
+        def is_about(q):
+            return any(spans_match(q, m) for m in about) or any(entity_matches("".join(q), e) for e in slot_ents)
+
+        ent_match = bool(q_spans) and any(is_about(q) for q in q_spans)
+        subject_match = bool(owner) and any(spans_match(q, owner) for q in q_spans)
+        mentioned = any(spans_match(q, m) for q in q_spans for m in mentions) or \
+            any(entity_matches("".join(q), e) for q in q_spans for e in slot_ents)
+        subject_conflict = bool(owner) and bool(q_spans) and not subject_match and not mentioned
+        named = [m for m in about if m != ("user",)]
         rel_match = asks_rel and any(relation_matches(s.get("relation", ""), q_rels) for s in slots)
-        words = set(re.findall(r"[a-z]+", c.get("content", "").lower()))
+        words = set(re.findall(r"[a-z]+", content.lower()))
         bm25 = abs(c.get("bm25_score") or 0.0)
         c["features"] = {
             "semantic": min(max(float(c.get("semantic_score") or 0.0), 0.0), 1.0),
-            "lexical": (bm25 / max_bm25) if (max_bm25 > 0 and not c.get("symbolic_match")) else 0.0,
+            "lexical": (bm25 / max_bm25) if max_bm25 > 0 else 0.0,
             "entity_index": 1.0 if c.get("symbolic_match") else 0.0,
             "entity_match": 1.0 if ent_match else 0.0,
-            "entity_conflict": 1.0 if (q_ents and not ent_match and named) else 0.0,
+            "entity_conflict": 1.0 if (q_spans and not ent_match and named) else 0.0,
+            "subject_match": 1.0 if subject_match else 0.0,
+            "subject_conflict": 1.0 if subject_conflict else 0.0,
             "relation_match": 1.0 if rel_match else 0.0,
             "relation_text": 1.0 if (asks_rel and not slots and words & asked_words) else 0.0,
             "relation_conflict": 1.0 if (asks_rel and slots and not rel_match) else 0.0,

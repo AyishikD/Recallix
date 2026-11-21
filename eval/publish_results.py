@@ -40,7 +40,7 @@ def main():
     evals = {}
     for path in sorted(glob.glob(str(RESULTS / "*_*.json"))):
         name = Path(path).stem
-        if name in ("summary",) or name.startswith("locomo"):
+        if name in ("summary",) or name.startswith(("locomo", "longmemeval", "gate_")):
             continue
         with open(path) as f:
             evals[name] = json.load(f)
@@ -53,7 +53,8 @@ def main():
     summary = {"generated_at": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "git_commit": commit,
                "machine": machine(), "eval": evals,
                "hnsw": read_jsonl(RESULTS / "hnsw.jsonl"), "hnsw_reference": read_jsonl(RESULTS / "hnsw_reference.jsonl"),
-               "locomo": [json.load(open(p)) for p in sorted(glob.glob(str(RESULTS / "locomo_*.json")))]}
+               "locomo": [json.load(open(p)) for p in sorted(glob.glob(str(RESULTS / "locomo_*.json")))],
+               "longmemeval": [json.load(open(p)) for p in sorted(glob.glob(str(RESULTS / "longmemeval_*.json")))]}
     with open(RESULTS / "summary.json", "w") as f:
         json.dump(summary, f, indent=2)
 
@@ -82,9 +83,25 @@ def main():
     for r in summary["hnsw_reference"]:
         md.append(f"| hnswlib | {r['n']:,} | {r['dim']} | {r['data']} | {r['M']} | {r['efConstruction']} | "
                   f"{r['efSearch']} | {r['recall_at_10']:.3f} | {r['search_avg_ms']:.3f} | – | {r['build_seconds']:.1f} |")
+    for lm in summary["longmemeval"]:
+        md.append(f"\n## LongMemEval_S (fresh held-out: {lm['questions']} questions, {lm['turns']:,} turns; embedder "
+                  f"{lm['embedder']}, {lm['engine']} engine, answer check {lm['answer_check']}; no LLM)\n")
+        types = [t for t in lm["systems"]["recallix"] if t != "overall"]
+        md.append("| system | recall@5 | recall@10 | hit@10 | " + " | ".join(f"{t} recall@10" for t in types) + " |")
+        md.append("|---" * (4 + len(types)) + "|")
+        for name, r in lm["systems"].items():
+            md.append(f"| {name} | {r['overall']['recall@5']:.3f} | {r['overall']['recall@10']:.3f} | {r['overall']['hit@10']:.3f} | "
+                      + " | ".join(f"{r[t]['recall@10']:.3f}" for t in types) + " |")
+        a = lm["abstention"]
+        md.append(f"\nRecallix declined {a['unanswerable_declined']:.1%} of {a['n_unanswerable']} unanswerable questions and wrongly "
+                  f"declined {a['answerable_wrongly_declined']:.1%} of {a['n_answerable']} answerable ones "
+                  f"(AUC: answer margin {a['auc_answer_margin']:.3f}, top relevance {a['auc_top_relevance']:.3f}).")
     for lc in summary["locomo"]:
-        md.append(f"\n## LoCoMo retrieval ({lc['conversations']} conversations, {lc['turns']} turns, {lc['questions']} questions; "
-                  f"embedder {lc['embedder']}, {lc['engine']} engine; no LLM)\n")
+        split = lc.get("split", "all")
+        md.append(f"\n## LoCoMo retrieval, {split} split ({lc['conversations']} conversations, {lc['turns']} turns, {lc['questions']} questions; "
+                  f"embedder {lc['embedder']}, {lc['engine']} engine; no LLM)"
+                  + (" — dev conversations were used for fitting" if split == "dev" else
+                     " — held out from fitting, but evaluated repeatedly during development" if split == "test" else "") + "\n")
         cats = [c for c in ("multi-hop", "temporal", "open-domain", "single-hop") if c in lc["systems"]["recallix"]]
         md.append("| system | recall@5 | recall@10 | hit@10 | " + " | ".join(f"{c} recall@10" for c in cats) + " |")
         md.append("|---" * (4 + len(cats)) + "|")

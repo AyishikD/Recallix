@@ -1,123 +1,143 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { ArrowLeft, Cpu, Brain, FlaskConical, AlertTriangle } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { evalRuns, hnsw, hnswReference, results, ms, pct, largestClustered } from "@/lib/results";
+import { Nav } from "@/components/site/Nav";
+import { Footer } from "@/components/site/Footer";
+import { DataTable, Eyebrow, Headline, Lede, Reveal, Section, Stat, Tile } from "@/components/site/ui";
+import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, ms, pct, results } from "@/lib/results";
 
-/* Every number on this page is read from eval/results/summary.json
-   (python eval/publish_results.py). Nothing is typed in by hand. */
+/* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
-const evalRows = evalRuns;
-
-function Section({ icon: Icon, title, children, note }: { icon: React.ComponentType<{ className?: string }>; title: string; children: React.ReactNode; note?: string }) {
-    return (
-        <section className="mb-16">
-            <div className="flex items-center gap-3 mb-2">
-                <Icon className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-2xl font-black tracking-tight">{title}</h2>
-            </div>
-            {note && <p className="text-sm text-zinc-500 mb-6 max-w-3xl">{note}</p>}
-            {children}
-        </section>
-    );
-}
-
-function Table({ head, rows }: { head: string[]; rows: (string | number | undefined)[][] }) {
-    return (
-        <div className="overflow-x-auto rounded-2xl border border-white/5">
-            <table className="w-full text-sm">
-                <thead className="bg-white/5 text-[10px] uppercase tracking-widest text-zinc-500">
-                    <tr>{head.map(h => <th key={h} className="text-left px-4 py-3 font-black">{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                    {rows.map((r, i) => (
-                        <tr key={i} className="border-t border-white/5">
-                            {r.map((c, j) => <td key={j} className="px-4 py-3 font-mono text-zinc-300 whitespace-nowrap">{c}</td>)}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-}
+const SYSTEM_LABEL: Record<string, string> = {
+    recallix: "Recallix", recallix_ranked: "Recallix (ranking only)", dense: "Vector search", bm25: "BM25",
+};
 
 export default function BenchmarkPage() {
+    const m = results.machine;
     const chart = hnsw.filter(r => r.n === 100000 && r.dim === 128).map(r => ({
-        name: `${r.data} ef=${r.efSearch}`,
-        recallix: +(r.recall_at_10 * 100).toFixed(1),
+        name: `${r.data}, ef ${r.efSearch}`,
+        Recallix: +(r.recall_at_10 * 100).toFixed(1),
         hnswlib: +((hnswReference.find(h => h.data === r.data && h.efSearch === r.efSearch && h.n === r.n)?.recall_at_10 ?? 0) * 100).toFixed(1),
     }));
-    const m = results.machine;
 
     return (
-        <div className="min-h-screen bg-black text-white">
-            <nav className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-white/5 flex items-center px-6 glass backdrop-blur-2xl gap-4">
-                <Link href="/" className="text-zinc-400 hover:text-white"><ArrowLeft className="w-4 h-4" /></Link>
-                <span className="text-sm font-black tracking-tight">MEASURED RESULTS</span>
-            </nav>
+        <main>
+            <Nav />
 
-            <main className="pt-24 pb-24 container mx-auto px-6 max-w-6xl">
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4">Benchmarks</h1>
-                <p className="text-zinc-500 font-bold max-w-3xl mb-12">
-                    Generated {results.generated_at} from commit <code>{results.git_commit}</code> on {m.cpu || m.machine} ({m.system}).
-                    Reproduce with the commands in <code>eval/README.md</code>. The C++ numbers are single-threaded and exclude the
-                    Python API and the embedding model.
-                </p>
+            <Section className="text-center">
+                <Reveal>
+                    <Eyebrow>Benchmarks</Eyebrow>
+                    <Headline as="h1">Measured. In the open.</Headline>
+                    <Lede className="mx-auto mt-6">
+                        Generated {results.generated_at} on {m.cpu || m.machine}. Reproduce every number with the commands in
+                        <code className="mx-1">eval/README.md</code>.
+                    </Lede>
+                </Reveal>
+            </Section>
 
-                <Section icon={Cpu} title="Vector engine" note="Recall@10 is measured against exact (brute-force) search on held-out queries from the same distribution. Clustered data resembles real embeddings; uniform random data is the known worst case for HNSW, shown with the reference implementation for comparison.">
-                    {largestClustered && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            {[["Vectors", largestClustered.n.toLocaleString()], ["Recall@10", pct(largestClustered.recall_at_10, 1)],
-                              ["Search avg", ms(largestClustered.search_avg_ms, 3)], ["Search p99", ms(largestClustered.search_p99_ms, 3)]].map(([k, v]) => (
-                                <div key={k} className="rounded-2xl border border-white/5 bg-zinc-900/40 p-5">
-                                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{k}</div>
-                                    <div className="text-2xl font-black">{v}</div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <Table head={["impl", "vectors", "dim", "data", "M / efC / efS", "recall@10", "avg", "p99", "build"]}
-                        rows={[...hnsw.map(r => [`recallix (${r.simd})`, r.n.toLocaleString(), r.dim, r.data, `${r.M} / ${r.efConstruction} / ${r.efSearch}`,
-                                pct(r.recall_at_10, 1), ms(r.search_avg_ms, 3), ms(r.search_p99_ms, 3), `${r.build_seconds.toFixed(1)} s`]),
-                               ...hnswReference.map(r => ["hnswlib", r.n.toLocaleString(), r.dim, r.data, `${r.M} / ${r.efConstruction} / ${r.efSearch}`,
-                                pct(r.recall_at_10, 1), ms(r.search_avg_ms, 3), "—", `${r.build_seconds.toFixed(1)} s`])]} />
-                    {chart.length > 0 && (
-                        <div className="h-72 mt-8 rounded-2xl border border-white/5 bg-zinc-900/40 p-4">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chart}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1f2937" />
-                                    <XAxis dataKey="name" stroke="#6b7280" fontSize={11} />
-                                    <YAxis stroke="#6b7280" fontSize={11} unit="%" domain={[0, 100]} />
-                                    <Tooltip contentStyle={{ backgroundColor: "#09090b", border: "1px solid #1f2937" }} />
-                                    <Bar dataKey="recallix" fill="#22d3ee" name="Recallix recall@10" />
-                                    <Bar dataKey="hnswlib" fill="#a78bfa" name="hnswlib recall@10" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    )}
+            {longMemEval && (
+                <Section tone="cloud">
+                    <Reveal>
+                        <Eyebrow>Fresh, held-out test</Eyebrow>
+                        <Headline>LongMemEval.</Headline>
+                        <Lede className="mt-5">
+                            {longMemEval.questions} questions over {longMemEval.turns.toLocaleString()} chat turns, run once after every design
+                            decision was frozen. Scored on whether the turns containing the answer are retrieved — no LLM judge.
+                        </Lede>
+                    </Reveal>
+                    <div className="mt-12 grid gap-5 md:grid-cols-2">
+                        <Reveal><Tile><Stat value={pct(longMemEval.systems.recallix?.overall?.["recall@10"], 1)} label="evidence recall@10"
+                            sub={`Vector search: ${pct(longMemEval.systems.dense?.overall?.["recall@10"], 1)} · BM25: ${pct(longMemEval.systems.bm25?.overall?.["recall@10"], 1)}`} /></Tile></Reveal>
+                        <Reveal delay={0.08}><Tile><Stat value={pct(longMemEval.abstention.unanswerable_declined)} label="of unanswerable questions declined"
+                            sub={`Wrongly declined ${pct(longMemEval.abstention.answerable_wrongly_declined, 1)} of ${longMemEval.abstention.n_answerable} answerable questions.`} /></Tile></Reveal>
+                    </div>
+                    <div className="mt-8">
+                        <DataTable head={["System", "recall@5", "recall@10", "hit@10"]}
+                            rows={Object.entries(longMemEval.systems).map(([name, r]) => [SYSTEM_LABEL[name] ?? name,
+                                pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)])} />
+                    </div>
                 </Section>
+            )}
 
-                <Section icon={Brain} title="Memory pipeline" note="Hand-labelled eval data (eval/data). Models are fitted on dev only; test is held out. 'hash' is a deterministic bag-of-words stand-in used in CI; the real-embedder rows are the meaningful ones. Unanswerable questions count as correct only if Recallix abstains.">
-                    <Table head={["split", "embedder", "facts F1", "schema acc", "importance AUC", "hit@1", "hit@3", "false abstain", "unanswerable declined", "recall p50"]}
-                        rows={evalRows.map(r => [r.split, r.embedder, r.facts?.f1?.toFixed(2), pct(r.schemas?.accuracy), r.importance?.auc?.toFixed(2),
-                            pct(r.retrieval?.["hit@1"]), pct(r.retrieval?.["hit@3"]), pct(r.retrieval?.false_abstain_rate), pct(r.retrieval?.abstain_accuracy),
-                            ms(r.retrieval?.recall_ms_p50, 1)])} />
+            {locomoRuns.length > 0 && (
+                <Section>
+                    <Reveal>
+                        <Eyebrow>Public benchmark</Eyebrow>
+                        <Headline>LoCoMo.</Headline>
+                        <Lede className="mt-5">
+                            Conversations 1–5 were used for fitting. Conversations 6–10 were held out from fitting but evaluated
+                            repeatedly during development, so read them as optimistic.
+                        </Lede>
+                    </Reveal>
+                    <div className="mt-10">
+                        <DataTable head={["Split", "System", "recall@5", "recall@10", "hit@10"]}
+                            rows={locomoRuns.flatMap(run => Object.entries(run.systems).map(([name, r]) => [run.split, SYSTEM_LABEL[name] ?? name,
+                                pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)]))} />
+                    </div>
+                    <p className="mt-5 text-[14px] text-ink-2">
+                        {locomoRuns.map(run => `${run.split}: declined ${pct(run.abstention.adversarial_declined)} of ${run.abstention.n_adversarial} adversarial questions, wrongly declined ${pct(run.abstention.answerable_wrongly_declined, 1)} of ${run.abstention.n_answerable} answerable.`).join("  ")}
+                    </p>
                 </Section>
+            )}
 
-                <Section icon={FlaskConical} title="Legacy benchmarks" note="Pre-existing adversarial gauntlet (v1–v3) and 500-turn retention test, ported unchanged and never used for tuning. Earlier versions of this page reported higher scores that depended on answers hardcoded into the code; those were removed.">
-                    <Table head={["run", "gauntlet passed", "retention recall@1"]}
-                        rows={evalRows.flatMap(r => r.legacy ? [[`${r.split} · ${r.embedder}`,
-                            `${r.legacy.gauntlet_passed}/${r.legacy.gauntlet_total}`, `${r.legacy.retention_hits}/${r.legacy.retention_total}`]] : [])} />
-                </Section>
-
-                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 flex gap-3 text-sm text-amber-200/80">
-                    <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400" />
-                    <p>The eval sets are small (tens of items per task) and were written by the same author as the extraction rules, so
-                        they can flatter the system. Independent test data is the most useful contribution — see eval/README.md.</p>
+            <Section tone="night">
+                <Reveal>
+                    <Eyebrow>Vector engine</Eyebrow>
+                    <Headline>Same recall as the reference.</Headline>
+                    <Lede dark className="mt-5">
+                        Recall@10 against exact search on held-out queries, single thread, next to the reference HNSW implementation on
+                        identical data. Uniform random vectors are the known worst case for any HNSW index.
+                    </Lede>
+                </Reveal>
+                {largestClustered && (
+                    <div className="mt-12 grid gap-5 md:grid-cols-3">
+                        <Tile dark><Stat dark value={`${(largestClustered.n / 1e6).toFixed(0)}M`} label="vectors" sub={`${largestClustered.dim} dimensions, clustered`} /></Tile>
+                        <Tile dark><Stat dark value={pct(largestClustered.recall_at_10, 1)} label="recall@10" sub="vs exact search" /></Tile>
+                        <Tile dark><Stat dark value={ms(largestClustered.search_avg_ms, 2)} label="average search" sub={`p99 ${ms(largestClustered.search_p99_ms, 2)}`} /></Tile>
+                    </div>
+                )}
+                {chart.length > 0 && (
+                    <div className="mt-8 h-72 rounded-[20px] bg-night-2 p-5">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chart} barGap={6}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
+                                <XAxis dataKey="name" stroke="#a1a1a6" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#a1a1a6" fontSize={12} unit="%" domain={[0, 100]} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ background: "#1d1d1f", border: "none", borderRadius: 12, color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                                <Bar dataKey="Recallix" fill="#2997ff" radius={[6, 6, 0, 0]} />
+                                <Bar dataKey="hnswlib" fill="#86868b" radius={[6, 6, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
+                <div className="mt-8">
+                    <DataTable dark head={["Implementation", "Vectors", "Dim", "Data", "M / efC / efS", "recall@10", "Average", "p99", "Build"]}
+                        rows={[...hnsw.map(r => [`Recallix (${r.simd})`, r.n.toLocaleString(), r.dim, r.data, `${r.M} / ${r.efConstruction} / ${r.efSearch}`,
+                            pct(r.recall_at_10, 1), ms(r.search_avg_ms, 3), ms(r.search_p99_ms, 3), `${r.build_seconds.toFixed(1)} s`]),
+                        ...hnswReference.map(r => ["hnswlib", r.n.toLocaleString(), r.dim, r.data, `${r.M} / ${r.efConstruction} / ${r.efSearch}`,
+                            pct(r.recall_at_10, 1), ms(r.search_avg_ms, 3), "—", `${r.build_seconds.toFixed(1)} s`])]} />
                 </div>
-            </main>
-        </div>
+            </Section>
+
+            <Section tone="cloud">
+                <Reveal>
+                    <Eyebrow tone="muted">Our own test sets</Eyebrow>
+                    <Headline>The small print.</Headline>
+                    <Lede className="mt-5">
+                        Hand-labelled sets written by the same author as the extraction rules — small, and evaluated repeatedly during
+                        development. Useful for regressions, not for bragging. “hash” is a deterministic stand-in embedder used in CI.
+                    </Lede>
+                </Reveal>
+                <div className="mt-10">
+                    <DataTable head={["Split", "Embedder", "Facts F1", "Schema", "Importance AUC", "hit@1", "hit@3", "Wrongly declined", "Unanswerable declined", "Gauntlet", "Retention"]}
+                        rows={evalRuns.map(r => [r.split, r.embedder.replace("st:sentence-transformers/", ""), r.facts?.f1?.toFixed(2), pct(r.schemas?.accuracy),
+                            r.importance?.auc?.toFixed(2), pct(r.retrieval?.["hit@1"]), pct(r.retrieval?.["hit@3"]), pct(r.retrieval?.false_abstain_rate),
+                            pct(r.retrieval?.abstain_accuracy), r.legacy ? `${r.legacy.gauntlet_passed}/${r.legacy.gauntlet_total}` : "—",
+                            r.legacy ? `${r.legacy.retention_hits}/${r.legacy.retention_total}` : "—"])} />
+                </div>
+            </Section>
+
+            <Footer note={<p>Generated {results.generated_at} at commit {results.git_commit}.</p>} />
+        </main>
     );
 }

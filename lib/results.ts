@@ -32,18 +32,39 @@ export interface EvalRun {
     example?: ExampleRun;
 }
 
+export interface SystemScores {
+    [category: string]: { [metric: string]: number };
+}
+
+export interface LongMemEvalRun {
+    questions: number; turns: number; embedder: string; engine: string; answer_check?: string;
+    systems: Record<string, SystemScores>;
+    abstention: { unanswerable_declined: number; answerable_wrongly_declined: number; n_unanswerable: number;
+                  n_answerable: number; auc_top_relevance: number; auc_answer_margin: number | null };
+}
+
+export interface LoCoMoRun {
+    split: string; conversations: number; turns: number; questions: number; embedder: string; engine: string;
+    systems: Record<string, SystemScores>;
+    abstention: { adversarial_declined: number; answerable_wrongly_declined: number; n_adversarial: number; n_answerable: number };
+}
+
 export interface Summary {
     generated_at: string; git_commit: string;
     machine: { system: string; machine: string; cpu?: string; python?: string };
     eval: Record<string, EvalRun>;
     hnsw: HnswResult[];
     hnsw_reference: HnswResult[];
+    longmemeval?: LongMemEvalRun[];
+    locomo?: LoCoMoRun[];
 }
 
 export const results = summary as unknown as Summary;
 export const hnsw: HnswResult[] = results.hnsw || [];
 export const hnswReference: HnswResult[] = results.hnsw_reference || [];
 export const evalRuns: EvalRun[] = Object.values(results.eval || {});
+export const longMemEval: LongMemEvalRun | undefined = (results.longmemeval || [])[0];
+export const locomoRuns: LoCoMoRun[] = results.locomo || [];
 
 /** The headline run: held-out test split with the real (non-hash) embedder. */
 export const headline: EvalRun | undefined = evalRuns.find(r => r.split === "test" && r.embedder !== "hash");
@@ -55,3 +76,31 @@ export const pct = (x: number | undefined, digits = 0) =>
     x === undefined || x === null || Number.isNaN(x) ? "—" : `${(x * 100).toFixed(digits)}%`;
 export const ms = (x: number | undefined, digits = 2) =>
     x === undefined || x === null ? "—" : `${x.toFixed(digits)} ms`;
+
+/** Relative improvement of a over b, e.g. 0.18 for +18%. */
+export const lift = (a?: number, b?: number) => (a === undefined || b === undefined || !b ? undefined : a / b - 1);
+
+/**
+ * The independent benchmark to headline: LongMemEval (fresh, held out) when published,
+ * otherwise LoCoMo's test split. Returns overall recall@10 for Recallix and the dense
+ * baseline, plus abstention rates.
+ */
+export function headlineBenchmark() {
+    if (longMemEval) {
+        const s = longMemEval.systems;
+        return {
+            name: "LongMemEval", questions: longMemEval.questions,
+            recallix: s.recallix?.overall?.["recall@10"], dense: s.dense?.overall?.["recall@10"], bm25: s.bm25?.overall?.["recall@10"],
+            declined: longMemEval.abstention.unanswerable_declined, wronglyDeclined: longMemEval.abstention.answerable_wrongly_declined,
+            nUnanswerable: longMemEval.abstention.n_unanswerable,
+        };
+    }
+    const t = locomoRuns.find(r => r.split === "test");
+    if (!t) return undefined;
+    return {
+        name: "LoCoMo (test split)", questions: t.questions,
+        recallix: t.systems.recallix?.overall?.["recall@10"], dense: t.systems.dense?.overall?.["recall@10"], bm25: t.systems.bm25?.overall?.["recall@10"],
+        declined: t.abstention.adversarial_declined, wronglyDeclined: t.abstention.answerable_wrongly_declined,
+        nUnanswerable: t.abstention.n_adversarial,
+    };
+}

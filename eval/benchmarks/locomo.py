@@ -45,8 +45,15 @@ TOKEN = re.compile(r"[a-z0-9]+")
 CATEGORY_NAMES = {1: "multi-hop", 2: "temporal", 3: "open-domain", 4: "single-hop", 5: "adversarial"}
 
 
+DEV_CONVERSATIONS = 5  # conversations [0, 5) may be used for fitting; [5, 10) are held out for reporting
+
+
+def split_samples(data, split):
+    return {"dev": data[:DEV_CONVERSATIONS], "test": data[DEV_CONVERSATIONS:], "all": data}[split]
+
+
 def turns_of(sample):
-    """[(dia_id, text)] in conversation order, text = '[date] Speaker: utterance [+ image caption]'."""
+    """[(dia_id, text, speaker)] in conversation order, text = '[date] Speaker: utterance [+ image caption]'."""
     conv = sample["conversation"]
     sessions = sorted((int(k.split("_")[1]), k) for k in conv
                       if re.fullmatch(r"session_\d+", k) and isinstance(conv[k], list))
@@ -57,8 +64,39 @@ def turns_of(sample):
             text = f"[{date}] {turn['speaker']}: {turn['text']}"
             if turn.get("blip_caption"):
                 text += f" [shares an image: {turn['blip_caption']}]"
-            out.append((turn["dia_id"].strip(), text))
+            out.append((turn["dia_id"].strip(), text, turn["speaker"]))
     return out
+
+
+def ingest(mm, sample):
+    """Stores every turn (with its labelled speaker as metadata). Returns {memory_id: [dia_id, ...]}."""
+    user = f"locomo_{sample['sample_id']}"
+    mem_to_dia = defaultdict(list)
+    with contextlib.redirect_stdout(io.StringIO()):
+        for dia_id, text, speaker in turns_of(sample):
+            res = mm.store(user, text, client_metadata={"speaker": speaker})
+            mem_to_dia[res["memory_id"]].append(dia_id)
+    return user, mem_to_dia
+
+
+def labelled_queries(mm, samples):
+    """
+    Training data for fit_ranker: {conversation: [[(features, label), ...] per question]}.
+    Label 1 = the candidate holds an evidence turn of an answerable question;
+    adversarial (category 5) questions have only negatives (the right answer is to abstain).
+    """
+    groups = {}
+    for sample in samples:
+        user, mem_to_dia = ingest(mm, sample)
+        queries = []
+        for qa in sample["qa"]:
+            evidence = norm_evidence(qa.get("evidence")) if qa["category"] != 5 else set()
+            with contextlib.redirect_stdout(io.StringIO()):
+                out = mm.retrieve(user, qa["question"], limit=10, return_candidates=True)
+            queries.append([(c["features"], int(bool(set(mem_to_dia[c["id"]]) & evidence)))
+                            for c in out["_candidates"]])
+        groups[f"locomo_{sample['sample_id']}"] = queries
+    return groups
 
 
 def norm_evidence(ev):
@@ -91,6 +129,38 @@ class BM25:
         return list(np.argsort(-scores)[:k])
 
 
+def _auc(pos, neg):
+    """P(score of a random positive > score of a random negative), ties count half."""
+    if not pos or not neg:
+        return float("nan")
+    neg_sorted = np.sort(np.asarray(neg))
+    wins = sum(np.searchsorted(neg_sorted, p, side="left") + 0.5 * (np.searchsorted(neg_sorted, p, side="right")
+               - np.searchsorted(neg_sorted, p, side="left")) for p in pos)
+    return float(wins / (len(pos) * len(neg)))
+
+
+def abstention_analysis(rows, budgets=(0.05, 0.10, 0.20)):
+    """
+    How well a score separates answerable from adversarial questions, independent of
+    any threshold: AUC, and the share of adversarial questions declined when at most
+    `budget` of answerable ones are declined. Scores: the answer check's best margin
+    (when enabled) and the top relevance.
+    """
+    out = {}
+    for name, idx in (("answer_margin", 2), ("top_relevance", 0)):
+        vals = [(r[idx], r[1]) for r in rows if r[idx] is not None]
+        if not vals:
+            continue
+        ans = np.sort([v for v, adv in vals if not adv])
+        adv = np.asarray([v for v, a in vals if a])
+        res = {"auc": _auc(list(ans), list(adv)), "operating_points": []}
+        for b in budgets:
+            t = ans[int(np.floor(b * len(ans)))] if len(ans) else 0.0
+            res["operating_points"].append({"max_false_decline": b, "adversarial_declined": float(np.mean(adv < t)) if len(adv) else float("nan")})
+        out[name] = res
+    return out
+
+
 def score(retrieved_ids, evidence, ks):
     out = {}
     for k in ks:
@@ -106,7 +176,9 @@ def main():
     ap.add_argument("--embedder", default="hash")
     ap.add_argument("--engine-url", default=None)
     ap.add_argument("--k", default="5,10")
-    ap.add_argument("--conversations", type=int, default=None, help="limit (for quick runs)")
+    ap.add_argument("--split", default="test", choices=["dev", "test", "all"],
+                    help="dev = first 5 conversations (may be used for fitting); test = last 5 (held out)")
+    ap.add_argument("--conversations", type=int, default=None, help="limit within the split (quick runs)")
     ap.add_argument("--bm25-k1", type=float, default=1.2)
     ap.add_argument("--bm25-b", type=float, default=0.75)
     ap.add_argument("--json", default=None)
@@ -120,28 +192,25 @@ def main():
     with contextlib.redirect_stdout(io.StringIO()):
         mm = get_memory_manager()
 
-    data = json.load(open(args.data))[: args.conversations]
+    data = split_samples(json.load(open(args.data)), args.split)[: args.conversations]
     systems = ["recallix", "recallix_ranked", "dense", "bm25"]
     per_cat = {s: defaultdict(lambda: defaultdict(list)) for s in systems}
     abstain = {"answerable": [], "adversarial": []}
+    # (top_relevance, is_adversarial) per question, for threshold-free analysis
+    decision_scores = []
     timing = defaultdict(float)
     n_turns = n_questions = 0
     embed_calls_ingest = 0
 
     for sample in data:
-        user = f"locomo_{sample['sample_id']}"
         turns = turns_of(sample)
         n_turns += len(turns)
-        texts = [t for _, t in turns]
-        mem_to_dia = defaultdict(list)
+        texts = [t for _, t, _ in turns]
 
         # ---- ingest
         before = env.embed_calls
         t0 = time.time()
-        with contextlib.redirect_stdout(io.StringIO()):
-            for dia_id, text in turns:
-                res = mm.store(user, text)
-                mem_to_dia[res["memory_id"]].append(dia_id)
+        user, mem_to_dia = ingest(mm, sample)
         timing["recallix_ingest_s"] += time.time() - t0
         embed_calls_ingest += env.embed_calls - before
 
@@ -151,7 +220,7 @@ def main():
         t0 = time.time()
         bm25 = BM25(texts, args.bm25_k1, args.bm25_b)
         timing["bm25_ingest_s"] += time.time() - t0
-        dia_ids = [d for d, _ in turns]
+        dia_ids = [d for d, _, _ in turns]
 
         # ---- questions
         for qa in sample["qa"]:
@@ -167,6 +236,9 @@ def main():
             served = [d for m in out["memories"] for d in mem_to_dia[m["id"]]]
             ranked = [d for c in out["_candidates"] for d in mem_to_dia[c["id"]]]
             abstained = out["status"] in ("ABSTAINED", "NO_MATCH")
+            chk = out["debug"].get("answer_check")
+            decision_scores.append((out["debug"].get("top_relevance") or 0.0, cat == 5,
+                                    chk["best_margin"] if chk else None))
 
             t0 = time.time()
             qv = mm.semantic.embed(q)
@@ -187,7 +259,7 @@ def main():
                     per_cat[name][cat][metric].append(v)
 
     # ---- report
-    results = {"dataset": "LoCoMo (locomo10.json)", "embedder": args.embedder,
+    results = {"dataset": "LoCoMo (locomo10.json)", "split": args.split, "embedder": args.embedder,
                "engine": "real" if args.engine_url else "in-process brute force",
                "conversations": len(data), "turns": n_turns, "questions": n_questions,
                "ranker_model": __import__("backend.brain.memory_ranking.ranker", fromlist=["Ranker"]).Ranker.model().get("source"),
@@ -195,6 +267,7 @@ def main():
                    "adversarial_declined": float(np.mean(abstain["adversarial"])) if abstain["adversarial"] else None,
                    "answerable_wrongly_declined": float(np.mean(abstain["answerable"])) if abstain["answerable"] else None,
                    "n_adversarial": len(abstain["adversarial"]), "n_answerable": len(abstain["answerable"])},
+               "abstention_analysis": abstention_analysis(decision_scores),
                "timing_seconds": {k: round(v, 2) for k, v in timing.items()},
                "embedding_calls_during_ingest": embed_calls_ingest,
                "llm_calls": 0, "api_cost_usd": 0.0}
@@ -211,7 +284,7 @@ def main():
         sys_res["overall"]["n"] = len(next(iter(overall.values()))) if overall else 0
         results["systems"][name] = sys_res
 
-    print(f"LoCoMo: {len(data)} conversations, {n_turns} turns, {n_questions} questions | embedder={args.embedder} engine={results['engine']}")
+    print(f"LoCoMo [{args.split}]: {len(data)} conversations, {n_turns} turns, {n_questions} questions | embedder={args.embedder} engine={results['engine']}")
     head = ["system"] + [f"recall@{k}" for k in ks] + [f"hit@{k}" for k in ks]
     print(" | ".join(f"{h:>16}" for h in head))
     for name in systems:
@@ -224,6 +297,10 @@ def main():
     a = results["abstention"]
     print(f"Recallix abstention: declined {a['adversarial_declined']:.2%} of {a['n_adversarial']} adversarial questions; "
           f"wrongly declined {a['answerable_wrongly_declined']:.2%} of {a['n_answerable']} answerable")
+    for name, aa in results["abstention_analysis"].items():
+        print(f"answerable-vs-adversarial AUC of {name}: {aa['auc']:.3f}  ("
+              + ", ".join(f"{r['adversarial_declined']:.1%} of traps declined at {r['max_false_decline']:.0%} false declines"
+                          for r in aa["operating_points"]) + ")")
     print(f"timing (s): {results['timing_seconds']} | LLM calls: 0 | API cost: $0")
     if args.json:
         with open(args.json, "w") as f:

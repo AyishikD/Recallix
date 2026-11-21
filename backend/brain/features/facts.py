@@ -29,11 +29,11 @@ import re
 import time
 
 _TRANSITION = r"(?:changed|moved|updated|switched|shifted|set|pushed|postponed|delayed|bumped)"
-_VERB = (
-    r"(?:is\s+now|is\s+named|is\s+called|is|are|was|were|will\s+be|="
-    rf"|ha(?:s|ve)\s+(?:been\s+)?{_TRANSITION}\s+(?:to|for)"
+_VERB = (  # longer, state-transition forms first so "was moved to X" yields the value X
+    rf"(?:ha(?:s|ve)\s+(?:been\s+)?{_TRANSITION}\s+(?:to|for)"
     rf"|(?:got|was|were|is)\s+{_TRANSITION}\s+(?:to|for)"
-    rf"|{_TRANSITION}\s+(?:to|for))"
+    rf"|{_TRANSITION}\s+(?:to|for)"
+    r"|is\s+now|is\s+named|is\s+called|is|are|was|were|will\s+be|=)"
 )
 _VALUE = r"(?P<val>[^;!?\n]{1,80})"  # sentences are pre-split, so dots (emails, Dr.) are allowed
 _REL = r"(?P<rel>[a-z][a-z0-9' -]{0,30}?)"
@@ -54,8 +54,8 @@ _KNOWN_REL_RE = re.compile(rf"^(?:{_KNOWN_RELS})$", re.I)
 _PATTERNS = [
     # alias: "<X> is also known as / aka <Y>"
     ("alias", re.compile(
-        r"\b(?:the\s+)?(?P<val>[\w -]{2,40}?)\s+(?:is\s+)?(?:also\s+)?(?:known\s+as|aka|nicknamed)\s+"
-        r"['\"]?(?P<ent>[A-Z][\w-]*(?:\s+[A-Z][\w-]*){0,3})", re.I), None),
+        r"\b(?:the\s+)?(?P<val>[\w -]{2,40}?)\s+(?:is\s+)?(?:also\s+)?(?:\w+ly\s+)?(?:known\s+as|aka|nicknamed)\s+"
+        r"['\"‘“]?(?P<ent>[A-Z][\w'’-]*(?:\s+[A-Z][\w'’-]*){0,3})", re.I), None),
     # I have a <rel> named <value>
     ("named", re.compile(rf"\bI\s+(?:have|own|got)\s+(?:a|an)\s+{_REL}\s+(?:named|called)\s+{_VALUE}", re.I), "user"),
     # <value> is my <rel>
@@ -70,6 +70,11 @@ _PATTERNS = [
     ("of", re.compile(rf"\bthe\s+{_REL}\s+of\s+(?:the\s+)?(?P<ent>[\w-]+(?:\s+[\w-]+){{0,3}}?)\s+{_VERB}\s+{_VALUE}", re.I), None),
     # [the] <Entity> <known-rel> is <value>   (entity Capitalised; rel/verb any case)
     ("entity_rel", re.compile(rf"(?:\b[Tt]he\s+)?{_ENTITY_CAP}\s+(?P<rel>(?i:{_KNOWN_RELS}))\s+(?i:{_VERB})\s+{_VALUE}"), None),
+    # <Name-with-code> <Attribute>: <value>   ("Patient X-100 Status: critical")
+    ("code_colon", re.compile(
+        rf"(?P<ent>(?:[A-Z][\w-]*\s+){{0,3}}[A-Za-z]*[\w-]*\d[\w-]*)\s+(?P<rel>[A-Za-z][a-z]+(?:\s+[A-Za-z][a-z]+){{0,2}})\s*:\s*{_VALUE}"), None),
+    # [the] <Entity> <noun phrase> is <Value>   (open relation; guarded: value must look concrete)
+    ("entity_np", re.compile(rf"(?:\b[Tt]he\s+)?{_ENTITY_CAP}\s+(?P<rel>[a-z][a-z-]*(?:\s+[a-z][a-z-]*){{0,2}})\s+(?i:{_VERB})\s+{_VALUE}"), None),
     # the <event> is on/at <time>   /   the <event> was moved to <time>
     ("event", re.compile(
         rf"\b(?:the\s+)?(?P<ent>[a-z][a-z-]*(?:\s+[a-z][a-z-]*)??)\s+(?:{_VERB}|is\s+scheduled|runs)\s+"
@@ -87,6 +92,8 @@ _FIRST_PERSON = [
     (re.compile(rf"\b(?:call\s+me|I\s+go\s+by)\s+{_VALUE}", re.I), "name"),
     (re.compile(rf"\bI\s+was\s+born\s+(?:on|in)\s+{_VALUE}", re.I), "birth"),
 ]
+
+_CARRY = re.compile(rf"^(?P<rel>[A-Za-z][a-z]+(?:\s+[a-z]+){{0,2}})\s+(?i:{_VERB})\s+{_VALUE}")
 
 _THIRD_PERSON = [
     (re.compile(rf"\b{_ENTITY_CAP}\s+(?:lives|is\s+living|moved)\s+(?:in|to)\s+{_VALUE}"), "location"),
@@ -153,13 +160,16 @@ def _looks_like_fact(rel, val):
 
 def extract_triads(message):
     """Return a list of {"entity", "relation", "value"} dicts (raw, un-normalised)."""
+    from backend.brain.features.query import capitalised_spans
     triads = []
     seen = set()
+    last_entity = None  # most recent named entity in this message (for subject-less follow-ups)
 
     for sentence in re.split(r"(?<=[.!?;])\s+|\n+", message):
         sentence = sentence.strip().rstrip(".!?;")
         if not sentence:
             continue
+        named_here = capitalised_spans(sentence, skip_sentence_initial_words=True)
         claimed = []  # value spans already explained by a more specific pattern
 
         def overlaps(m):
@@ -194,7 +204,9 @@ def extract_triads(message):
                     add(m, fixed_entity, m.group("rel"), val, guard=False)
                 else:
                     ent = fixed_entity or m.group("ent").strip()
-                    add(m, ent, m.group("rel"), val, guard=(kind in ("my", "possessive", "of")))
+                    if kind == "entity_np" and m.start("ent") == 0 and " " not in ent and not re.search(r"\d", ent):
+                        continue  # a lone capitalised first word is not evidence of a name
+                    add(m, ent, m.group("rel"), val, guard=(kind in ("my", "possessive", "of", "entity_np", "code_colon")))
         for pattern, rel in _FIRST_PERSON:
             m = pattern.search(sentence)
             if m and not overlaps(m):
@@ -203,6 +215,12 @@ def extract_triads(message):
             m = pattern.search(sentence)
             if m and not overlaps(m):
                 add(m, m.group("ent").strip(), rel, _clean_value(m.group("val")), guard=False)
+        if last_entity and not claimed:  # no fact of its own: "<Relation> is now <Value>" about the last subject
+            m = _CARRY.match(sentence)
+            if m:
+                add(m, last_entity, m.group("rel"), _clean_value(m.group("val")), guard=True)
+        if named_here and not _CARRY.match(sentence):
+            last_entity = "".join(named_here[0])  # a sentence's first named entity is usually its subject
     return triads
 
 

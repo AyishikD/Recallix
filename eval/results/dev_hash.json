@@ -14,28 +14,28 @@
     "accuracy": 0.8055555555555556
   },
   "retrieval": {
-    "hit@1": 0.8571428571428571,
-    "hit@3": 0.8571428571428571,
-    "stale_top": 0,
-    "false_abstain_rate": 0.14285714285714285,
-    "abstain_accuracy": 0.75,
+    "hit@1": 0.8214285714285714,
+    "hit@3": 0.9285714285714286,
+    "stale_top": 2,
+    "false_abstain_rate": 0.07142857142857142,
+    "abstain_accuracy": 0.625,
     "embed_calls_per_query": 1.0,
     "recall_ms_p50": 3.1,
-    "recall_ms_p95": 3.8499999999999996,
-    "store_ms_p50": 3.9,
+    "recall_ms_p95": 3.525,
+    "store_ms_p50": 3.8,
     "store_stage_ms_mean": {
-      "Sensory & Working Memory": 0.537,
+      "Sensory & Working Memory": 0.524,
       "Embedding": 0.0,
-      "Fact Extraction": 0.0,
-      "Schema Classification": 0.163,
-      "Importance Scoring": 0.922,
-      "Episodic Storage": 1.439,
-      "Vector Engine": 0.424,
-      "Long-Term Promotion": 0.494
+      "Fact Extraction": 0.056,
+      "Schema Classification": 0.159,
+      "Importance Scoring": 0.795,
+      "Episodic Storage": 1.4,
+      "Vector Engine": 0.415,
+      "Long-Term Promotion": 0.506
     }
   },
   "legacy": {
-    "gauntlet_passed": 4,
+    "gauntlet_passed": 6,
     "gauntlet_total": 12,
     "retention_hits": 7,
     "retention_total": 8
@@ -57,7 +57,7 @@
             "system": "python",
             "stage": "Sensory & Working Memory",
             "detail": "Updated sliding windows",
-            "duration_ms": 0.6
+            "duration_ms": 0.7
           },
           {
             "system": "embedding",
@@ -87,13 +87,13 @@
             "system": "python",
             "stage": "Episodic Storage",
             "detail": "Stored in SQLite id=561",
-            "duration_ms": 1.5
+            "duration_ms": 1.7
           },
           {
             "system": "cpp",
             "stage": "Vector Engine",
             "detail": "Indexed",
-            "duration_ms": 0.5
+            "duration_ms": 0.4
           },
           {
             "system": "python",
@@ -118,7 +118,7 @@
             "system": "python",
             "stage": "Sensory & Working Memory",
             "detail": "Updated sliding windows",
-            "duration_ms": 0.6
+            "duration_ms": 0.5
           },
           {
             "system": "embedding",
@@ -148,13 +148,13 @@
             "system": "python",
             "stage": "Episodic Storage",
             "detail": "Stored in SQLite id=562",
-            "duration_ms": 1.5
+            "duration_ms": 1.6
           },
           {
             "system": "cpp",
             "stage": "Vector Engine",
             "detail": "Indexed",
-            "duration_ms": 0.5
+            "duration_ms": 0.4
           },
           {
             "system": "python",
@@ -189,13 +189,13 @@
             "system": "python",
             "stage": "Fact Extraction",
             "detail": "Slots: []",
-            "duration_ms": 0.0
+            "duration_ms": 0.1
           },
           {
             "system": "python",
             "stage": "Schema Classification",
             "detail": "Schemas: ['task']",
-            "duration_ms": 0.1
+            "duration_ms": 0.0
           },
           {
             "system": "python",
@@ -207,7 +207,7 @@
             "system": "python",
             "stage": "Episodic Storage",
             "detail": "Stored in SQLite id=563",
-            "duration_ms": 1.6
+            "duration_ms": 1.5
           },
           {
             "system": "cpp",
@@ -266,7 +266,7 @@
             "system": "python",
             "stage": "Episodic Storage",
             "detail": "Stored in SQLite id=564",
-            "duration_ms": 1.5
+            "duration_ms": 1.7
           },
           {
             "system": "cpp",
@@ -280,18 +280,20 @@
     "query": "What am I allergic to?",
     "recall": {
       "status": "CONSISTENT",
-      "latency_ms": 3.0,
-      "threshold": 0.3282,
+      "latency_ms": 3.4,
+      "threshold": 0.0331,
       "memories": [
         {
           "content": "I'm allergic to peanuts and prefer dark chocolate.",
-          "relevance": 0.922,
+          "relevance": 0.7548,
           "explain": {
             "semantic": 0.316,
             "lexical": 1.0,
             "entity_index": 0.0,
             "entity_match": 1.0,
             "entity_conflict": 0.0,
+            "subject_match": 1.0,
+            "subject_conflict": 0.0,
             "relation_match": 1.0,
             "relation_text": 0.0,
             "relation_conflict": 0.0,
@@ -304,13 +306,15 @@
         },
         {
           "content": "Need to renew my passport before 1 June.",
-          "relevance": 0.2937,
+          "relevance": 0.0017,
           "explain": {
             "semantic": 0.316,
             "lexical": 0.0,
             "entity_index": 0.0,
             "entity_match": 1.0,
             "entity_conflict": 0.0,
+            "subject_match": 1.0,
+            "subject_conflict": 0.0,
             "relation_match": 0.0,
             "relation_text": 0.0,
             "relation_conflict": 0.0,
@@ -323,13 +327,15 @@
         },
         {
           "content": "My name is Priya and I live in Pune.",
-          "relevance": 0.033,
+          "relevance": 0.0004,
           "explain": {
             "semantic": 0.0,
             "lexical": 0.0,
             "entity_index": 0.0,
             "entity_match": 1.0,
             "entity_conflict": 0.0,
+            "subject_match": 1.0,
+            "subject_conflict": 0.0,
             "relation_match": 0.0,
             "relation_text": 0.0,
             "relation_conflict": 1.0,
@@ -344,5 +350,5 @@
     }
   },
   "engine": "real",
-  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2"
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2 + LoCoMo dev conversations (5)"
 }

@@ -130,7 +130,12 @@ class Env:
         mr.ModelRouter.get_embedding = get_embedding
         mr.ModelRouter.route = no_llm
 
-        if not engine_url:
+        if engine_url:
+            # Fresh storage must start with an empty engine: otherwise vectors from an
+            # earlier run (same user ids, memory ids restarting at 1) leak into this one.
+            from backend.utils.internal_client import engine_post
+            engine_post("/drop_all", {})
+        else:
             fake = FakeEngine()
             import backend.brain.memory.semantic.semantic_memory as sm
             import backend.brain.memory.index_sync as isync
@@ -405,19 +410,111 @@ def eval_legacy(env, verbose):
 
 
 # ---------------------------------------------------------------------------
-def fit_ranker(env, embedder):
+RANKER_CANDIDATES_PER_QUERY = 40
+
+
+def fit_answer_check(env, embedder, locomo_path, models):
+    """
+    Chooses the answer-check model and threshold on DEV data only (our dev scenarios
+    + LoCoMo dev conversations). For every dev question, the QA margin of the served
+    results is recorded; answerable questions whose evidence is served must not be
+    refused more than recall.max_false_abstain_rate. The model that then declines
+    the most unanswerable questions wins. Writes backend/brain/features/answer_check.default.json.
+    """
+    from backend import settings
+    from backend.api.deps import get_memory_manager, reset
+    from backend.brain.features import answer_check as ac
+    from backend.brain.memory_ranking.fit_ranker import max_false_abstain_rate
+    sys.path.insert(0, str(REPO / "eval" / "benchmarks"))
+    import locomo
+
+    reset()
+    with quiet():
+        mm = get_memory_manager()
+    # ingest once; the QA model does not affect storage
+    items = []  # (user, question, answerable, evidence_test)
+    for n, scenario in enumerate(load("dev", "retrieval")):
+        user = f"acdev_{n}"
+        with quiet():
+            for m in scenario["memories"]:
+                mm.store(user, m)
+        for q in scenario["queries"]:
+            exp = q.get("expect")
+            items.append((user, q["q"], exp is not None,
+                          (lambda contents, e=exp: e is not None and any(e.lower() in c.lower() for c in contents))))
+    if locomo_path:
+        for sample in locomo.split_samples(json.load(open(locomo_path)), "dev"):
+            user, mem_to_dia = locomo.ingest(mm, sample)
+            for qa in sample["qa"]:
+                ev = locomo.norm_evidence(qa.get("evidence")) if qa["category"] != 5 else set()
+                items.append((user, qa["question"], qa["category"] != 5,
+                              (lambda contents, ev=ev, m2d=mem_to_dia: bool(ev) and any(set(m2d.get(i, [])) & ev for i in contents)),
+                              ))
+
+    cfg = settings.config().setdefault("recall", {})
+    report = {}
+    for model in models:
+        cfg["answer_check"] = {"enabled": True, "model": model, "threshold": -1e9}  # measure, never gate
+        ac.AnswerChecker._instances.clear()
+        rows = []  # (margin or None if the relevance gate already abstained, answerable, evidence served)
+        for user, q, answerable, served_ok in items:
+            with quiet():
+                out = mm.retrieve(user, q, limit=5)
+            served = [m["content"] for m in out["memories"]] if user.startswith("acdev_") else [m["id"] for m in out["memories"]]
+            chk = out["debug"].get("answer_check")
+            rows.append((chk["best_margin"] if chk else None, answerable, served_ok(served)))
+        margins_ok = [r[0] for r in rows if r[1] and r[2] and r[0] is not None]
+        unans = [r for r in rows if not r[1]]
+
+        def rates(t):
+            refused = float(np.mean([m < t for m in margins_ok])) if margins_ok else float("nan")
+            declined = float(np.mean([(m is None) or (m < t) for m, _, _ in unans])) if unans else float("nan")
+            return refused, declined
+        rate = max_false_abstain_rate()
+        srt = np.sort(margins_ok)
+        policy_t = float(srt[int(np.floor(rate * len(srt)))]) if len(srt) else 0.0
+        ans_m = [r[0] for r in rows if r[1] and r[0] is not None]
+        una_m = [r[0] for r in rows if not r[1] and r[0] is not None]
+        report[model] = {"auc": auc(ans_m + una_m, [1] * len(ans_m) + [0] * len(una_m)), "native": dict(zip(("refused", "unanswerable_declined"), rates(0.0))),
+                         "policy_threshold": policy_t,
+                         "policy": dict(zip(("refused", "unanswerable_declined"), rates(policy_t))),
+                         "n_answerable_with_evidence_served": len(margins_ok), "n_unanswerable": len(unans)}
+        r = report[model]
+        print(f"{model}: AUC={r['auc']:.3f} | native(0): refused {r['native']['refused']:.1%}, unanswerable declined "
+              f"{r['native']['unanswerable_declined']:.1%} | policy(t={policy_t:.2f}, <= {rate:.0%} refused): "
+              f"refused {r['policy']['refused']:.1%}, unanswerable declined {r['policy']['unanswerable_declined']:.1%}")
+    best = max(report, key=lambda m: report[m]["policy"]["unanswerable_declined"])
+    out = {"model": best, "threshold": report[best]["policy_threshold"],
+           "selection": f"dev only: our dev scenarios + LoCoMo dev conversations; threshold = {max_false_abstain_rate():.0%} "
+                        "quantile of margins of answerable questions whose evidence is served; model = most unanswerable declined",
+           "embedder": embedder, "candidates": report, "fitted_at": __import__("time").time()}
+    with open(ac.DEFAULT_PATH, "w") as f:
+        json.dump(out, f, indent=2)
+    print(f"chose {best} (threshold {out['threshold']:.3f}); wrote {ac.DEFAULT_PATH}")
+
+
+def fit_ranker(env, embedder, locomo_path=None):
     from backend.brain.memory_ranking import fit_ranker as fr
-    from backend.brain.memory_ranking.ranker import DEFAULT_MODEL_PATH, Ranker
+    from backend.brain.memory_ranking.ranker import DEFAULT_MODEL_PATH
     recs = retrieval_queries(env, "dev", collect=True)
     groups = {}
     for r in recs:
         groups.setdefault(r["scenario"], []).append(r["candidates"])
-    model = fr.fit_model_cv(groups, source=f"eval/data/dev/retrieval.jsonl, embedder={embedder}")
+    source = f"eval/data/dev/retrieval.jsonl, embedder={embedder}"
+    if locomo_path:
+        sys.path.insert(0, str(REPO / "eval" / "benchmarks"))
+        import locomo
+        from backend.api.deps import get_memory_manager
+        dev = locomo.split_samples(json.load(open(locomo_path)), "dev")
+        groups.update(locomo.labelled_queries(get_memory_manager(), dev))
+        source += f" + LoCoMo dev conversations ({len(dev)})"
+    model = fr.fit_model_cv(groups, source=source, max_candidates=RANKER_CANDIDATES_PER_QUERY)
     with open(DEFAULT_MODEL_PATH, "w") as f:
         json.dump(model, f, indent=2)
-    print(f"fitted ranker on {model['n_queries']} dev queries / {model['n_candidates']} candidates; "
-          f"lam={model['lam']} threshold={model['threshold']:.3f}; "
-          f"leave-one-scenario-out CV query accuracy={model['cv_query_accuracy']:.2f} (by lam: {model['cv_by_lam']})")
+    print(f"fitted ranker on {model['n_queries']} dev queries / {model['n_candidates']} candidates; lam={model['lam']}; "
+          f"CV hit@{model['answer_k']}={model['cv_hit_at_k']:.3f} (by lam: {model['cv_by_lam']}); "
+          f"threshold={model['threshold']:.3f} -> out-of-fold: answerable declined {model['cv_answerable_declined']:.1%}, "
+          f"unanswerable declined {model['cv_unanswerable_declined']:.1%}")
     print(f"wrote {DEFAULT_MODEL_PATH}")
 
 
@@ -448,14 +545,19 @@ def main():
     ap.add_argument("--json", default=None, help="write results to this file")
     ap.add_argument("--fit-ranker", action="store_true")
     ap.add_argument("--fit-importance", action="store_true")
+    ap.add_argument("--fit-answer-check", default=None, metavar="MODELS",
+                    help="comma-separated QA models to compare on dev data (use with --locomo)")
+    ap.add_argument("--locomo", default=None, help="with --fit-ranker: also fit on LoCoMo dev conversations (path to locomo10.json)")
     args = ap.parse_args()
 
     env = Env(args.embedder, args.engine_url)
     if args.fit_importance:
         fit_importance(args.embedder)
     if args.fit_ranker:
-        fit_ranker(env, args.embedder)
-    if args.fit_ranker or args.fit_importance:
+        fit_ranker(env, args.embedder, args.locomo)
+    if args.fit_answer_check:
+        fit_answer_check(env, args.embedder, args.locomo, args.fit_answer_check.split(","))
+    if args.fit_ranker or args.fit_importance or args.fit_answer_check:
         return
 
     print(f"== split={args.split} embedder={args.embedder} engine={'real ' + args.engine_url if args.engine_url else 'fake'} ==")

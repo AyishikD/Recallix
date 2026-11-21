@@ -173,7 +173,7 @@ class EpisodicMemory:
                         (user_id, ent, f"%{ent}%", *vis_args, limit)):
                     m = self._row(r)
                     m["symbolic_match"] = True
-                    m["bm25_score"] = -10.0
+                    m["bm25_score"] = None  # filled in below if the words match too
                     results[m["id"]] = m
 
             words = [re.sub(r"[^\w]+", " ", w).strip() for w in query.replace('"', " ").split()]
@@ -187,7 +187,9 @@ class EpisodicMemory:
                         WHERE e.status = 'ACTIVE' {vis}
                         """, (" OR ".join(tokens), user_id, limit, *vis_args)):
                     m = self._row(r[:-1])
-                    if m["id"] not in results:
+                    if m["id"] in results:
+                        results[m["id"]]["bm25_score"] = r[-1]
+                    else:
                         m["bm25_score"] = r[-1]
                         m["symbolic_match"] = False
                         results[m["id"]] = m

@@ -1,0 +1,65 @@
+{
+  "model": "deepset/roberta-base-squad2",
+  "threshold": -2.222,
+  "selection": "dev only: our dev scenarios + LoCoMo dev conversations; threshold = 5% quantile of margins of answerable questions whose evidence is served; model = most unanswerable declined",
+  "embedder": "st:sentence-transformers/all-MiniLM-L6-v2",
+  "candidates": {
+    "deepset/minilm-uncased-squad2": {
+      "auc": 0.6708886592611728,
+      "native": {
+        "refused": 0.04417670682730924,
+        "unanswerable_declined": 0.15510204081632653
+      },
+      "policy_threshold": 1.028,
+      "policy": {
+        "refused": 0.04819277108433735,
+        "unanswerable_declined": 0.2163265306122449
+      },
+      "n_answerable_with_evidence_served": 498,
+      "n_unanswerable": 245
+    },
+    "deepset/tinyroberta-squad2": {
+      "auc": 0.6946835443037974,
+      "native": {
+        "refused": 0.13052208835341367,
+        "unanswerable_declined": 0.46938775510204084
+      },
+      "policy_threshold": -5.231,
+      "policy": {
+        "refused": 0.04819277108433735,
+        "unanswerable_declined": 0.2612244897959184
+      },
+      "n_answerable_with_evidence_served": 498,
+      "n_unanswerable": 245
+    },
+    "deepset/roberta-base-squad2": {
+      "auc": 0.7325858951175407,
+      "native": {
+        "refused": 0.09839357429718876,
+        "unanswerable_declined": 0.5387755102040817
+      },
+      "policy_threshold": -2.222,
+      "policy": {
+        "refused": 0.04819277108433735,
+        "unanswerable_declined": 0.3795918367346939
+      },
+      "n_answerable_with_evidence_served": 498,
+      "n_unanswerable": 245
+    },
+    "deepset/deberta-v3-base-squad2": {
+      "auc": 0.7591475071041075,
+      "native": {
+        "refused": 0.10843373493975904,
+        "unanswerable_declined": 0.6530612244897959
+      },
+      "policy_threshold": -8.206,
+      "policy": {
+        "refused": 0.04819277108433735,
+        "unanswerable_declined": 0.2938775510204082
+      },
+      "n_answerable_with_evidence_served": 498,
+      "n_unanswerable": 245
+    }
+  },
+  "fitted_at": 1795281879.163525
+}

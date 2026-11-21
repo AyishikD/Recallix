@@ -1,14 +1,14 @@
 {
   "weights": {
-    "bias": -2.1778614130058163,
-    "novelty": 1.8716760708700662,
-    "information": 0.288616075166685,
-    "specificity": 2.498212003406097,
-    "goal": 1.0903268450799797,
-    "preference": 1.3094054791861394,
-    "explicit": 1.7948956451083429,
-    "small_talk": -2.05919327418528,
-    "brevity": -1.7499084511010539
+    "bias": -2.17786236357734,
+    "novelty": 1.8716768409728959,
+    "information": 0.2886165012385592,
+    "specificity": 2.4982121628179166,
+    "goal": 1.090326631117408,
+    "preference": 1.3094057040134364,
+    "explicit": 1.7948960508920053,
+    "small_talk": -2.0591933355272896,
+    "brevity": -1.7499080675130216
   },
   "source": "eval/data/dev/importance.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2",
   "n_examples": 35,

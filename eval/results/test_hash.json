@@ -2,9 +2,9 @@
   "split": "test",
   "embedder": "hash",
   "facts": {
-    "precision": 0.9047619047619048,
-    "recall": 0.7916666666666666,
-    "f1": 0.8444444444444444
+    "precision": 1.0,
+    "recall": 0.875,
+    "f1": 0.9333333333333333
   },
   "schemas": {
     "accuracy": 0.4242424242424242
@@ -14,28 +14,28 @@
     "accuracy": 0.8333333333333334
   },
   "retrieval": {
-    "hit@1": 0.5714285714285714,
-    "hit@3": 0.5714285714285714,
+    "hit@1": 0.42857142857142855,
+    "hit@3": 0.5,
     "stale_top": 1,
-    "false_abstain_rate": 0.35714285714285715,
-    "abstain_accuracy": 0.75,
+    "false_abstain_rate": 0.42857142857142855,
+    "abstain_accuracy": 0.5,
     "embed_calls_per_query": 1.0,
-    "recall_ms_p50": 3.05,
-    "recall_ms_p95": 9.679999999999993,
-    "store_ms_p50": 3.9,
+    "recall_ms_p50": 3.1500000000000004,
+    "recall_ms_p95": 3.5149999999999997,
+    "store_ms_p50": 3.8,
     "store_stage_ms_mean": {
-      "Sensory & Working Memory": 0.567,
-      "Embedding": 0.005,
-      "Fact Extraction": 0.0,
-      "Schema Classification": 0.29,
-      "Importance Scoring": 0.976,
-      "Episodic Storage": 1.438,
-      "Vector Engine": 0.433,
-      "Long-Term Promotion": 0.5
+      "Sensory & Working Memory": 0.514,
+      "Embedding": 0.0,
+      "Fact Extraction": 0.033,
+      "Schema Classification": 0.305,
+      "Importance Scoring": 0.829,
+      "Episodic Storage": 1.395,
+      "Vector Engine": 0.414,
+      "Long-Term Promotion": 0.55
     }
   },
   "legacy": {
-    "gauntlet_passed": 4,
+    "gauntlet_passed": 6,
     "gauntlet_total": 12,
     "retention_hits": 7,
     "retention_total": 8
@@ -44,11 +44,11 @@
     "stores": [
       {
         "content": "I'm allergic to peanuts and prefer dark chocolate.",
-        "importance": 7.97,
+        "importance": 8.06,
         "schemas": [
           "preference"
         ],
-        "promoted": false,
+        "promoted": true,
         "slots": [
           "user::allergy = peanuts and prefer dark chocolate"
         ],
@@ -57,13 +57,13 @@
             "system": "python",
             "stage": "Sensory & Working Memory",
             "detail": "Updated sliding windows",
-            "duration_ms": 0.5
+            "duration_ms": 0.6
           },
           {
             "system": "embedding",
             "stage": "Embedding",
             "detail": "OK",
-            "duration_ms": 0.0
+            "duration_ms": 0.1
           },
           {
             "system": "python",
@@ -75,13 +75,13 @@
             "system": "python",
             "stage": "Schema Classification",
             "detail": "Schemas: ['preference']",
-            "duration_ms": 1.5
+            "duration_ms": 1.6
           },
           {
             "system": "python",
             "stage": "Importance Scoring",
-            "detail": "Score: 8.0/10 | novelty=0.97, information=1.00, specificity=0.00, goal=0.00, preference=1.00, explicit=0.00, small_talk=0.00, brevity=0.00",
-            "duration_ms": 1.0
+            "detail": "Score: 8.1/10 | novelty=1.00, information=1.00, specificity=0.00, goal=0.00, preference=1.00, explicit=0.00, small_talk=0.00, brevity=0.00",
+            "duration_ms": 1.1
           },
           {
             "system": "python",
@@ -94,12 +94,18 @@
             "stage": "Vector Engine",
             "detail": "Indexed",
             "duration_ms": 0.5
+          },
+          {
+            "system": "python",
+            "stage": "Long-Term Promotion",
+            "detail": "importance 8.1",
+            "duration_ms": 0.5
           }
         ]
       },
       {
         "content": "My name is Priya and I live in Pune.",
-        "importance": 8.35,
+        "importance": 8.43,
         "schemas": [
           "identity"
         ],
@@ -135,7 +141,7 @@
           {
             "system": "python",
             "stage": "Importance Scoring",
-            "detail": "Score: 8.3/10 | novelty=0.97, information=0.97, specificity=0.63, goal=0.00, preference=0.00, explicit=0.00, small_talk=0.00, brevity=0.00",
+            "detail": "Score: 8.4/10 | novelty=1.00, information=0.97, specificity=0.63, goal=0.00, preference=0.00, explicit=0.00, small_talk=0.00, brevity=0.00",
             "duration_ms": 0.9
           },
           {
@@ -148,19 +154,19 @@
             "system": "cpp",
             "stage": "Vector Engine",
             "detail": "Indexed",
-            "duration_ms": 0.4
+            "duration_ms": 0.5
           },
           {
             "system": "python",
             "stage": "Long-Term Promotion",
-            "detail": "importance 8.3",
+            "detail": "importance 8.4",
             "duration_ms": 0.5
           }
         ]
       },
       {
         "content": "Need to renew my passport before 1 June.",
-        "importance": 9.5,
+        "importance": 9.58,
         "schemas": [
           "task"
         ],
@@ -171,7 +177,7 @@
             "system": "python",
             "stage": "Sensory & Working Memory",
             "detail": "Updated sliding windows",
-            "duration_ms": 0.6
+            "duration_ms": 0.5
           },
           {
             "system": "embedding",
@@ -183,7 +189,7 @@
             "system": "python",
             "stage": "Fact Extraction",
             "detail": "Slots: []",
-            "duration_ms": 0.0
+            "duration_ms": 0.1
           },
           {
             "system": "python",
@@ -194,8 +200,8 @@
           {
             "system": "python",
             "stage": "Importance Scoring",
-            "detail": "Score: 9.5/10 | novelty=0.90, information=1.00, specificity=0.78, goal=1.00, preference=0.00, explicit=0.00, small_talk=0.00, brevity=0.00",
-            "duration_ms": 1.0
+            "detail": "Score: 9.6/10 | novelty=1.00, information=1.00, specificity=0.78, goal=1.00, preference=0.00, explicit=0.00, small_talk=0.00, brevity=0.00",
+            "duration_ms": 0.9
           },
           {
             "system": "python",
@@ -212,7 +218,7 @@
           {
             "system": "python",
             "stage": "Long-Term Promotion",
-            "detail": "importance 9.5",
+            "detail": "importance 9.6",
             "duration_ms": 0.5
           }
         ]
@@ -260,7 +266,7 @@
             "system": "python",
             "stage": "Episodic Storage",
             "detail": "Stored in SQLite id=544",
-            "duration_ms": 1.5
+            "duration_ms": 1.6
           },
           {
             "system": "cpp",
@@ -275,22 +281,24 @@
     "recall": {
       "status": "CONSISTENT",
       "latency_ms": 3.2,
-      "threshold": 0.3282,
+      "threshold": 0.0331,
       "memories": [
         {
           "content": "I'm allergic to peanuts and prefer dark chocolate.",
-          "relevance": 0.9217,
+          "relevance": 0.7555,
           "explain": {
             "semantic": 0.316,
             "lexical": 1.0,
             "entity_index": 0.0,
             "entity_match": 1.0,
             "entity_conflict": 0.0,
+            "subject_match": 1.0,
+            "subject_conflict": 0.0,
             "relation_match": 1.0,
             "relation_text": 0.0,
             "relation_conflict": 0.0,
             "slot_match": 1.0,
-            "salience": 0.797,
+            "salience": 0.806,
             "recency": 0.0,
             "alias_bridge": 0.0,
             "own_private": 1.0
@@ -298,18 +306,20 @@
         },
         {
           "content": "Need to renew my passport before 1 June.",
-          "relevance": 0.2926,
+          "relevance": 0.0017,
           "explain": {
             "semantic": 0.316,
             "lexical": 0.0,
             "entity_index": 0.0,
             "entity_match": 1.0,
             "entity_conflict": 0.0,
+            "subject_match": 1.0,
+            "subject_conflict": 0.0,
             "relation_match": 0.0,
             "relation_text": 0.0,
             "relation_conflict": 0.0,
             "slot_match": 0.0,
-            "salience": 0.95,
+            "salience": 0.958,
             "recency": 0.667,
             "alias_bridge": 0.0,
             "own_private": 1.0
@@ -317,18 +327,20 @@
         },
         {
           "content": "My name is Priya and I live in Pune.",
-          "relevance": 0.0329,
+          "relevance": 0.0004,
           "explain": {
             "semantic": 0.0,
             "lexical": 0.0,
             "entity_index": 0.0,
             "entity_match": 1.0,
             "entity_conflict": 0.0,
+            "subject_match": 1.0,
+            "subject_conflict": 0.0,
             "relation_match": 0.0,
             "relation_text": 0.0,
             "relation_conflict": 1.0,
             "slot_match": 0.0,
-            "salience": 0.835,
+            "salience": 0.843,
             "recency": 0.333,
             "alias_bridge": 0.0,
             "own_private": 1.0
@@ -338,5 +350,5 @@
     }
   },
   "engine": "real",
-  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2"
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2 + LoCoMo dev conversations (5)"
 }

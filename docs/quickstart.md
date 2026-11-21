@@ -65,9 +65,13 @@ print(out["status"], [m["content"] for m in out["memories"]])
 mem.feedback(out["recall_id"], [m["id"] for m in out["memories"][:1]])
 ```
 
-`status` is `CONSISTENT` (answer found), `ABSTAINED` (best match below the
-learned relevance threshold — Recallix returns nothing rather than a guess) or
-`NO_MATCH`.
+`status` is `CONSISTENT` (answer found), `ABSTAINED` (none of the matching memories
+answers the question — Recallix returns nothing rather than a guess) or `NO_MATCH`.
+
+The "does it answer?" decision is made by a small local reading-comprehension model
+(SQuAD 2.0, no LLM) when `requirements-local.txt` is installed
+(`recall.answer_check` in config.yaml; first use downloads the model, ~500 MB).
+Without it, Recallix falls back to a learned relevance threshold.
 
 TypeScript: `sdk/typescript` (`npm install ./sdk/typescript && npm run build` inside it).
 

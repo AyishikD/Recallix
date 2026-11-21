@@ -38,17 +38,22 @@ RELATION_GROUPS = [
     {"password", "code", "passcode", "pin"},
 ]
 
-_FIRST_PERSON = re.compile(r"\b(i|me|my|mine|myself|i'm|i've|i'd)\b", re.I)
-_CAP_SPAN = re.compile(r"\b[A-Z][\w-]*(?:\s+[A-Z][\w-]*)*")
+_FIRST_PERSON = re.compile(r"\b(i|me|my|mine|myself|i'm|i've|i'd|i'll)\b", re.I)
+_CAP_SPAN = re.compile(r"\b[A-Z][\w'’-]*(?:\s+[A-Z][\w'’-]*)*")
+_BRACKET_PREFIX = re.compile(r"^\s*\[[^\]]*\]\s*")   # e.g. a "[date]" header before the text
 _QUESTION_WORDS = {"what", "when", "where", "who", "whom", "which", "why", "how", "do", "does", "did",
                    "is", "are", "was", "were", "can", "could", "should", "would", "will", "i", "the",
                    "a", "an", "tell", "please", "any", "is there", "what's", "whats"}
 
 
 def norm_id(s):
-    s = re.sub(r"'s\b", "", s.strip())
+    s = re.sub(r"['’]s\b", "", s.strip())
     s = re.sub(r"^(?:the|a|an)\s+", "", s, flags=re.I)
     return re.sub(r"[^a-z0-9]+", "", s.lower())
+
+
+def _norm_token(t):
+    return re.sub(r"[^a-z0-9]+", "", re.sub(r"['’]s$", "", t.lower()))
 
 
 def _strip_leading_question_words(span):
@@ -58,16 +63,65 @@ def _strip_leading_question_words(span):
     return " ".join(words)
 
 
+def capitalised_spans(text, skip_sentence_initial_words=False, skip_vocatives=False):
+    """
+    Capitalised spans as tuples of normalised tokens ("Galaxy X-99 Primary" ->
+    ("galaxy", "x99", "primary")), leading question words/articles removed.
+
+    skip_sentence_initial_words: drop a single-word span at the start of a
+      sentence unless it contains a digit ("Status of X-77?" -> only ("x77",)).
+      Used for questions, where a capitalised first word is usually not a name.
+    skip_vocatives: drop direct address — a name immediately followed by , ! or ?
+      ("Thanks, Caroline!" does not make the text about Caroline).
+    """
+    out = []
+    for m in _CAP_SPAN.finditer(text):
+        span = _strip_leading_question_words(m.group(0))
+        if not span or span.lower() in _QUESTION_WORDS:
+            continue
+        tokens = tuple(t for t in (_norm_token(w) for w in span.split()) if t)
+        if not tokens or len("".join(tokens)) < 2:
+            continue
+        before = text[:m.start()].rstrip()
+        sentence_initial = not before or before[-1] in ".!?:\n"
+        if skip_sentence_initial_words and sentence_initial and m.group(0) == span and len(tokens) == 1 \
+                and not any(c.isdigit() for c in tokens[0]):
+            continue
+        if skip_vocatives and re.match(r"\s*[,!?]", text[m.end():]):
+            continue
+        out.append(tokens)
+    return out
+
+
 def capitalised_entities(text):
     """Normalised ids of capitalised spans, ignoring leading question/aux words."""
-    out = []
-    for span in _CAP_SPAN.findall(text):
-        span = _strip_leading_question_words(span)
-        if span and span.lower() not in _QUESTION_WORDS:
-            nid = norm_id(span)
-            if len(nid) > 1:
-                out.append(nid)
-    return out
+    return ["".join(t) for t in capitalised_spans(text)]
+
+
+def spans_match(a, b):
+    """
+    Token spans name the same entity if equal, if one is a contiguous run of the
+    other ("x99" in "galaxy x99 primary emission"; "kestrel" in "project kestrel"),
+    or if their joined forms are a one-edit typo of each other.
+    """
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    short, long_ = sorted((a, b), key=len)
+    n = len(short)
+    if any(long_[i:i + n] == short for i in range(len(long_) - n + 1)):
+        return True
+    return entity_matches("".join(a), "".join(b))
+
+
+def strip_header(text):
+    """Text without a leading bracketed header (e.g. a timestamp)."""
+    return _BRACKET_PREFIX.sub("", text, count=1)
+
+
+def is_first_person(text):
+    return bool(_FIRST_PERSON.search(text))
 
 
 def expand_relations(words):
@@ -80,12 +134,15 @@ def expand_relations(words):
 
 
 def analyze_query(query):
-    strong = capitalised_entities(query)
+    spans = capitalised_spans(query, skip_sentence_initial_words=True)
+    strong = ["".join(s) for s in spans]
     if _FIRST_PERSON.search(query):
         strong.append("user")
+        spans.append(("user",))
     words = re.findall(r"[a-z][a-z'-]*", query.lower())
     weak = [norm_id(t) for t in content_terms(query)]
     return {
+        "strong_spans": list(dict.fromkeys(spans)),
         "strong_entities": list(dict.fromkeys(strong)),
         "weak_entities": list(dict.fromkeys(weak)),
         "relations": expand_relations(words),
@@ -127,6 +184,9 @@ def entity_matches(a, b):
     short, long_ = sorted((a, b), key=len)
     if len(short) >= 4 and (long_.startswith(short) or long_.endswith(short)) and len(long_) - len(short) >= 3:
         return True
+    # Typo tolerance is for spelling: identifiers with digits ("x101" vs "x102") must match exactly.
+    if any(c.isdigit() for c in a + b):
+        return False
     return len(short) >= 5 and _edit_distance_at_most_one(a, b)
 
 
@@ -138,8 +198,10 @@ def relation_matches(slot_relation, query_relations):
 
 
 def slot_matches(slot, analysis, allow_weak=True):
-    ents = analysis["strong_entities"] + (analysis["weak_entities"] if allow_weak else [])
-    ent_ok = any(entity_matches(slot.get("entity", ""), e) for e in ents)
+    """Named (strong) entities match fuzzily; plain words (weak) only match a slot entity exactly."""
+    ent = slot.get("entity", "")
+    ent_ok = any(entity_matches(ent, e) for e in analysis["strong_entities"]) or \
+        (allow_weak and ent in analysis["weak_entities"])
     return ent_ok and relation_matches(slot.get("relation", ""), analysis["relations"])
 
 
@@ -150,3 +212,47 @@ def memory_entities(memory_text, slots):
     if _FIRST_PERSON.search(memory_text):
         ents.add("user")
     return {e for e in ents if e}
+
+
+def memory_subject(memory_text, speaker=None):
+    """
+    Who a memory is about (answer-level attribution):
+      owner     the speaker of a first-person statement ("I ran a race" said by
+                Melanie is about Melanie); the user if no speaker is recorded
+      mentions  named entities in the text, excluding direct address
+                ("Thanks, Caroline!") and the header
+    `speaker` comes from the store call's metadata, never guessed from the text.
+    """
+    body = strip_header(memory_text)
+    if speaker:
+        sp = re.escape(speaker.strip())
+        body = re.sub(rf"^\s*{sp}\s*:\s*", "", body, count=1)
+    owner = None
+    if is_first_person(body):
+        owner = tuple(t for t in (_norm_token(w) for w in speaker.split()) if t) if speaker else ("user",)
+    mentions = capitalised_spans(body, skip_vocatives=True)
+    return owner, mentions
+
+
+# First-person forms and their third-person rewrites ({s} = speaker). English grammar only.
+_FIRST_PERSON_REWRITES = [
+    (r"\bI'm\b|\bI am\b", "{s} is"), (r"\bI've\b|\bI have\b", "{s} has"), (r"\bI'd\b", "{s} would"),
+    (r"\bI'll\b", "{s} will"), (r"\bI was\b", "{s} was"), (r"\bmyself\b", "{s}"), (r"\bmine\b", "{s}'s"),
+    (r"\bmy\b", "{s}'s"), (r"\bme\b", "{s}"), (r"\bI\b", "{s}"),
+]
+
+
+def resolve_first_person(text, speaker):
+    """
+    Rewrites a speaker's first-person statement in the third person, so a reader that
+    does not know who "I" is can tell whose statement it is:
+      ("Melanie", "Melanie: I'm starting to realize...") -> "Melanie: Melanie is starting to realize..."
+    Text without a known speaker is returned unchanged.
+    """
+    if not speaker:
+        return text
+    head = re.match(r"^\s*(?:\[[^\]]*\]\s*)?(?:" + re.escape(speaker.strip()) + r"\s*:\s*)?", text)
+    prefix, body = text[:head.end()], text[head.end():]
+    for pattern, repl in _FIRST_PERSON_REWRITES:
+        body = re.sub(pattern, repl.format(s=speaker.strip()), body, flags=re.I if pattern != r"\bI\b" else 0)
+    return prefix + body

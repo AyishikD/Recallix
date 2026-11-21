@@ -119,6 +119,24 @@ memory:
 recall:
   candidate_pool: 200        # max candidates from each of lexical and vector search
   backfill_per_query: 50     # max legacy rows embedded lazily per query
+  # Abstention: recall returns nothing when the best match's relevance is below a threshold.
+  # The fitter sets it so that at most this share of answerable dev questions is refused
+  # (a wrongly refused question is treated as costlier than a missed trap; raise it to refuse more).
+  max_false_abstain_rate: 0.05
+  # Answer-level check (needs requirements-local.txt): a small extractive QA model trained on
+  # SQuAD 2.0 reads the served memories; recall abstains if none of them contains an answer.
+  # No LLM. threshold: null = value chosen on dev data for this model (answer_check.default.json),
+  # else the model's own answer/no-answer boundary.
+  answer_check:
+    enabled: true
+    model: "deepset/roberta-base-squad2"   # chosen on dev data (eval/run_eval.py --fit-answer-check); must match answer_check.default.json
+    max_length: 384
+    stride: 128
+    max_answer_tokens: 30
+    threshold: null
+    rerank: true       # serve memories in which an answer was found first (dev: LoCoMo hit@1 0.29 -> 0.37)
+  # Runtime override of the learned relevance threshold (null = the fitted ranker model's threshold).
+  abstain_threshold: null
 
 # ============================================================================
 # HTTP API
