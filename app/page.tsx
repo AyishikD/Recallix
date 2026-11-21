@@ -4,7 +4,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ButtonLink, CodeBlock, CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
 import { AgentsHub, ClosingCTA, MemoryField, MemoryStory } from "@/components/site/story";
-import { headline, headlineBenchmark, largestClustered, lift, ms, pct, results } from "@/lib/results";
+import { headline, headlineBenchmark, largestClustered, lift, ms, pct, results, signedPct } from "@/lib/results";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
@@ -98,7 +98,7 @@ function ExplainBars() {
 
 export default function HomePage() {
     const bench = headlineBenchmark();
-    const gain = lift(bench?.recallix, bench?.dense);
+    const gain = lift(bench?.ranked, bench?.dense);
     const ex = headline?.example;
     const story = ex && {
         query: ex.query, status: ex.recall.status,
@@ -157,12 +157,12 @@ export default function HomePage() {
                 </Reveal>
                 <div className="mt-14 grid gap-5 md:grid-cols-2">
                     {bench && <><Reveal from="left"><Tile>
-                        <Stat value={gain !== undefined ? <CountUp value={`+${Math.round(gain * 100)}%`} /> : "—"} label="more evidence found than vector search"
-                            sub={bench ? `recall@10 ${pct(bench.recallix, 1)} vs ${pct(bench.dense, 1)} with the same embeddings (BM25: ${pct(bench.bm25, 1)}).` : undefined} />
+                        <Stat value={gain !== undefined ? <CountUp value={signedPct(gain)} /> : "—"} label="more evidence ranked into the top 10 than vector search"
+                            sub={bench ? `Ranking recall@10 ${pct(bench.ranked, 1)} vs ${pct(bench.dense, 1)} with the same embeddings (BM25 ${pct(bench.bm25, 1)}). What Recallix serves after its answer check is lower, ${pct(bench.served, 1)}: on this dataset the check declines too often.` : undefined} />
                     </Tile></Reveal>
                     <Reveal from="right" delay={0.08}><Tile>
                         <Stat value={<CountUp value={pct(bench?.declined)} />} label="of unanswerable questions declined"
-                            sub={bench ? `while wrongly declining ${pct(bench.wronglyDeclined, 1)} of answerable ones (${bench.nUnanswerable} unanswerable questions).` : undefined} />
+                            sub={bench ? `but it also wrongly declined ${pct(bench.wronglyDeclined, 1)} of answerable ones (only ${bench.nUnanswerable} unanswerable questions; its threshold was calibrated on a different dataset).` : undefined} />
                     </Tile></Reveal></>}
                     <Reveal from="left" delay={0.12}><Tile>
                         <Stat value={largestClustered ? <CountUp value={ms(largestClustered.search_avg_ms, 2)} /> : "—"} label={`vector search at ${largestClustered ? (largestClustered.n / 1e6).toFixed(0) + " million" : "—"} memories`}
@@ -288,8 +288,9 @@ export default function HomePage() {
                     <Headline className="mx-auto max-w-[760px]">What it doesn’t do yet.</Headline>
                     <Lede className="mx-auto mt-5">
                         Fact extraction is rule-based and misses some phrasings. Questions that mix up who said what are still
-                        often answered instead of declined. The evaluation sets we wrote ourselves are small.
-                        We publish all of it.
+                        often answered instead of declined.{bench ? <> On {bench.name}, the answer check’s threshold — set on a different
+                        dataset — wrongly declined {pct(bench.wronglyDeclined)} of answerable questions; it needs calibrating per deployment.</> : null}{" "}
+                        The evaluation sets we wrote ourselves are small. We publish all of it.
                     </Lede>
                     <div className="mt-8"><ButtonLink href="/roadmap" variant="link">See the roadmap</ButtonLink></div>
                 </Reveal>

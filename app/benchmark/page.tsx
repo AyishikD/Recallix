@@ -10,7 +10,7 @@ import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEva
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
 const SYSTEM_LABEL: Record<string, string> = {
-    recallix: "Recallix", recallix_ranked: "Recallix (ranking only)", dense: "Vector search", bm25: "BM25",
+    recallix: "Recallix (served, after answer check)", recallix_ranked: "Recallix ranking", dense: "Vector search", bm25: "BM25",
 };
 
 export default function BenchmarkPage() {
@@ -57,10 +57,10 @@ export default function BenchmarkPage() {
                         </Lede>
                     </Reveal>
                     <div className="mt-12 grid gap-5 md:grid-cols-2">
-                        <Reveal from="left"><Tile><Stat value={<CountUp value={pct(longMemEval.systems.recallix?.overall?.["recall@10"], 1)} />} label="evidence recall@10"
-                            sub={`Vector search: ${pct(longMemEval.systems.dense?.overall?.["recall@10"], 1)} · BM25: ${pct(longMemEval.systems.bm25?.overall?.["recall@10"], 1)}`} /></Tile></Reveal>
+                        <Reveal from="left"><Tile><Stat value={<CountUp value={pct(longMemEval.systems.recallix_ranked?.overall?.["recall@10"], 1)} />} label="evidence recall@10, Recallix ranking"
+                            sub={`Vector search ${pct(longMemEval.systems.dense?.overall?.["recall@10"], 1)} · BM25 ${pct(longMemEval.systems.bm25?.overall?.["recall@10"], 1)} · served after the answer check ${pct(longMemEval.systems.recallix?.overall?.["recall@10"], 1)}`} /></Tile></Reveal>
                         <Reveal from="right" delay={0.08}><Tile><Stat value={<CountUp value={pct(longMemEval.abstention.unanswerable_declined)} />} label="of unanswerable questions declined"
-                            sub={`Wrongly declined ${pct(longMemEval.abstention.answerable_wrongly_declined, 1)} of ${longMemEval.abstention.n_answerable} answerable questions.`} /></Tile></Reveal>
+                            sub={`Wrongly declined ${pct(longMemEval.abstention.answerable_wrongly_declined, 1)} of ${longMemEval.abstention.n_answerable} answerable questions. The answer check separates the two well (AUC ${longMemEval.abstention.auc_answer_margin?.toFixed(2) ?? "—"}), but its threshold was set on LoCoMo and declines too often here; it needs calibrating per deployment.`} /></Tile></Reveal>
                     </div>
                     <Reveal className="mt-8">
                         <DataTable head={["System", "recall@5", "recall@10", "hit@10"]}

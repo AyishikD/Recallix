@@ -80,17 +80,22 @@ export const ms = (x: number | undefined, digits = 2) =>
 /** Relative improvement of a over b, e.g. 0.18 for +18%. */
 export const lift = (a?: number, b?: number) => (a === undefined || b === undefined || !b ? undefined : a / b - 1);
 
+/** "+12%" / "−6%": a signed percentage that never reads "+-6%". */
+export const signedPct = (x: number) => `${x >= 0 ? "+" : "−"}${Math.abs(Math.round(x * 100))}%`;
+
 /**
  * The independent benchmark to headline: LongMemEval (fresh, held out) when published,
- * otherwise LoCoMo's test split. Returns overall recall@10 for Recallix and the dense
- * baseline, plus abstention rates.
+ * otherwise LoCoMo's test split. Returns overall recall@10 for Recallix's ranking
+ * (`ranked`), for what Recallix serves after the answer check (`served`), and for
+ * the baselines, plus abstention rates. Both Recallix numbers are shown on the site.
  */
 export function headlineBenchmark() {
     if (longMemEval) {
         const s = longMemEval.systems;
         return {
             name: "LongMemEval", questions: longMemEval.questions,
-            recallix: s.recallix?.overall?.["recall@10"], dense: s.dense?.overall?.["recall@10"], bm25: s.bm25?.overall?.["recall@10"],
+            ranked: s.recallix_ranked?.overall?.["recall@10"], served: s.recallix?.overall?.["recall@10"],
+            dense: s.dense?.overall?.["recall@10"], bm25: s.bm25?.overall?.["recall@10"],
             declined: longMemEval.abstention.unanswerable_declined, wronglyDeclined: longMemEval.abstention.answerable_wrongly_declined,
             nUnanswerable: longMemEval.abstention.n_unanswerable,
         };
@@ -99,7 +104,8 @@ export function headlineBenchmark() {
     if (!t) return undefined;
     return {
         name: "LoCoMo (test split)", questions: t.questions,
-        recallix: t.systems.recallix?.overall?.["recall@10"], dense: t.systems.dense?.overall?.["recall@10"], bm25: t.systems.bm25?.overall?.["recall@10"],
+        ranked: t.systems.recallix_ranked?.overall?.["recall@10"], served: t.systems.recallix?.overall?.["recall@10"],
+        dense: t.systems.dense?.overall?.["recall@10"], bm25: t.systems.bm25?.overall?.["recall@10"],
         declined: t.abstention.adversarial_declined, wronglyDeclined: t.abstention.answerable_wrongly_declined,
         nUnanswerable: t.abstention.n_adversarial,
     };

@@ -35,6 +35,7 @@ const GROUPS: { title: string; lede: string; items: { name: string; detail: stri
             { name: "Who said what", detail: "Questions that attribute something to the wrong person are still often answered instead of declined.", status: "known gap" },
             { name: "Rule-based extraction", detail: "The fact grammar misses phrasings it was not written for.", status: "known gap" },
             { name: "Our own test sets are small", detail: "Written by the same author as the rules and evaluated repeatedly. Public benchmarks carry the weight.", status: "known gap" },
+            { name: "Answer-check threshold doesn’t transfer", detail: "Fitted on LoCoMo, it declined too many answerable questions on LongMemEval. It needs calibrating for each deployment.", status: "known gap" },
             { name: "Answer check costs time", detail: "The QA reader adds latency to each recall on CPU. It can be switched off in config.yaml.", status: "known gap" },
             { name: "Single API process", detail: "One process owns SQLite and the background jobs. Scaling out needs a shared database.", status: "known gap" },
             { name: "Deleted vectors linger", detail: "They stay in the graph, filtered out, until a rebuild (python -m backend.tools.reindex --force).", status: "known gap" },
