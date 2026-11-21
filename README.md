@@ -31,6 +31,21 @@ Benchmarks page reads the same file.
 | Legacy adversarial gauntlet v1–v3 | 4/12 |
 | Legacy 500-turn retention, recall@1 | 7/8 |
 
+**LoCoMo** (independent public benchmark: 10 conversations, 5,882 turns, 1,986 questions; never
+used for tuning). It measures how much of each question's labelled evidence is retrieved, with
+no LLM involved:
+
+| recall@10 | overall | multi-hop | temporal | open-domain | single-hop |
+|---|---|---|---|---|---|
+| **Recallix** | **0.591** | **0.317** | **0.643** | **0.342** | **0.690** |
+| Dense vectors (same embeddings) | 0.499 | 0.307 | 0.554 | 0.269 | 0.566 |
+| BM25 | 0.544 | 0.221 | 0.630 | 0.283 | 0.647 |
+
+Abstention does **not** transfer to LoCoMo's adversarial questions: Recallix declined only 0.4%
+of them. They ask about topics the conversation did discuss (attributing an event to the wrong
+person), which a retrieval-confidence threshold cannot detect; that needs an answer-level check.
+Recallix also wrongly declined only 0.4% of answerable questions.
+
 The legacy gauntlet and retention benchmarks are the pre-existing ones from this repository.
 Earlier versions of this README reported 10/12 and 75% for them. Those scores depended on
 answers hardcoded into the recall code (e.g. a fixed alias table), which has been removed.

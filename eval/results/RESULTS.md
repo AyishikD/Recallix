@@ -1,6 +1,6 @@
 # Measured results
 
-Generated 2026-11-21 14:39 UTC from commit `cfb6e8ac + uncommitted changes` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
+Generated 2026-11-21 15:36 UTC from commit `be738542` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
 
 ## Memory pipeline (eval harness)
 
@@ -23,3 +23,14 @@ Generated 2026-11-21 14:39 UTC from commit `cfb6e8ac + uncommitted changes` on A
 | hnswlib | 100,000 | 128 | clustered | 16 | 100 | 50 | 0.971 | 0.068 | – | 7.8 |
 | hnswlib | 100,000 | 128 | uniform | 16 | 100 | 50 | 0.190 | 0.139 | – | 30.0 |
 | hnswlib | 100,000 | 128 | uniform | 16 | 100 | 200 | 0.480 | 0.463 | – | 29.7 |
+
+## LoCoMo retrieval (10 conversations, 5882 turns, 1986 questions; embedder st:sentence-transformers/all-MiniLM-L6-v2, real engine; no LLM)
+
+| system | recall@5 | recall@10 | hit@10 | multi-hop recall@10 | temporal recall@10 | open-domain recall@10 | single-hop recall@10 |
+|---|---|---|---|---|---|---|---|
+| recallix | 0.496 | 0.591 | 0.661 | 0.317 | 0.643 | 0.342 | 0.690 |
+| recallix_ranked | 0.498 | 0.593 | 0.664 | 0.324 | 0.643 | 0.348 | 0.691 |
+| dense | 0.397 | 0.499 | 0.571 | 0.307 | 0.554 | 0.269 | 0.566 |
+| bm25 | 0.467 | 0.544 | 0.601 | 0.221 | 0.630 | 0.283 | 0.647 |
+
+Recallix declined 0.4% of 446 adversarial (unanswerable) questions and wrongly declined 0.4% of 1540 answerable ones.

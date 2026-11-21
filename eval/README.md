@@ -49,6 +49,13 @@ for split in dev test; do
       --json eval/results/${split}_$(echo $e | sed 's/st:sentence-transformers\///; s/[:\/]/_/g').json
   done
 done
+
+# LoCoMo (public benchmark, retrieval only, no LLM)
+mkdir -p /tmp/locomo && curl -sSfL -o /tmp/locomo/locomo10.json \
+  https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json
+python eval/benchmarks/locomo.py --data /tmp/locomo/locomo10.json \
+  --embedder st:sentence-transformers/all-MiniLM-L6-v2 --engine-url http://127.0.0.1:18431 \
+  --json eval/results/locomo_all-MiniLM-L6-v2.json
 kill %1
 
 python eval/publish_results.py     # -> eval/results/summary.json + RESULTS.md

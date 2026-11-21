@@ -1,0 +1,235 @@
+"""
+LoCoMo retrieval benchmark (no LLM needed).
+
+LoCoMo (Maharana et al., 2024; github.com/snap-research/locomo) has 10 long
+two-person conversations (~5.9k turns) and ~2k questions. Every question lists
+the dialogue turns ("evidence") that contain its answer, so retrieval can be
+scored directly, without an answer-generating LLM or an LLM judge:
+
+  evidence recall@k  share of a question's evidence turns among the top k retrieved
+  hit@k              at least one evidence turn in the top k
+
+Categories 1-4 are answerable. Category 5 is adversarial (the question presumes
+something the conversation never says); the right behaviour is to decline, so
+for Recallix we report how often it abstains there, and how often it wrongly
+abstains on answerable questions. Baselines cannot abstain.
+
+Systems, all fed the identical text for every turn ("[date] Speaker: text"):
+  recallix   full store + recall pipeline (as served, with abstention)
+  recallix_ranked  Recallix's ranking before truth arbitration and abstention
+  dense      cosine top-k over the same embeddings (brute force)
+  bm25       Okapi BM25 (k1, b configurable; defaults are the standard 1.2 / 0.75)
+
+Usage:
+  curl -sSfL -o /tmp/locomo/locomo10.json https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json
+  python eval/benchmarks/locomo.py --data /tmp/locomo/locomo10.json \
+      --embedder st:sentence-transformers/all-MiniLM-L6-v2 [--engine-url URL] --json eval/results/locomo.json
+"""
+import argparse
+import contextlib
+import io
+import json
+import math
+import re
+import sys
+import time
+from collections import Counter, defaultdict
+from pathlib import Path
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # eval/
+import run_eval  # noqa: E402
+
+TOKEN = re.compile(r"[a-z0-9]+")
+CATEGORY_NAMES = {1: "multi-hop", 2: "temporal", 3: "open-domain", 4: "single-hop", 5: "adversarial"}
+
+
+def turns_of(sample):
+    """[(dia_id, text)] in conversation order, text = '[date] Speaker: utterance [+ image caption]'."""
+    conv = sample["conversation"]
+    sessions = sorted((int(k.split("_")[1]), k) for k in conv
+                      if re.fullmatch(r"session_\d+", k) and isinstance(conv[k], list))
+    out = []
+    for _, key in sessions:
+        date = conv.get(f"{key}_date_time", "")
+        for turn in conv[key]:
+            text = f"[{date}] {turn['speaker']}: {turn['text']}"
+            if turn.get("blip_caption"):
+                text += f" [shares an image: {turn['blip_caption']}]"
+            out.append((turn["dia_id"].strip(), text))
+    return out
+
+
+def norm_evidence(ev):
+    ids = []
+    for e in ev or []:
+        ids += [x.strip() for x in re.split(r"[;,]", str(e)) if x.strip()]
+    return set(ids)
+
+
+class BM25:
+    def __init__(self, docs, k1=1.2, b=0.75):
+        self.k1, self.b = k1, b
+        self.docs = [Counter(TOKEN.findall(d.lower())) for d in docs]
+        self.lens = np.array([sum(d.values()) for d in self.docs], dtype=float)
+        self.avg = self.lens.mean() if len(self.lens) else 0.0
+        df = Counter(t for d in self.docs for t in d)
+        n = len(self.docs)
+        self.idf = {t: math.log(1 + (n - c + 0.5) / (c + 0.5)) for t, c in df.items()}
+
+    def top(self, query, k):
+        q = TOKEN.findall(query.lower())
+        scores = np.zeros(len(self.docs))
+        for i, d in enumerate(self.docs):
+            s = 0.0
+            for t in q:
+                tf = d.get(t)
+                if tf:
+                    s += self.idf[t] * tf * (self.k1 + 1) / (tf + self.k1 * (1 - self.b + self.b * self.lens[i] / self.avg))
+            scores[i] = s
+        return list(np.argsort(-scores)[:k])
+
+
+def score(retrieved_ids, evidence, ks):
+    out = {}
+    for k in ks:
+        top = set(retrieved_ids[:k])
+        out[f"recall@{k}"] = len(top & evidence) / len(evidence)
+        out[f"hit@{k}"] = float(bool(top & evidence))
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--data", required=True)
+    ap.add_argument("--embedder", default="hash")
+    ap.add_argument("--engine-url", default=None)
+    ap.add_argument("--k", default="5,10")
+    ap.add_argument("--conversations", type=int, default=None, help="limit (for quick runs)")
+    ap.add_argument("--bm25-k1", type=float, default=1.2)
+    ap.add_argument("--bm25-b", type=float, default=0.75)
+    ap.add_argument("--json", default=None)
+    args = ap.parse_args()
+    ks = [int(x) for x in args.k.split(",")]
+    kmax = max(ks)
+
+    env = run_eval.Env(args.embedder, args.engine_url)
+    from backend.api.deps import get_memory_manager, reset
+    reset()
+    with contextlib.redirect_stdout(io.StringIO()):
+        mm = get_memory_manager()
+
+    data = json.load(open(args.data))[: args.conversations]
+    systems = ["recallix", "recallix_ranked", "dense", "bm25"]
+    per_cat = {s: defaultdict(lambda: defaultdict(list)) for s in systems}
+    abstain = {"answerable": [], "adversarial": []}
+    timing = defaultdict(float)
+    n_turns = n_questions = 0
+    embed_calls_ingest = 0
+
+    for sample in data:
+        user = f"locomo_{sample['sample_id']}"
+        turns = turns_of(sample)
+        n_turns += len(turns)
+        texts = [t for _, t in turns]
+        mem_to_dia = defaultdict(list)
+
+        # ---- ingest
+        before = env.embed_calls
+        t0 = time.time()
+        with contextlib.redirect_stdout(io.StringIO()):
+            for dia_id, text in turns:
+                res = mm.store(user, text)
+                mem_to_dia[res["memory_id"]].append(dia_id)
+        timing["recallix_ingest_s"] += time.time() - t0
+        embed_calls_ingest += env.embed_calls - before
+
+        t0 = time.time()
+        vecs = np.vstack([mm.semantic.embed(t) for t in texts])  # cached: same embeddings Recallix stored
+        timing["dense_ingest_s"] += time.time() - t0
+        t0 = time.time()
+        bm25 = BM25(texts, args.bm25_k1, args.bm25_b)
+        timing["bm25_ingest_s"] += time.time() - t0
+        dia_ids = [d for d, _ in turns]
+
+        # ---- questions
+        for qa in sample["qa"]:
+            cat = qa["category"]
+            evidence = norm_evidence(qa.get("evidence")) & set(dia_ids)
+            q = qa["question"]
+            n_questions += 1
+
+            t0 = time.time()
+            with contextlib.redirect_stdout(io.StringIO()):
+                out = mm.retrieve(user, q, limit=kmax, return_candidates=True)
+            timing["recallix_query_s"] += time.time() - t0
+            served = [d for m in out["memories"] for d in mem_to_dia[m["id"]]]
+            ranked = [d for c in out["_candidates"] for d in mem_to_dia[c["id"]]]
+            abstained = out["status"] in ("ABSTAINED", "NO_MATCH")
+
+            t0 = time.time()
+            qv = mm.semantic.embed(q)
+            dense = [dia_ids[i] for i in np.argsort(-(vecs @ qv))[:kmax]]
+            timing["dense_query_s"] += time.time() - t0
+            t0 = time.time()
+            lexical = [dia_ids[i] for i in bm25.top(q, kmax)]
+            timing["bm25_query_s"] += time.time() - t0
+
+            if cat == 5:
+                abstain["adversarial"].append(abstained)
+                continue
+            abstain["answerable"].append(abstained)
+            if not evidence:
+                continue
+            for name, ids in (("recallix", served), ("recallix_ranked", ranked), ("dense", dense), ("bm25", lexical)):
+                for metric, v in score(ids, evidence, ks).items():
+                    per_cat[name][cat][metric].append(v)
+
+    # ---- report
+    results = {"dataset": "LoCoMo (locomo10.json)", "embedder": args.embedder,
+               "engine": "real" if args.engine_url else "in-process brute force",
+               "conversations": len(data), "turns": n_turns, "questions": n_questions,
+               "ranker_model": __import__("backend.brain.memory_ranking.ranker", fromlist=["Ranker"]).Ranker.model().get("source"),
+               "systems": {}, "abstention": {
+                   "adversarial_declined": float(np.mean(abstain["adversarial"])) if abstain["adversarial"] else None,
+                   "answerable_wrongly_declined": float(np.mean(abstain["answerable"])) if abstain["answerable"] else None,
+                   "n_adversarial": len(abstain["adversarial"]), "n_answerable": len(abstain["answerable"])},
+               "timing_seconds": {k: round(v, 2) for k, v in timing.items()},
+               "embedding_calls_during_ingest": embed_calls_ingest,
+               "llm_calls": 0, "api_cost_usd": 0.0}
+    for name in systems:
+        cats = per_cat[name]
+        overall = defaultdict(list)
+        sys_res = {}
+        for cat in sorted(cats):
+            sys_res[CATEGORY_NAMES.get(cat, str(cat))] = {m: round(float(np.mean(v)), 4) for m, v in cats[cat].items()}
+            sys_res[CATEGORY_NAMES.get(cat, str(cat))]["n"] = len(next(iter(cats[cat].values())))
+            for m, v in cats[cat].items():
+                overall[m] += v
+        sys_res["overall"] = {m: round(float(np.mean(v)), 4) for m, v in overall.items()}
+        sys_res["overall"]["n"] = len(next(iter(overall.values()))) if overall else 0
+        results["systems"][name] = sys_res
+
+    print(f"LoCoMo: {len(data)} conversations, {n_turns} turns, {n_questions} questions | embedder={args.embedder} engine={results['engine']}")
+    head = ["system"] + [f"recall@{k}" for k in ks] + [f"hit@{k}" for k in ks]
+    print(" | ".join(f"{h:>16}" for h in head))
+    for name in systems:
+        o = results["systems"][name]["overall"]
+        print(" | ".join([f"{name:>16}"] + [f"{o.get(f'recall@{k}', 0):>16.3f}" for k in ks] + [f"{o.get(f'hit@{k}', 0):>16.3f}" for k in ks]))
+    print("per category recall@%d:" % kmax)
+    for cat in sorted({c for s in systems for c in per_cat[s]}):
+        name = CATEGORY_NAMES.get(cat, str(cat))
+        print(f"  {name:>12}: " + "  ".join(f"{s}={results['systems'][s][name][f'recall@{kmax}']:.3f}" for s in systems))
+    a = results["abstention"]
+    print(f"Recallix abstention: declined {a['adversarial_declined']:.2%} of {a['n_adversarial']} adversarial questions; "
+          f"wrongly declined {a['answerable_wrongly_declined']:.2%} of {a['n_answerable']} answerable")
+    print(f"timing (s): {results['timing_seconds']} | LLM calls: 0 | API cost: $0")
+    if args.json:
+        with open(args.json, "w") as f:
+            json.dump(results, f, indent=2)
+        print("wrote", args.json)
+
+
+if __name__ == "__main__":
+    main()
