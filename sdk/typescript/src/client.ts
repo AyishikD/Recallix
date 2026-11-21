@@ -3,38 +3,32 @@ export interface MemoryConfig {
     baseUrl?: string;
 }
 
+export class RecallixError extends Error {
+    constructor(public status: number, public detail: string) {
+        super(`HTTP ${status}: ${detail}`);
+    }
+}
+
 export class MemoryClient {
     private apiKey: string;
     private baseUrl: string;
 
     constructor(config: MemoryConfig) {
+        if (!config.apiKey) throw new Error("apiKey is required");
         this.apiKey = config.apiKey;
         this.baseUrl = (config.baseUrl || "http://localhost:8000").replace(/\/$/, "");
     }
 
-    async request<T>(method: string, endpoint: string, data?: any): Promise<T> {
-        const url = `${this.baseUrl}${endpoint}`;
-        try {
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    "X-API-Key": this.apiKey,
-                    "Content-Type": "application/json"
-                },
-                body: data ? JSON.stringify(data) : undefined
-            });
-
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.statusText}`);
-            }
-
-            return await response.json();
-        } catch (error: any) {
-            return {
-                status: "error",
-                message: error.message,
-                code: "SDK_ERROR"
-            } as any;
-        }
+    /** Returns the response's `data`; throws RecallixError on HTTP errors. */
+    async request<T = any>(method: string, endpoint: string, data?: Record<string, any>): Promise<T> {
+        const body = data ? JSON.stringify(Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined))) : undefined;
+        const response = await fetch(`${this.baseUrl}${endpoint}`, {
+            method,
+            headers: { "X-API-Key": this.apiKey, "Content-Type": "application/json" },
+            body,
+        });
+        const json: any = await response.json().catch(() => ({}));
+        if (!response.ok) throw new RecallixError(response.status, json.detail ?? response.statusText);
+        return json.data as T;
     }
 }

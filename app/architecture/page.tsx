@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { largestClustered, ms, pct } from "@/lib/results";
 
 const container = {
   hidden: { opacity: 0 },
@@ -45,58 +46,58 @@ interface Component {
 const architectureStack: Component[] = [
   {
     id: "cognitive",
-    title: "Cognitive Reasoning Layer",
-    desc: "Python-driven orchestration engine. Handles intent classification, importance ranking, and multi-model routing.",
+    title: "Memory Logic (Python)",
+    desc: "Deterministic store and recall pipelines. No LLM: facts, schemas, importance and relevance are computed from rules, embeddings and fitted models.",
     icon: Brain,
     color: "cyan",
     modules: [
-      { name: "RecallEngine", detail: "Intent-Driven routing → HNSW search → Hybrid Reranking (Cosine + Heuristics)", type: "logic" },
-      { name: "IntentDetector", detail: "Sub-10ms NLP Classifier across 6 core cognitive intents", type: "logic" },
-      { name: "ImportanceRanker", detail: "Neural-heuristic scoring: Goal (+3.0), Preference (+2.0), Feedback (+4.0)", type: "logic" },
-      { name: "ContextInference", detail: "Stateful analyzer mapping queries to optimal memory layer activations", type: "logic" },
+      { name: "RecallEngine", detail: "FTS5 + entity index + per-user HNSW candidates, scored by a learned logistic relevance model", type: "logic" },
+      { name: "TruthEngine", detail: "One value per fact slot: newer values supersede, 'X is not V' invalidates V only", type: "logic" },
+      { name: "ImportanceRanker", detail: "1 + 9·sigmoid(w·features): novelty, IDF information, specificity, cue words; weights fitted", type: "logic" },
+      { name: "IndexSync", detail: "Rebuilds vector indexes from SQLite at startup and after engine restarts", type: "logic" },
     ],
   },
   {
     id: "infrastructure",
-    title: "Hardware Moat (C++)",
-    desc: "High-performance native infrastructure. HNSW indexing, Cross-Platform SIMD acceleration (AVX2/SSE/NEON), and atomic timeline engines.",
+    title: "Vector Engine (C++)",
+    desc: "HNSW (Malkov & Yashunin heuristic neighbour selection), one index per user, exact scan of not-yet-linked vectors, shared-mutex concurrency.",
     icon: Cpu,
     color: "purple",
     modules: [
-      { name: "VectorEngine", detail: "HNSW Hierarchical Index with Cross-Platform SIMD hardware acceleration", type: "infra" },
-      { name: "TimelineEngine", detail: "Atomic event indexing with millisecond precision linked to unique DB IDs", type: "infra" },
-      { name: "HardwareAccelerator", detail: "Intrinsic-level SIMD optimizations (AVX2, SSE, NEON) for maximum parallelism", type: "infra" },
-      { name: "IDLinker", detail: "Unique ID Propagation system linking vector space to relational records", type: "infra" },
+      { name: "VectorEngine", detail: "HNSW index; recall measured against exact search and hnswlib", type: "infra" },
+      { name: "IndexRegistry", detail: "Namespaces (users) with one shared background indexing thread", type: "infra" },
+      { name: "SIMD", detail: "NEON on ARM64, AVX2+FMA on x86-64, scalar otherwise (reported at runtime)", type: "infra" },
+      { name: "Auth", detail: "Shared secret from RECALLIX_INTERNAL_KEY; the engine refuses to start without it", type: "infra" },
     ],
   },
   {
     id: "storage",
-    title: "Multi-Layer Persistence",
-    desc: "ACID-compliant memory hierarchy. SQLite WAL mode for high-velocity non-blocking concurrent ingestion.",
+    title: "Persistence (SQLite)",
+    desc: "SQLite in WAL mode is the system of record; the vector index is derived from it and can always be rebuilt.",
     icon: Database,
     color: "emerald",
     modules: [
-      { name: "Episodic (SQL)", detail: "SQLite (WAL Mode + Normal Sync) for 60+ concurrent memories/sec", type: "storage" },
-      { name: "Semantic (HNSW)", detail: "128D latent embeddings persisted in native C++ vector clusters", type: "storage" },
-      { name: "Working (JSON)", detail: "Append-only rolling session context with automated topic summarization", type: "storage" },
-      { name: "Long-Term (Gated)", detail: "Importance threshold (>8.0) gated promotion with Ebbinghaus decay", type: "storage" },
+      { name: "Episodic", detail: "Memories with embedding, embedding model name, content hash and FTS5 index", type: "storage" },
+      { name: "Working", detail: "Sliding window of recent messages, one row per user", type: "storage" },
+      { name: "Long-Term", detail: "Promoted facts (importance threshold from config) with Ebbinghaus decay", type: "storage" },
+      { name: "Recall log", detail: "Candidate features per recall; feedback turns them into ranker training data", type: "storage" },
     ],
   },
 ];
 
 const storePipelineSteps = [
-  { step: "Input", label: "User interaction captured via POST /memory/store", icon: <Eye className="w-4 h-4" /> },
-  { step: "Intent", label: "Sub-10ms classification for routing", icon: <Target className="w-4 h-4" /> },
-  { step: "Sensory", label: "Capturing raw buffer in 60s TTL deque", icon: <Boxes className="w-4 h-4" /> },
-  { step: "Working", label: "Active context update & summarization", icon: <Activity className="w-4 h-4" /> },
-  { step: "Episodic", label: "SQLite WAL persistence with ID generation", icon: <Database className="w-4 h-4" /> },
-  { step: "Vector", label: "128D Latent Embedding generation", icon: <Dna className="w-4 h-4" /> },
-  { step: "HNSW", label: "C++ HNSW index update (AVX2/SSE/NEON)", icon: <Microchip className="w-4 h-4" /> },
-  { step: "Linking", label: "Unique ID mapping (Vector <-> SQL)", icon: <Workflow className="w-4 h-4" /> },
-  { step: "Ranking", label: "Heuristic importance scoring", icon: <Zap className="w-4 h-4" /> },
-  { step: "Gating", label: "Long-term promotion threshold analysis", icon: <ShieldCheck className="w-4 h-4" /> },
-  { step: "Reflection", label: "Background LLM pattern extraction", icon: <Lightbulb className="w-4 h-4" /> },
-  { step: "Meta", label: "Self-optimizing retrieval policy tune", icon: <Sparkles className="w-4 h-4" /> },
+  { step: "Auth", label: "Hashed API key → user (service keys may act for end users)", icon: <Eye className="w-4 h-4" /> },
+  { step: "Dedupe", label: "Identical content visible to this agent is skipped", icon: <Target className="w-4 h-4" /> },
+  { step: "Sensory", label: "Per-user ring buffer with TTL", icon: <Boxes className="w-4 h-4" /> },
+  { step: "Working", label: "Sliding window of recent messages", icon: <Activity className="w-4 h-4" /> },
+  { step: "Embedding", label: "One embedding per message, reused below", icon: <Dna className="w-4 h-4" /> },
+  { step: "Facts", label: "Rule grammar → (entity, relation, value) slots", icon: <Workflow className="w-4 h-4" /> },
+  { step: "Schema", label: "Prototype classifier on the embedding", icon: <Sparkles className="w-4 h-4" /> },
+  { step: "Importance", label: "Learned logistic score (novelty, IDF, specificity, cues)", icon: <Zap className="w-4 h-4" /> },
+  { step: "Episodic", label: "SQLite row + embedding + FTS5 + timeline", icon: <Database className="w-4 h-4" /> },
+  { step: "HNSW", label: "Add to the user's index (searchable immediately)", icon: <Microchip className="w-4 h-4" /> },
+  { step: "Gating", label: "Long-term promotion above the configured threshold", icon: <ShieldCheck className="w-4 h-4" /> },
+  { step: "Jobs", label: "World state, prediction, replay, forgetting (background)", icon: <Lightbulb className="w-4 h-4" /> },
 ];
 
 export default function ArchitecturePage() {
@@ -182,7 +183,7 @@ export default function ArchitecturePage() {
             </div>
             <h3 className="text-2xl font-black tracking-tight mb-4">C++ Moat</h3>
             <p className="text-sm text-zinc-500 font-bold leading-relaxed mb-8">
-              Hardware-accelerated engines for millisecond search at 1,000,000 nodes.
+              {largestClustered ? `${ms(largestClustered.search_avg_ms, 2)} average search at ${largestClustered.n.toLocaleString()} vectors, recall@10 ${pct(largestClustered.recall_at_10, 1)} (single thread).` : null}
             </p>
             <div className="space-y-4 flex-1">
               {architectureStack[1].modules.slice(0, 3).map((mod) => (
@@ -256,7 +257,7 @@ export default function ArchitecturePage() {
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">
               Atomic Store <span className="text-gradient">Pipeline</span>
             </h2>
-            <p className="text-zinc-500 text-lg font-bold">The 12-step propagation of a single memory.</p>
+            <p className="text-zinc-500 text-lg font-bold">{storePipelineSteps.length} steps from request to stored memory.</p>
           </div>
 
           <div className="relative max-w-4xl mx-auto">
@@ -299,8 +300,8 @@ export default function ArchitecturePage() {
         <section className="py-24 border-t border-white/5">
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { title: "Python 3.11", detail: "FastAPI, PyDantic, NumPy, Sentence-Transformers", icon: Activity },
-                { title: "C++ 17", detail: "HNSWlib, Eigen, Simd (AVX2/SSE/NEON), libcurl, nlohmann-json", icon: Cpu },
+                { title: "Python 3.11", detail: "FastAPI, Pydantic, NumPy (optional: sentence-transformers)", icon: Activity },
+                { title: "C++ 17", detail: "Own HNSW implementation, NEON/AVX2 intrinsics, cpp-httplib, nlohmann-json", icon: Cpu },
                 { title: "SQLite 3", detail: "WAL Mode, Full-Text Search (FTS5), JSON1 extension", icon: Database },
                 { title: "Next.js 14", detail: "Tailwind CSS, Framer Motion, Lucide, Recharts", icon: Layers },
               ].map((tech) => (

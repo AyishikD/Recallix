@@ -1,0 +1,59 @@
+{
+  "source": "scratch/retention_benchmark.py (pre-existing, ported unchanged except a fixed seed and run id)",
+  "turns": 500,
+  "seed": 0,
+  "run_id": "legacy",
+  "filler_topics": [
+    "the weather in Tokyo",
+    "stock market fluctuations",
+    "a recipe for lasagna",
+    "the history of the Eiffel Tower",
+    "how to build a treehouse",
+    "quantum entanglement",
+    "the rules of cricket",
+    "deep sea exploration"
+  ],
+  "filler_template": "[RUN:{run}] Turn {i}: Discussion about {topic}.",
+  "important": {
+    "10": [
+      "[RUN:{run}] Project Alpha deadline is December 12.",
+      "When is Project Alpha due?",
+      "december 12"
+    ],
+    "40": [
+      "[RUN:{run}] Project Beta deadline is December 21.",
+      "When is Project Beta due?",
+      "december 21"
+    ],
+    "80": [
+      "[RUN:{run}] The user's cat is named Pixel.",
+      "What is the user's cat named?",
+      "pixel"
+    ],
+    "120": [
+      "[RUN:{run}] The user's dog is named Pixel.",
+      "What is the user's dog named?",
+      "pixel"
+    ],
+    "180": [
+      "[RUN:{run}] Meeting for Project Orion is at 2 PM.",
+      "When is the Project Orion meeting?",
+      "2 pm"
+    ],
+    "220": [
+      "[RUN:{run}] Meeting for Project Phoenix is at 4 PM.",
+      "When is the Project Phoenix meeting?",
+      "4 pm"
+    ],
+    "300": [
+      "[RUN:{run}] The Project Alpha deadline was moved to December 18.",
+      "What is the latest Project Alpha deadline?",
+      "december 18"
+    ],
+    "350": [
+      "[RUN:{run}] The Project Alpha deadline is NOT December 12 anymore.",
+      "What is the latest Project Alpha deadline?",
+      "december 18"
+    ]
+  }
+}

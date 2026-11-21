@@ -1,69 +1,43 @@
 """
-ModelRouter: Universal LLM provider abstraction.
-Loads config from config.yaml and routes to Ollama, OpenAI, Anthropic, Groq,
-or any OpenAI-compatible API endpoint.
+ModelRouter: provider abstraction configured entirely by config.yaml `models`.
+
+The memory pipeline only uses get_embedding(). route() (text generation) is
+kept for scripts that drive LLM agents against Recallix; nothing under
+backend/ calls it.
 """
 import os
-import yaml
+
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# Locate config.yaml relative to project root
-_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "config.yaml")
+from backend import settings
 
 
-def _load_config():
-    """Load config.yaml or return sensible defaults."""
-    try:
-        with open(os.path.abspath(_CONFIG_PATH), "r") as f:
-            return yaml.safe_load(f)
-    except FileNotFoundError:
-        print("[ModelRouter] ⚠️  config.yaml not found — using hardcoded Ollama defaults.")
-        return {
-            "models": {
-                "provider": "ollama",
-                "ollama": {
-                    "base_url": "http://localhost:11434",
-                    "fast_model": "mistral:latest",
-                    "smart_model": "llama3.1:8b",
-                    "embedding_model": "mxbai-embed-large",
-                },
-            }
-        }
+def _secret(provider, cfg):
+    """API key from <PROVIDER>_API_KEY, else a literal value in config (never a ${...} placeholder)."""
+    value = os.getenv(f"{provider.upper()}_API_KEY") or cfg.get("api_key", "") or ""
+    return "" if value.startswith("${") else value
 
 
 class ModelRouter:
     def __init__(self):
-        cfg = _load_config()
-        models_cfg = cfg.get("models", {})
-        self.provider = models_cfg.get("provider", "ollama")
-        
-        # Support separate embedding provider (Fix for local embedding request)
+        models_cfg = settings.get("models", {}) or {}
+        self.provider = models_cfg.get("provider")
         self.embedding_provider = models_cfg.get("embedding_provider", self.provider)
-        
-        # Primary Config
-        self.provider_cfg = models_cfg.get(self.provider, {})
-        self.fast_model = self.provider_cfg.get("fast_model", "mistral:latest")
-        self.smart_model = self.provider_cfg.get("smart_model", "llama3.1:8b")
-        self.base_url = self.provider_cfg.get("base_url", "http://localhost:11434")
-        
-        # Embedding Config
-        self.embed_cfg = models_cfg.get(self.embedding_provider, {})
-        self.embedding_model = self.embed_cfg.get("embedding_model", "mxbai-embed-large")
-        self.embed_base_url = self.embed_cfg.get("base_url", "http://localhost:11434")
-        
-        # Auth Keys
-        env_key_name = f"{self.provider.upper()}_API_KEY"
-        self.api_key = os.getenv(env_key_name) or self.provider_cfg.get("api_key", "")
-        
-        embed_env_key = f"{self.embedding_provider.upper()}_API_KEY"
-        self.embed_api_key = os.getenv(embed_env_key) or self.embed_cfg.get("api_key", "")
+        if not self.embedding_provider:
+            raise settings.ConfigError("config.yaml: models.embedding_provider is not set")
 
-        print(f"[ModelRouter] Primary Provider: {self.provider}")
-        print(f"[ModelRouter] Embedding Provider: {self.embedding_provider}")
-        print(f"[ModelRouter] Fast: {self.fast_model} | Smart: {self.smart_model} | Embedding: {self.embedding_model}")
+        self.provider_cfg = models_cfg.get(self.provider, {}) or {}
+        self.fast_model = self.provider_cfg.get("fast_model")
+        self.smart_model = self.provider_cfg.get("smart_model")
+        self.base_url = self.provider_cfg.get("base_url")
+        self.api_key = _secret(self.provider or "", self.provider_cfg)
+
+        self.embed_cfg = models_cfg.get(self.embedding_provider, {}) or {}
+        self.embedding_model = self.embed_cfg.get("embedding_model")
+        if not self.embedding_model:
+            raise settings.ConfigError(f"config.yaml: models.{self.embedding_provider}.embedding_model is not set")
+        self.embed_base_url = self.embed_cfg.get("base_url")
+        self.embed_api_key = _secret(self.embedding_provider, self.embed_cfg)
 
     def route(self, task_type, prompt):
         if task_type in ["compression", "summarization", "preprocessing", "cleanup"]:
@@ -128,8 +102,26 @@ class ModelRouter:
         """Generate embeddings using the configured embedding provider."""
         if self.embedding_provider == "ollama":
             return self._get_embedding_ollama(text)
-        else:
-            return self._get_embedding_openai_compat(text)
+        if self.embedding_provider == "local":
+            return self._get_embedding_local(text)
+        return self._get_embedding_openai_compat(text)
+
+    _local_models = {}
+    _local_lock = __import__("threading").Lock()
+
+    def _get_embedding_local(self, text):
+        """In-process sentence-transformers model: no server, no API key."""
+        try:
+            with ModelRouter._local_lock:  # load once, even under concurrent requests
+                model = ModelRouter._local_models.get(self.embedding_model)
+                if model is None:
+                    from sentence_transformers import SentenceTransformer
+                    model = SentenceTransformer(self.embedding_model)
+                    ModelRouter._local_models[self.embedding_model] = model
+            return model.encode([text])[0].tolist()
+        except Exception as e:
+            print(f"Error getting local embedding: {e}")
+            return []
 
     def _get_embedding_ollama(self, text):
         try:

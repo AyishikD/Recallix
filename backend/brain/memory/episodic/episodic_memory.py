@@ -1,22 +1,39 @@
-import sqlite3
-import os
-import time
+"""
+Episodic store: the system of record for every memory (SQLite, WAL mode).
+
+The vector engine's in-memory indexes are derived from the `embedding` column
+here and can always be rebuilt from it (see backend/brain/memory/index_sync.py).
+
+Visibility: a memory is visible to an agent if it is `shared`, or `private`
+and written by that agent. Every read that takes an agent_id applies this rule
+in SQL; agent_id=None means an internal, unscoped read.
+"""
+import hashlib
 import json
 import re
-from backend.utils.paths import get_db_path, ensure_dir
-from backend.utils.internal_client import internal_post
+import sqlite3
+import time
+
+import numpy as np
+
+from backend.utils.paths import get_db_path
+
+COLUMNS = ("id", "user_id", "agent_id", "memory_type", "content", "timestamp", "importance",
+           "reinforcement_score", "retrieval_count", "metadata", "entity_id", "relation_type", "status")
+_SELECT = ", ".join(f"e.{c}" for c in COLUMNS)
+_VISIBLE = "(e.memory_type = 'shared' OR e.agent_id = ?)"
+
+
+def content_hash(text):
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
 
 class EpisodicMemory:
     def __init__(self, db_path=None):
-        from backend.utils.paths import get_db_path, ensure_dir
         self.db_path = db_path or get_db_path("backend/storage/sqlite_db/memory.db")
-        ensure_dir(os.path.dirname(self.db_path))
-        
-        conn = sqlite3.connect(self.db_path, timeout=30)
+        conn = self._connect()
         cursor = conn.cursor()
         cursor.execute("PRAGMA journal_mode=WAL")
-        
-        # Kernel v2 Schema: Supporting versioned truth states
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS episodic_events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,164 +51,303 @@ class EpisodicMemory:
                 status TEXT DEFAULT 'ACTIVE'
             )
         ''')
-        
         cursor.execute("CREATE VIRTUAL TABLE IF NOT EXISTS episodic_fts USING fts5(content, content_id UNINDEXED, user_id UNINDEXED)")
+        cursor.execute("CREATE VIRTUAL TABLE IF NOT EXISTS episodic_vocab USING fts5vocab(episodic_fts, 'row')")
+
+        # Migrations (idempotent)
+        columns = {row[1] for row in cursor.execute("PRAGMA table_info(episodic_events)")}
+        for name, ddl in (("embedding", "BLOB"), ("embedding_model", "TEXT"), ("content_hash", "TEXT")):
+            if name not in columns:
+                cursor.execute(f"ALTER TABLE episodic_events ADD COLUMN {name} {ddl}")
+        for (mid, content) in cursor.execute(
+                "SELECT id, content FROM episodic_events WHERE content_hash IS NULL").fetchall():
+            cursor.execute("UPDATE episodic_events SET content_hash = ? WHERE id = ?", (content_hash(content or ""), mid))
+
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relation_status ON episodic_events(entity_id, relation_type, status)")
-        
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_hash ON episodic_events(user_id, content_hash)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_time ON episodic_events(user_id, timestamp)")
         conn.commit()
         conn.close()
+
+    def _connect(self):
+        return sqlite3.connect(self.db_path, timeout=30)
+
+    @staticmethod
+    def _row(r):
+        return dict(zip(COLUMNS, r))
+
+    # ------------------------------------------------------------------
+    # Writes
+    # ------------------------------------------------------------------
+    def find_duplicate(self, user_id, content, agent_id):
+        """Id of an identical memory already visible to this agent, else None."""
+        conn = self._connect()
+        try:
+            row = conn.execute(
+                f"SELECT e.id FROM episodic_events e WHERE e.user_id = ? AND e.content_hash = ? "
+                f"AND e.status = 'ACTIVE' AND {_VISIBLE} LIMIT 1",
+                (user_id, content_hash(content), agent_id)).fetchone()
+            return row[0] if row else None
+        finally:
+            conn.close()
 
     def store(self, event):
-        conn = sqlite3.connect(self.db_path, timeout=30)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        
-        user_id = event["user_id"]
-        content = event["content"]
-        timestamp = event.get("timestamp", time.time())
-        metadata = event.get("metadata", {})
-        
-        # Kernel v2: Extract symbolic keys for state tracking
-        entity_id = None
-        relation_type = None
-        if metadata:
-            entities = metadata.get("entities", [])
-            relations = metadata.get("relations", [])
-            if entities:
-                entity_id = str(entities[0].get("id") if isinstance(entities[0], dict) else entities[0]).lower()
-            if relations:
-                relation_type = str(relations[0].get("type") if isinstance(relations[0], dict) else relations[0]).lower()
+        metadata = event.get("metadata", {}) or {}
+        slots = metadata.get("slots") or []
+        entity_id = slots[0].get("entity") if slots else None
+        relation_type = slots[0].get("relation") if slots else None
+        embedding = event.get("embedding")
+        blob = np.asarray(embedding, dtype=np.float32).tobytes() if embedding is not None else None
 
-        # 1. State Suppression: Mark previous versions as OBSOLETE
-        if entity_id and relation_type:
-            cursor.execute("""
-                UPDATE episodic_events 
-                SET status = 'OBSOLETE' 
-                WHERE user_id = ? AND entity_id = ? AND relation_type = ? AND status = 'ACTIVE'
-            """, (user_id, entity_id, relation_type))
-
-        # 2. Store new state
-        cursor.execute("""
-            INSERT INTO episodic_events 
-            (user_id, agent_id, memory_type, content, timestamp, importance, reinforcement_score, retrieval_count, metadata, entity_id, relation_type, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, 'ACTIVE')
-        """, (
-            user_id, event.get("agent_id", "default"), event.get("memory_type", "private"),
-            content, timestamp, event.get("importance", 5.0), 
-            event.get("reinforcement_score", 1.0), json.dumps(metadata),
-            entity_id, relation_type
-        ))
-        
-        memory_id = cursor.lastrowid
-        cursor.execute("INSERT INTO episodic_fts (content_id, content, user_id) VALUES (?, ?, ?)", (memory_id, content, user_id))
-        conn.commit()
-        conn.close()
-        return memory_id
-
-    def search(self, user_id, query, agent_id=None, limit=10, include_obsolete=False):
-        conn = sqlite3.connect(self.db_path, timeout=30)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        
-        # 1. Identity Recognition
-        entity_list = re.findall(r"\bGalaxy X-\d+\b|\bProject [A-Z][a-z]+\b|\bID[:\s]\d+\b|\b[A-Z]{2,}-\d+\b|\bx-?\d+\b", query, re.IGNORECASE)
-        canonical_query_id = None
-        if entity_list:
-            clean_e = re.sub(r"^(galaxy|project|starship|pulsar)\s+", "", entity_list[0], flags=re.IGNORECASE).strip()
-            canonical_query_id = re.sub(r"[^a-z0-9]+", "", clean_e.lower())
-
-        status_filter = "AND status = 'ACTIVE'" if not include_obsolete else ""
-        results_map = {}
-
-        # Path A: Deterministic Symbolic Lookup (High Precision)
-        if canonical_query_id:
-            cursor.execute(f"SELECT * FROM episodic_events WHERE user_id = ? AND (entity_id LIKE ? OR entity_id = ?) {status_filter} LIMIT ?", 
-                           (user_id, f"%{canonical_query_id}%", canonical_query_id, limit))
-            for r in cursor.fetchall():
-                m = self._row_to_dict(r)
-                m["symbolic_match"] = True
-                m["bm25_score"] = -10.0 # Force high priority
-                results_map[m["id"]] = m
-
-        # Path B: Lexical FTS5 Search (Broad Recall)
-        tokens = [f'"{re.sub(r"[^a-zA-Z0-9]+", " ", w).strip()}"' for w in query.replace('"', '').split() if len(w) > 2]
-        fts_query = ' OR '.join(tokens) if tokens else "*"
-        
-        cursor.execute(f"""
-            SELECT e.*, f.bm25_score 
-            FROM episodic_events e
-            JOIN (
-                SELECT content_id, bm25(episodic_fts) as bm25_score 
-                FROM episodic_fts 
-                WHERE episodic_fts MATCH ? AND user_id = ?
-            ) f ON e.id = f.content_id
-            WHERE e.user_id = ? {status_filter.replace('status', 'e.status')}
-        """, (fts_query, user_id, user_id))
-        
-        for r in cursor.fetchall():
-            m = self._row_to_dict(r)
-            m["bm25_score"] = r[-1]
-            m["symbolic_match"] = False
-            if m["id"] not in results_map:
-                results_map[m["id"]] = m
-        
-        conn.close()
-        return list(results_map.values())
-
-    def _row_to_dict(self, row):
-        # Helper to convert SQLite row to episodic dictionary (Kernel v2 Alignment)
-        return {
-            "id": row[0], "user_id": row[1], "agent_id": row[2],
-            "memory_type": row[3], "content": row[4], "timestamp": row[5],
-            "importance": row[6], "reinforcement_score": row[7],
-            "retrieval_count": row[8],
-            "metadata": row[9], "entity_id": row[10], "relation_type": row[11],
-            "status": row[12]
-        }
-
-    def cleanup_low_importance_memories(self, user_id, age_days=7):
-        """
-        Prune 'Low-Signal' memories: Low importance AND never retrieved.
-        """
-        conn = sqlite3.connect(self.db_path, timeout=30)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        
-        # Threshold: Importance < 3 and Retrieval Count == 0
-        cutoff = time.time() - (age_days * 86400)
-        
-        # 1. Find victims
-        cursor.execute("""
-            SELECT id FROM episodic_events 
-            WHERE user_id = ? AND importance < 3.0 AND retrieval_count = 0 AND timestamp < ?
-        """, (user_id, cutoff))
-        victims = [r[0] for r in cursor.fetchall()]
-        
-        if victims:
-            print(f"[EpisodicMemory] 🧹 Pruning {len(victims)} low-signal memories for {user_id}")
-            placeholders = ','.join(['?'] * len(victims))
-            cursor.execute(f"DELETE FROM episodic_events WHERE id IN ({placeholders})", victims)
-            cursor.execute(f"DELETE FROM episodic_fts WHERE content_id IN ({placeholders})", victims)
+        conn = self._connect()
+        try:
+            cur = conn.execute("""
+                INSERT INTO episodic_events
+                (user_id, agent_id, memory_type, content, timestamp, importance, reinforcement_score,
+                 retrieval_count, metadata, entity_id, relation_type, status, embedding, embedding_model, content_hash)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, 'ACTIVE', ?, ?, ?)
+            """, (event["user_id"], event.get("agent_id", "default_agent"), event.get("memory_type", "private"),
+                  event["content"], event.get("timestamp", time.time()), event.get("importance", 5.0),
+                  event.get("reinforcement_score", 1.0), json.dumps(metadata), entity_id, relation_type,
+                  blob, event.get("embedding_model") if blob else None, content_hash(event["content"])))
+            memory_id = cur.lastrowid
+            conn.execute("INSERT INTO episodic_fts (content_id, content, user_id) VALUES (?, ?, ?)",
+                         (memory_id, event["content"], event["user_id"]))
             conn.commit()
-            cursor.execute("PRAGMA wal_checkpoint(PASSIVE)")
-            
-        conn.close()
-        return len(victims)
+            return memory_id
+        finally:
+            conn.close()
 
-    def get_by_id(self, user_id, memory_id):
-        conn = sqlite3.connect(self.db_path, timeout=30)
-        cursor = conn.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
-        # Kernel v2: Ensure we only fetch ACTIVE memories, even by direct ID
-        cursor.execute("SELECT * FROM episodic_events WHERE id = ? AND user_id = ? AND status = 'ACTIVE'", (memory_id, user_id))
-        r = cursor.fetchone()
-        conn.close()
-        if r:
-            return {
-                "id": r[0], "user_id": r[1], "agent_id": r[2],
-                "memory_type": r[3], "content": r[4], "timestamp": r[5],
-                "importance": r[6], "reinforcement_score": r[7],
-                "metadata": r[9],
-                "entity_id": r[10], "relation_type": r[11], "status": r[12]
-            }
-        return None
+    def delete(self, user_id, memory_id):
+        """Deletes one memory of this user. Returns True if it existed."""
+        conn = self._connect()
+        try:
+            cur = conn.execute("DELETE FROM episodic_events WHERE id = ? AND user_id = ?", (memory_id, user_id))
+            if cur.rowcount:
+                conn.execute("DELETE FROM episodic_fts WHERE content_id = ?", (memory_id,))
+            conn.commit()
+            return cur.rowcount > 0
+        finally:
+            conn.close()
+
+    def clear_user(self, user_id):
+        conn = self._connect()
+        try:
+            conn.execute("DELETE FROM episodic_fts WHERE user_id = ?", (user_id,))
+            n = conn.execute("DELETE FROM episodic_events WHERE user_id = ?", (user_id,)).rowcount
+            conn.commit()
+            return n
+        finally:
+            conn.close()
+
+    def clear_all(self):
+        conn = self._connect()
+        try:
+            conn.execute("DELETE FROM episodic_fts")
+            n = conn.execute("DELETE FROM episodic_events").rowcount
+            conn.commit()
+            return n
+        finally:
+            conn.close()
+
+    # ------------------------------------------------------------------
+    # Reads
+    # ------------------------------------------------------------------
+    def search(self, user_id, query, agent_id=None, limit=200):
+        """
+        Lexical candidates: (A) memories whose primary fact is about an entity
+        named in the query, (B) FTS5 BM25 matches. Both bounded by `limit`.
+        """
+        from backend.brain.features.query import capitalised_entities
+        vis = f"AND {_VISIBLE}" if agent_id is not None else ""
+        vis_args = (agent_id,) if agent_id is not None else ()
+        results = {}
+        conn = self._connect()
+        try:
+            for ent in capitalised_entities(query)[:5]:
+                if len(ent) < 2:
+                    continue
+                for r in conn.execute(
+                        f"SELECT {_SELECT} FROM episodic_events e WHERE e.user_id = ? AND e.status = 'ACTIVE' "
+                        f"AND (e.entity_id = ? OR e.entity_id LIKE ?) {vis} LIMIT ?",
+                        (user_id, ent, f"%{ent}%", *vis_args, limit)):
+                    m = self._row(r)
+                    m["symbolic_match"] = True
+                    m["bm25_score"] = -10.0
+                    results[m["id"]] = m
+
+            words = [re.sub(r"[^\w]+", " ", w).strip() for w in query.replace('"', " ").split()]
+            tokens = [f'"{w}"' for w in words if len(w) > 2]
+            if tokens:
+                for r in conn.execute(f"""
+                        SELECT {_SELECT}, f.score FROM (
+                            SELECT content_id, bm25(episodic_fts) AS score FROM episodic_fts
+                            WHERE episodic_fts MATCH ? AND user_id = ? ORDER BY score LIMIT ?
+                        ) f JOIN episodic_events e ON e.id = f.content_id
+                        WHERE e.status = 'ACTIVE' {vis}
+                        """, (" OR ".join(tokens), user_id, limit, *vis_args)):
+                    m = self._row(r[:-1])
+                    if m["id"] not in results:
+                        m["bm25_score"] = r[-1]
+                        m["symbolic_match"] = False
+                        results[m["id"]] = m
+        finally:
+            conn.close()
+        return list(results.values())
+
+    def get_many(self, user_id, memory_ids, agent_id=None):
+        """Batch fetch (one query per 500 ids) of visible ACTIVE memories, as {id: memory}."""
+        ids = [int(i) for i in memory_ids if i is not None]
+        out = {}
+        if not ids:
+            return out
+        vis = f"AND {_VISIBLE}" if agent_id is not None else ""
+        conn = self._connect()
+        try:
+            for start in range(0, len(ids), 500):
+                chunk = ids[start:start + 500]
+                ph = ",".join("?" * len(chunk))
+                args = (user_id, *chunk) + ((agent_id,) if agent_id is not None else ())
+                for r in conn.execute(
+                        f"SELECT {_SELECT} FROM episodic_events e WHERE e.user_id = ? AND e.id IN ({ph}) "
+                        f"AND e.status = 'ACTIVE' {vis}", args):
+                    m = self._row(r)
+                    out[m["id"]] = m
+        finally:
+            conn.close()
+        return out
+
+    def get_by_id(self, user_id, memory_id, agent_id=None):
+        return self.get_many(user_id, [memory_id], agent_id).get(int(memory_id))
+
+    def list_recent(self, user_id, limit=200):
+        conn = self._connect()
+        try:
+            rows = conn.execute(
+                f"SELECT {_SELECT} FROM episodic_events e WHERE e.user_id = ? AND e.status = 'ACTIVE' "
+                f"ORDER BY e.timestamp DESC LIMIT ?", (user_id, limit)).fetchall()
+            return [self._row(r) for r in rows]
+        finally:
+            conn.close()
+
+    def active_users(self, since_ts):
+        conn = self._connect()
+        try:
+            return [r[0] for r in conn.execute(
+                "SELECT DISTINCT user_id FROM episodic_events WHERE timestamp >= ?", (since_ts,))]
+        finally:
+            conn.close()
+
+    def count(self, user_id=None):
+        conn = self._connect()
+        try:
+            if user_id is None:
+                return conn.execute("SELECT COUNT(*) FROM episodic_events").fetchone()[0]
+            return conn.execute("SELECT COUNT(*) FROM episodic_events WHERE user_id = ?", (user_id,)).fetchone()[0]
+        finally:
+            conn.close()
+
+    # ------------------------------------------------------------------
+    # Embedding cache (source of truth for the vector indexes)
+    # ------------------------------------------------------------------
+    def get_embeddings(self, memory_ids, model):
+        """{id: vector} for ids whose stored embedding was made by `model`."""
+        ids = [int(i) for i in memory_ids if i is not None]
+        out = {}
+        conn = self._connect()
+        try:
+            for start in range(0, len(ids), 500):
+                chunk = ids[start:start + 500]
+                ph = ",".join("?" * len(chunk))
+                for mid, blob in conn.execute(
+                        f"SELECT id, embedding FROM episodic_events WHERE id IN ({ph}) "
+                        f"AND embedding IS NOT NULL AND embedding_model = ?", (*chunk, model)):
+                    out[mid] = np.frombuffer(blob, dtype=np.float32)
+        finally:
+            conn.close()
+        return out
+
+    def set_embedding(self, memory_id, vector, model):
+        if vector is None:
+            return
+        conn = self._connect()
+        try:
+            conn.execute("UPDATE episodic_events SET embedding = ?, embedding_model = ? WHERE id = ?",
+                         (np.asarray(vector, dtype=np.float32).tobytes(), model, int(memory_id)))
+            conn.commit()
+        finally:
+            conn.close()
+
+    def embedding_counts(self, model):
+        """{user_id: number of ACTIVE memories with an embedding from `model`}."""
+        conn = self._connect()
+        try:
+            return dict(conn.execute(
+                "SELECT user_id, COUNT(*) FROM episodic_events WHERE status = 'ACTIVE' "
+                "AND embedding IS NOT NULL AND embedding_model = ? GROUP BY user_id", (model,)).fetchall())
+        finally:
+            conn.close()
+
+    def embedding_dims(self, model):
+        """{user_id: vector dimension} of the stored embeddings from `model`."""
+        conn = self._connect()
+        try:
+            return {u: int(n) // 4 for u, n in conn.execute(
+                "SELECT user_id, MAX(length(embedding)) FROM episodic_events WHERE status = 'ACTIVE' "
+                "AND embedding IS NOT NULL AND embedding_model = ? GROUP BY user_id", (model,)).fetchall()}
+        finally:
+            conn.close()
+
+    def iter_embeddings(self, user_id, model, batch=1000):
+        """Yields lists of (id, vector) for this user's indexable memories."""
+        conn = self._connect()
+        try:
+            cur = conn.execute(
+                "SELECT id, embedding FROM episodic_events WHERE user_id = ? AND status = 'ACTIVE' "
+                "AND embedding IS NOT NULL AND embedding_model = ? ORDER BY id", (user_id, model))
+            while True:
+                rows = cur.fetchmany(batch)
+                if not rows:
+                    return
+                yield [(mid, np.frombuffer(blob, dtype=np.float32)) for mid, blob in rows]
+        finally:
+            conn.close()
+
+    def rows_needing_embedding(self, model, limit=1000):
+        """ACTIVE memories with no embedding, or one from a different model."""
+        conn = self._connect()
+        try:
+            return conn.execute(
+                "SELECT id, user_id, content FROM episodic_events WHERE status = 'ACTIVE' AND "
+                "(embedding IS NULL OR embedding_model IS NULL OR embedding_model != ?) LIMIT ?",
+                (model, limit)).fetchall()
+        finally:
+            conn.close()
+
+    def stale_embedding_count(self, model):
+        conn = self._connect()
+        try:
+            return conn.execute(
+                "SELECT COUNT(*) FROM episodic_events WHERE status = 'ACTIVE' AND "
+                "(embedding IS NULL OR embedding_model IS NULL OR embedding_model != ?)", (model,)).fetchone()[0]
+        finally:
+            conn.close()
+
+    # ------------------------------------------------------------------
+    # Corpus statistics
+    # ------------------------------------------------------------------
+    def term_stats(self, terms):
+        """(total_docs, {term: document_frequency}) over the whole FTS corpus."""
+        conn = self._connect()
+        try:
+            total = conn.execute("SELECT COUNT(*) FROM episodic_events").fetchone()[0]
+            unique = list(set(terms))
+            dfs = {}
+            if unique:
+                ph = ",".join("?" * len(unique))
+                dfs = dict(conn.execute(f"SELECT term, doc FROM episodic_vocab WHERE term IN ({ph})", unique).fetchall())
+            return total, dfs
+        except sqlite3.Error:
+            return 0, {}
+        finally:
+            conn.close()

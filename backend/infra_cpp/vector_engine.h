@@ -1,109 +1,102 @@
 #ifndef VECTOR_ENGINE_H
 #define VECTOR_ENGINE_H
 
-#include <condition_variable>
+// HNSW approximate nearest-neighbour index (Malkov & Yashunin, 2018) over
+// unit-normalised float vectors, distance = 1 - dot(a, b).
+//
+// Concurrency model: one std::shared_mutex per index.
+//   * add / remove / indexPending (graph insertion) take the lock exclusively.
+//   * search takes it shared and never re-locks.
+// Every read of graph state therefore happens under the lock that guards it.
+//
+// Two-phase writes: add() appends the vector to a pending list in O(dim);
+// indexPending() later links pending vectors into the graph. search() scans
+// pending vectors exactly, so a write is visible to search immediately.
+
+#include <cstddef>
+#include <cstdint>
 #include <deque>
-#include <mutex>
 #include <random>
-#include <set>
 #include <shared_mutex>
 #include <string>
-#include <thread>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
-// 🧠 RESEARCH-GRADE HNSW NODE STRUCTURE
-struct HNSWNode {
-  int id;
-  int max_layer;
-  // neighbors[layer] is a vector of neighbor IDs
-  std::vector<std::vector<int>> neighbors;
-
-  HNSWNode(int _id, int _max_layer) : id(_id), max_layer(_max_layer) {
-    neighbors.resize(16); // Pre-allocate for MAX_LAYERS to prevent segfaults
-  }
-};
-
-struct EngineStats {
-  size_t total_nodes;
-  size_t pending_nodes;
-  int entry_point_id;
-  int max_layer;
+struct IndexStats {
+  std::size_t live;      // searchable vectors (indexed + pending, minus deleted)
+  std::size_t indexed;   // linked into the graph
+  std::size_t pending;   // waiting for graph insertion
+  std::size_t deleted;   // tombstoned nodes still used for graph traversal
+  int dim;
   int M;
   int efConstruction;
   int efSearch;
+  int max_level;
 };
 
 class VectorEngine {
 public:
-  VectorEngine(int M = 48, int efConstruction = 200, int efSearch = 100);
-  ~VectorEngine();
+  VectorEngine(int dim, int M, int efConstruction, int efSearch,
+               unsigned seed = std::random_device{}());
 
-  // 🧩 API LAYER
-  void addVector(const std::vector<float> &vec, const std::string &id);
-  void addVectors(const std::vector<std::vector<float>> &vecs,
-                  const std::vector<std::string> &ids);
+  // Adds (or replaces) a vector. Returns false if vec.size() != dim().
+  bool add(const std::string &id, const std::vector<float> &vec);
+  // Tombstones a vector. Returns false if the id is unknown.
+  bool remove(const std::string &id);
+
+  // k nearest live vectors as (id, cosine similarity), best first.
+  // ef_search <= 0 uses the index default; the beam is always >= k.
   std::vector<std::pair<std::string, float>>
-  search(const std::vector<float> &query_vec, int k, int ef_search = -1);
+  search(const std::vector<float> &query, int k, int ef_search = -1) const;
 
-  void clear();
-  EngineStats getStats() const;
-  int getPendingCount() const;
-  void removeVector(const std::string &id);
-  void reconfigure(int M, int efC, int efS);
+  // Links up to max_items pending vectors into the graph. Returns how many.
+  std::size_t indexPending(std::size_t max_items);
 
-  // 🛠️ SYSTEM LAYER
-  bool saveSnapshot(const std::string &path);
-  bool loadSnapshot(const std::string &path);
+  void setEfSearch(int ef);
+  IndexStats stats() const;
+  std::size_t pendingCount() const;
+  int dim() const { return dim_; }
 
 private:
-  // 🏗️ STORAGE
-  std::vector<std::vector<float>> store_;
-  std::vector<std::string> id_map_;
-  std::vector<HNSWNode *> nodes_;
-  std::set<int> deleted_nodes_;
+  using Candidate = std::pair<float, int>; // (distance, node)
 
-  // 🚦 CONCURRENCY & INDEXING
-  mutable std::shared_timed_mutex
-      engine_mutex_; // shared_timed_mutex for concurrent search (C++14
-                     // compatibility)
-  std::deque<int> active_buffer_;
-  std::thread worker_thread_;
-  std::condition_variable_any worker_cv_;
-  bool stop_worker_;
+  const int dim_;
+  const int M_;
+  const int maxM0_; // max links on layer 0 (2 * M)
+  const int efConstruction_;
+  int efSearch_;
+  const double levelMult_;
 
-  // 📊 HNSW STATE
-  int entry_point_id_;
-  int M_;
-  int efConstruction_;
-  int efSearch_default_;
-  const int MAX_LAYERS = 16;
+  mutable std::shared_mutex mu_;
 
-  // 🔬 HNSW CORE SUBSYSTEMS
-  void insertHNSW(int node_idx);
-  int getRandomLayer();
-  float getDistance(int id1, int id2);
-  float getDistance(const float *vec1, const float *vec2);
+  std::vector<float> data_; // node i occupies [i*dim, (i+1)*dim)
+  std::vector<std::string> ids_;
+  std::unordered_map<std::string, int> idToNode_;
+  std::vector<int> level_;                          // -1 while pending
+  std::vector<std::vector<std::vector<int>>> links_; // links_[node][layer]
+  std::vector<char> deleted_;
+  std::deque<int> pending_;
+  std::size_t deletedCount_ = 0;
+  std::size_t indexedCount_ = 0;
 
-  // 🔷 M-DIVERSITY SELECTION (Paper Correct)
-  void selectNeighborsHeuristic(
-      int node_idx, std::priority_queue<std::pair<float, int>> &candidates,
-      int M, int layer);
+  int entry_ = -1;
+  int maxLevel_ = -1;
+  std::mt19937 rng_;
 
-  // 🔷 SEARCH KERNELS
-  int searchLayerGreedy(const float *query_vec, int entry_id, int layer);
-  void
-  searchLayerBeam(const float *query_vec, int entry_id, int ef, int layer,
-                  std::priority_queue<std::pair<float, int>> &top_candidates);
+  const float *vec(int node) const { return data_.data() + (std::size_t)node * dim_; }
+  float distance(const float *a, const float *b) const;
+  int randomLevel();
 
-  void backgroundWorkerLoop();
-
-  struct ThreadCtx {
-    std::mt19937 rng;
-    ThreadCtx() : rng(std::random_device{}()) {}
-  };
-  static thread_local ThreadCtx ctx;
+  void insertNode(int node);
+  int greedyClosest(const float *q, int entry, int layer) const;
+  std::vector<Candidate> searchLayer(const float *q, int entry, int ef, int layer) const;
+  std::vector<int> selectNeighbors(const float *q, std::vector<Candidate> candidates, int m) const;
+  void addLink(int from, int to, int layer);
 };
 
-const char *getSIMDBackend();
+// Name of the compiled SIMD dot-product backend ("NEON", "AVX2", "SCALAR").
+const char *simdBackend();
+float dotProduct(const float *a, const float *b, int n);
 
 #endif

@@ -1,0 +1,30 @@
+{"text": "Hi, my name is Tomasz.", "slots": {"user::name": "Tomasz"}}
+{"text": "You can call me Liz.", "slots": {"user::name": "Liz"}}
+{"text": "I live in Lisbon with my wife.", "slots": {"user::location": "Lisbon with my wife"}}
+{"text": "I work for the city council.", "slots": {"user::employer": "the city council"}}
+{"text": "I am an ICU nurse.", "slots": {"user::role": "ICU nurse"}}
+{"text": "We have a parrot named Kiwi.", "slots": {"user::parrot": "Kiwi"}}
+{"text": "Biscuit is my dog.", "slots": {"user::dog": "Biscuit"}}
+{"text": "My birthday is 2 March.", "slots": {"user::birthday": "2 March"}}
+{"text": "I'm 41 years old.", "slots": {"user::age": "41"}}
+{"text": "My phone number is +44 7700 900123.", "slots": {"user::phone": "+44 7700 900123"}}
+{"text": "Nadia's email is nadia@corp.io.", "slots": {"nadia::email": "nadia@corp.io"}}
+{"text": "The Atlas release date is June 30.", "slots": {"atlas::release_date": "June 30"}}
+{"text": "The Atlas release date moved to July 14.", "slots": {"atlas::release_date": "July 14"}}
+{"text": "Project Heron deadline is the end of May.", "slots": {"projectheron::deadline": "the end of May"}}
+{"text": "The retro is on Thursday.", "slots": {"retro::when": "Thursday"}}
+{"text": "The board meeting was rescheduled to Monday.", "slots": {"board_meeting::when": "Monday"}}
+{"text": "My rent is $1,850 a month.", "slots": {"user::rent": "$1,850 a month"}}
+{"text": "The population of Iceland is about 380,000.", "slots": {"iceland::population": "about 380,000"}}
+{"text": "Kenji lives in Osaka.", "slots": {"kenji::location": "Osaka"}}
+{"text": "Fatima works at the British Museum.", "slots": {"fatima::employer": "the British Museum"}}
+{"text": "The billing service is also called Ledger.", "slots": {"ledger::alias_of": "billing service"}}
+{"text": "I am allergic to penicillin.", "slots": {"user::allergy": "penicillin"}}
+{"text": "My dog is barking at the mailman.", "slots": {}}
+{"text": "My week has been exhausting.", "slots": {}}
+{"text": "It was a long flight.", "slots": {}}
+{"text": "This coffee is amazing.", "slots": {}}
+{"text": "I guess the tests are flaky.", "slots": {}}
+{"text": "Okay, sounds good.", "slots": {}}
+{"text": "My favorite food is ramen.", "slots": {"user::favorite_food": "ramen"}}
+{"text": "Our team lead is Sofia.", "slots": {"user::team_lead": "Sofia"}}

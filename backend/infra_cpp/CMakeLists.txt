@@ -1,55 +1,50 @@
-cmake_minimum_required(VERSION 3.10)
-project(MemoryInfra)
+cmake_minimum_required(VERSION 3.14)
+project(RecallixVectorEngine CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# ============================================================================
-# Cross-Platform SIMD Detection
-# Automatically selects the best SIMD backend for the target architecture.
-# ARM: NEON (default on Apple Silicon / ARM64)
-# x86: AVX2 if supported, else SSE (fallback)
-# Other: Scalar (universal fallback)
-# ============================================================================
-include(CheckCXXCompilerFlag)
-
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64|ARM64")
-    message(STATUS "Detected ARM architecture — using NEON SIMD")
-    # NEON is enabled by default on ARM64, no extra flags needed
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|i686")
-    check_cxx_compiler_flag("-mavx2" HAS_AVX2)
-    check_cxx_compiler_flag("-msse" HAS_SSE)
-    if(HAS_AVX2)
-        message(STATUS "Detected x86 architecture — using AVX2 SIMD")
-        add_compile_options(-mavx2 -mfma)
-    elseif(HAS_SSE)
-        message(STATUS "Detected x86 architecture — using SSE SIMD (AVX2 not available)")
-        add_compile_options(-msse -msse3)
-    else()
-        message(STATUS "Detected x86 architecture — no SIMD support, using scalar fallback")
-    endif()
-else()
-    message(STATUS "Unknown architecture (${CMAKE_SYSTEM_PROCESSOR}) — using scalar fallback")
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Find SQLite3
-find_package(SQLite3 REQUIRED)
-include_directories(${SQLite3_INCLUDE_DIRS})
+# ----------------------------------------------------------------------------
+# SIMD backend for the dot product (see vector_engine.cpp):
+#   ARM64  -> NEON (always available)
+#   x86-64 -> AVX2+FMA when the compiler supports it, otherwise scalar
+# The selected backend is reported at runtime by GET /status and the tools.
+# ----------------------------------------------------------------------------
+include(CheckCXXCompilerFlag)
+set(SIMD_FLAGS "")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    check_cxx_compiler_flag("-mavx2 -mfma" HAS_AVX2_FMA)
+    if(HAS_AVX2_FMA AND NOT RECALLIX_DISABLE_AVX2)
+        set(SIMD_FLAGS -mavx2 -mfma)
+    endif()
+endif()
 
-add_executable(memory_service 
-    main.cpp
-    event_queue.cpp
-    vector_engine.cpp
-    memory_indexer.cpp
-    clustering_engine.cpp
-    graph_engine.cpp
-    timeline_engine.cpp
-)
-target_link_libraries(memory_service ${SQLite3_LIBRARIES})
+find_package(Threads REQUIRED)
 
-# ADD BENCHMARK TOOL
-add_executable(benchmark_hnsw
-    benchmark_hnsw.cpp
-    vector_engine.cpp
-)
-target_link_libraries(benchmark_hnsw ${SQLite3_LIBRARIES})
+add_library(recallix_index STATIC vector_engine.cpp)
+target_compile_options(recallix_index PUBLIC ${SIMD_FLAGS})
+target_link_libraries(recallix_index PUBLIC Threads::Threads)
+
+add_executable(memory_service main.cpp)
+target_link_libraries(memory_service PRIVATE recallix_index)
+
+add_executable(benchmark_hnsw benchmark_hnsw.cpp)
+target_link_libraries(benchmark_hnsw PRIVATE recallix_index)
+
+enable_testing()
+add_executable(test_vector_engine test_vector_engine.cpp)
+target_link_libraries(test_vector_engine PRIVATE recallix_index)
+add_test(NAME vector_engine COMMAND test_vector_engine)
+
+# Same tests under ThreadSanitizer (data-race detection).
+option(RECALLIX_TSAN "Build the ThreadSanitizer test target" ON)
+if(RECALLIX_TSAN)
+    add_executable(test_vector_engine_tsan test_vector_engine.cpp vector_engine.cpp)
+    target_compile_options(test_vector_engine_tsan PRIVATE -fsanitize=thread -O1 -g ${SIMD_FLAGS})
+    target_link_options(test_vector_engine_tsan PRIVATE -fsanitize=thread)
+    target_link_libraries(test_vector_engine_tsan PRIVATE Threads::Threads)
+    add_test(NAME vector_engine_tsan COMMAND test_vector_engine_tsan)
+endif()

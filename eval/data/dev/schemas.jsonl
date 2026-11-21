@@ -1,0 +1,33 @@
+{"text": "My name is Priya and I'm from Chennai.", "label": "identity"}
+{"text": "I'm a third-year medical student.", "label": "identity"}
+{"text": "I grew up in a small town near Shimla.", "label": "identity"}
+{"text": "I'm 34 and left-handed.", "label": "identity"}
+{"text": "I really don't like cilantro.", "label": "preference"}
+{"text": "Window seats are my favourite on flights.", "label": "preference"}
+{"text": "I'd rather get emails than phone calls.", "label": "preference"}
+{"text": "Jazz is my go-to music while coding.", "label": "preference"}
+{"text": "Doctor's appointment on the 9th at 4:30.", "label": "calendar"}
+{"text": "The conference runs from June 3 to June 5.", "label": "calendar"}
+{"text": "Team sync moved to Wednesday afternoon.", "label": "calendar"}
+{"text": "My train leaves at 6am tomorrow.", "label": "calendar"}
+{"text": "I'm working through a course on distributed systems.", "label": "learning"}
+{"text": "Today I finally understood how backpropagation works.", "label": "learning"}
+{"text": "Practising Japanese kanji every evening.", "label": "learning"}
+{"text": "Can you explain what a monad is?", "label": "learning"}
+{"text": "I need to renew my passport.", "label": "task"}
+{"text": "Don't let me forget to pay the electricity bill.", "label": "task"}
+{"text": "Have to submit the expense report by Friday.", "label": "task"}
+{"text": "Next step: write unit tests for the parser.", "label": "task"}
+{"text": "The wifi password is tangerine42.", "label": "security"}
+{"text": "Rotate the AWS access keys this month.", "label": "security"}
+{"text": "My bank PIN ends in 7.", "label": "security"}
+{"text": "Turned on 2FA for GitHub.", "label": "security"}
+{"text": "Going to my cousin's wedding next month.", "label": "social"}
+{"text": "Caught up with an old school friend over coffee.", "label": "social"}
+{"text": "My brother just had a baby girl.", "label": "social"}
+{"text": "Our neighbours invited us for dinner.", "label": "social"}
+{"text": "The sky looks really grey today.", "label": "general"}
+{"text": "Octopuses have three hearts.", "label": "general"}
+{"text": "The stock market dipped a little.", "label": "general"}
+{"text": "Traffic was terrible this morning.", "label": "general"}
+{"text": "That documentary about deep sea fish was wild.", "label": "general"}

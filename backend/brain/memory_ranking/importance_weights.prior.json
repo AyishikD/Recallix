@@ -1,0 +1,14 @@
+{
+  "weights": {
+    "bias": -1.5,
+    "novelty": 1.6,
+    "information": 1.0,
+    "specificity": 1.2,
+    "goal": 1.0,
+    "preference": 0.8,
+    "explicit": 1.5,
+    "small_talk": -2.0,
+    "brevity": -1.5
+  },
+  "source": "hand-set prior (a neutral message scores ~5). Used only as the regularisation centre for fitting."
+}

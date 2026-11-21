@@ -1,0 +1,33 @@
+{
+  "weights": {
+    "bias": -4.340136588161862,
+    "semantic": 3.922819569139211,
+    "lexical": 0.9398114467319794,
+    "entity_index": 0.4377816390785875,
+    "entity_match": 1.314414868319653,
+    "entity_conflict": -1.5704245637572922,
+    "relation_match": 1.3658390261323348,
+    "relation_text": 0.5032680769195831,
+    "relation_conflict": -1.0515429677128674,
+    "slot_match": 1.3957063012246578,
+    "salience": 0.7390117058887586,
+    "recency": 0.36098796223623786,
+    "alias_bridge": -1.512653204072124,
+    "own_private": -0.040136588161888406
+  },
+  "threshold": 0.32815051525266214,
+  "cv_query_accuracy": 0.8888888888888888,
+  "cv_by_lam": {
+    "0.3": 0.8333,
+    "1.0": 0.8889,
+    "3.0": 0.8889,
+    "10.0": 0.8889,
+    "30.0": 0.8889
+  },
+  "lam": 30.0,
+  "n_queries": 36,
+  "n_candidates": 374,
+  "selection": "leave-one-group-out CV (lam and threshold from out-of-fold predictions)",
+  "source": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2",
+  "fitted_at": 1795270930.0571709
+}

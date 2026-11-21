@@ -2,9 +2,11 @@ import sqlite3
 import os
 import time
 
+from backend.utils.paths import get_db_path
+
 class AgentRegistry:
-    def __init__(self, db_path="backend/storage/agent_registry.db"):
-        self.db_path = db_path
+    def __init__(self, db_path=None):
+        self.db_path = db_path or get_db_path("backend/storage/agent_registry.db")
         self._init_db()
 
     def _init_db(self):

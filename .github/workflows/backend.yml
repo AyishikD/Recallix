@@ -1,0 +1,48 @@
+name: Backend tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  engine:
+    name: Vector engine (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]   # x86-64 (AVX2 path) and ARM64 (NEON path)
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build backend/infra_cpp/build -j 4
+      - name: Unit tests (+ ThreadSanitizer)
+        run: ctest --test-dir backend/infra_cpp/build --output-on-failure
+      - name: Benchmark smoke (recall must stay high on clustered data)
+        run: |
+          backend/infra_cpp/build/benchmark_hnsw 20000 64 16 100 50 clustered 200 | tee bench.txt
+          python3 -c "import json;r=json.loads([l for l in open('bench.txt') if l.startswith('RESULT ')][0][7:]);print(r);assert r['recall_at_10']>=0.95"
+
+  python:
+    name: API, integration and eval gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Build engine
+        run: |
+          cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release -DRECALLIX_TSAN=OFF
+          cmake --build backend/infra_cpp/build -j 4 --target memory_service
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Tests (real engine binary, hermetic storage, no LLM)
+        env:
+          RECALLIX_ENGINE_BIN: backend/infra_cpp/build/memory_service
+        run: python -m pytest tests -q

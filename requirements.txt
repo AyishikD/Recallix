@@ -1,14 +1,10 @@
-fastapi
-uvicorn
-pydantic
-requests
-numpy
-sentence-transformers
-scikit-learn
-torch
-tqdm
-python-multipart
-pyyaml
-ollama
-openai
-python-dotenv
+# Core API + memory pipeline (no torch needed)
+fastapi>=0.110
+uvicorn>=0.27
+pydantic>=2.5
+requests>=2.31
+numpy>=1.26
+pyyaml>=6.0
+python-dotenv>=1.0
+ollama>=0.1.7          # embedding_provider: ollama
+openai>=1.0            # only for scripts that drive LLM agents (models.provider: nvidia)

@@ -1,150 +1,119 @@
 # Recallix
-### Universal Memory Substrate for AI Agents
 
-> **0.01ms writes. 0.19ms search. 1M nodes.**
-> The first verified cross-model memory transfer 
-> between different LLMs.
+Persistent memory for AI agents: store what a user tells any of their agents, recall it
+later by meaning, keep facts up to date, and say "I don't know" instead of guessing.
 
-![Recallix Dashboard](dashboard.png)
+* **No LLM in the memory pipeline.** Fact extraction, schema tagging, importance, ranking,
+  reflections and predictions are rules, embeddings and small fitted models. Recallix needs
+  only an embedding model (Ollama, in-process sentence-transformers, or an API).
+* **Per-user HNSW vector engine in C++** (NEON / AVX2), rebuilt from SQLite on start, so
+  the engine can restart at any time without losing anything.
+* **Learned, explainable recall.** Each result carries its relevance and the feature
+  breakdown behind it. Weights and the abstention threshold are fitted on labelled data and
+  can be refit from your users' feedback.
 
-## 🚀 Verified Performance Benchmarks
+## Measured results
 
-All benchmarks measured on Apple M4 (ARM). 
-Benchmark scripts reproducible — see `/scratch` directory.
+Copied from [`eval/results/RESULTS.md`](eval/results/RESULTS.md) (generated 2026-11-21 on an
+Apple M4; regenerate with the commands in [`eval/README.md`](eval/README.md)). The website's
+Benchmarks page reads the same file.
 
-### ⚡ Core Engine Performance
-| Metric | Result | Notes |
-|--------|--------|-------|
-| Write Latency | 0.01ms | Two-phase buffer |
-| C++ Search (Avg) | 0.106ms | `benchmark_hnsw` binary |
-| C++ Search (P99) | 1.80ms | `benchmark_hnsw` binary |
-| API Search (Avg) | ~1-5ms | Includes Python overhead |
-| Index Build (1M) | 92 seconds | Background async |
+**Memory pipeline**: held-out test split, `all-MiniLM-L6-v2` embeddings, real engine:
 
-### 📈 Scale vs Recall (Clustered Data)
-| Memory Nodes | Recall@5 | Avg Latency |
-|-------------|----------|-------------|
-| 1,000 | 96.4% | 1.15ms |
-| 10,000 | 80.9% | 1.81ms |
-| 100,000 | 57.4% | 5.17ms |
-
-⚙️ Optimized for agent workloads under 10,000 nodes.
-M and efSearch tunable via `config.yaml` for your accuracy/speed requirements.
-
-### 🤝 Multi-Agent Memory Transfer
 | Metric | Result |
-|--------|--------|
-| Cross-model fidelity | 100% exact match |
-| Memory recall latency | 407ms |
-| LLM generation time | Reported separately |
-| Models tested | NVIDIA Nemotron → Nemotron |
+|---|---|
+| Recall hit@1 / hit@3 (answerable questions) | 0.79 / 0.93 |
+| Unanswerable questions correctly declined | 3/4 (false abstention on answerable: 0.07) |
+| Fact extraction F1 | 0.84 |
+| Schema accuracy | 0.85 |
+| Importance ROC AUC | 1.00 |
+| Recall / store latency, p50 (incl. embedding) | 8.3 ms / 9.2 ms |
+| Legacy adversarial gauntlet v1–v3 | 4/12 |
+| Legacy 500-turn retention, recall@1 | 7/8 |
 
-### 🧠 Long-Term Retention
-| Metric | Result |
-|--------|--------|
-| 500-turn retention | 75% |
-| Failure mode | Intent Shadowing (documented) |
-| Fix | Adaptive semantic fallback (in development) |
+The legacy gauntlet and retention benchmarks are the pre-existing ones from this repository.
+Earlier versions of this README reported 10/12 and 75% for them. Those scores depended on
+answers hardcoded into the recall code (e.g. a fixed alias table), which has been removed.
 
-### 🔥 Adversarial Gauntlet
-| Test | Result |
-|------|--------|
-| Temporal contradiction | PASS |
-| Slang/noisy identity | PASS |
-| One-token adversarial | PASS |
-| Ghost query (false positive) | PASS |
-| Entity typo resolution | PASS |
-| Linguistic drift | PASS |
-| Cross-domain collision | PASS |
-| Ambiguous facts | PASS |
-| Multi-hop reasoning | PASS |
-| State-dependent truth | PASS |
-| Alias resolution | ❌ FAIL (known bug) |
-| Identity locking edge case | ❌ FAIL (known bug) |
+**Vector engine** (single thread, recall@10 against exact search, M=16, efConstruction=100, efSearch=50):
 
-**10/12 adversarial tests passing.**
+| Vectors | Dim | Data | Recall@10 | Search avg / p99 | Build |
+|---|---|---|---|---|---|
+| 100,000 | 128 | clustered | 0.980 | 0.082 / 0.116 ms | 8.8 s |
+| 100,000 | 384 | clustered | 0.956 | 0.164 / 0.274 ms | 25.3 s |
+| 1,000,000 | 128 | clustered | 0.921 | 0.173 / 0.648 ms | 127 s |
+| 100,000 | 128 | uniform random | 0.189 (hnswlib: 0.190) | 0.149 ms | 17.9 s |
 
-⚠️ **Hardware**: NEON SIMD benchmarked on Apple Silicon. AVX2 (x86) implemented, benchmarks pending.
-⚠️ **Latency**: C++ engine latency excludes Python API and LLM inference overhead.
+Uniform random vectors are the known worst case for HNSW; the reference implementation
+(hnswlib) gets the same recall on the same data, which validates the engine. These numbers exclude
+the Python API and the embedding model.
 
-## The Problem
+**Limits worth knowing:**
+* The eval sets are small and were written by the same author as the extraction rules.
+* Fact extraction is rule-based. It misses phrasings such as "we have a…", "rescheduled to"
+  and "also called"; unextracted facts are still stored and searchable, just not versioned.
 
-Every AI agent today is amnesiac. It forgets everything 
-between sessions. When you're building multi-agent systems, 
-there's no shared memory substrate — each model operates 
-in isolation.
+## Architecture
 
-Recallix is the persistent cognitive layer that fixes this. 
-Any model can write to it. Any model can read from it. 
-The memory survives forever.
-
-## 🏛️ Modern Architecture
-*   **SIMD Acceleration**: NEON (Apple Silicon, benchmarked). AVX2/SSE (x86, implemented — benchmarks pending).
-*   **Two-Phase Cognitive Storage**: Instant write buffer with asynchronous background HNSW construction.
-*   **Cognitive Pipeline**: Atomic 12-step store process with **Hybrid Neural-Heuristic Reranking**.
-*   **ACID Persistence**: High-velocity ingestion via **SQLite WAL mode**.
-*   **Model Agnostic**: Neutral substrate supporting Llama, Mistral, GPT, and custom architectures.
-
-## 📊 Audited Configuration (The Ground Truth)
-To replicate our search and retention metrics, we used the following defaults:
-*   **Reasoning Model**: `nvidia/nemotron-3-8b` (NVIDIA API)
-*   **Retrieval Model**: `mistral:latest` (Ollama)
-*   **Embedding Model**: `mxbai-embed-large` (Ollama)
-*   **HNSW Params**: `M=48`, `efConstruction=200`, `efSearch=100`
-*   **Database**: SQLite with `PRAGMA journal_mode=WAL`
-*   **Hardware**: Apple M-series (ARM) with **NEON SIMD** acceleration
-
-> ⚠️ **Hardware Caveat**: Benchmarks were measured on ARM (Apple Silicon). All models and parameters are configurable via `config.yaml`.
-
----
-
-## 🛠️ Getting Started
-
-### 1. Requirements
-*   **Ollama**: Install from [ollama.com](https://ollama.com)
-*   **C++17**: For high-performance indexing
-*   **Python 3.11+**: For cognitive orchestration
-
-### 2. Pull Required Models (Audited Defaults)
-Recallix uses these specific models for our verified benchmarks. Pull them before running:
-```bash
-ollama pull llama3.1:8b
-ollama pull mistral:latest
-ollama pull mxbai-embed-large
 ```
-> [!IMPORTANT]
-> These are the audited defaults. To use different models (Ollama, OpenAI, Anthropic, etc.) or adjust HNSW parameters, simply update the **`config.yaml`** file in the root directory.
-
-### 3. Quickstart (Reproduction)
-
-#### A. 1M Node HNSW Search (C++)
-```bash
-cd backend/infra_cpp/build
-./benchmark_hnsw
+client ──X-API-Key──▶ FastAPI (server.py)
+                        ├─ store:  dedupe → embed once → facts → schema → importance
+                        │          → SQLite (row + embedding + FTS5) → engine /add
+                        ├─ recall: aliases → FTS5 + entity index + user's HNSW → learned ranker
+                        │          → truth arbitration → multi-hop → abstain below threshold
+                        ├─ index sync: SQLite → engine (startup, engine restart, reindex)
+                        └─ jobs: world state · next-topic prediction · reflections · forgetting
+                      SQLite (system of record)        C++ engine (one HNSW index per user)
 ```
 
-#### B. High-Speed Retention Benchmark (Python)
+Diagrams: [`docs/architecture_high_level.puml`](docs/architecture_high_level.puml),
+[`docs/architecture_technical_depth.puml`](docs/architecture_technical_depth.puml).
+
+## Getting started
+
 ```bash
-# Simulates 500 turns in ~8s with hybrid reranking
-./venv/bin/python scratch/retention_benchmark.py
+pip install -r requirements.txt                 # + requirements-local.txt for offline embeddings
+cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
+cmake --build backend/infra_cpp/build -j
+
+python -m backend.tools.setup_env               # writes the engine secret to .env, prints an admin key
+set -a; source .env; set +a
+./backend/infra_cpp/build/memory_service &      # vector engine
+python server.py                                # API on 127.0.0.1:8000
 ```
 
-#### C. Multi-Agent Handover (Python)
+Then create a key (`python -m backend.tools.keys create --user alice`) and use the
+[Python SDK](sdk/python) or [TypeScript SDK](sdk/typescript). Full walkthrough:
+[`docs/quickstart.md`](docs/quickstart.md). Endpoints: [`docs/api_reference.md`](docs/api_reference.md).
+All settings live in [`config.yaml`](config.yaml). Secrets come only from the environment.
+
+## Security model
+
+* API keys are random tokens stored only as SHA-256 hashes, with roles: `user` (acts as itself),
+  `service` (may act for its end users), `admin` (maintenance endpoints).
+* Each user has a separate vector index; private memories are visible only to the agent that
+  wrote them, enforced in SQL.
+* Deleting a memory removes its vector, long-term copy and timeline entry. Clearing a user
+  removes their data from every store.
+* The engine binds to localhost and refuses to start without `RECALLIX_INTERNAL_KEY`.
+
+## Development
+
 ```bash
-# Model A (Llama) stores secret → Model B (Mistral) retrieves
-./venv/bin/python scratch/multi_agent_benchmark.py
+pip install -r requirements-dev.txt
+RECALLIX_ENGINE_BIN=backend/infra_cpp/build/memory_service python -m pytest tests
+ctest --test-dir backend/infra_cpp/build --output-on-failure   # includes a ThreadSanitizer run
+python eval/run_eval.py --split dev -v
 ```
 
----
+CI (`.github/workflows/backend.yml`) builds the engine on Linux (AVX2) and macOS (NEON), runs
+the C++ tests under ThreadSanitizer, the API/integration tests against the real engine binary,
+and an eval regression gate.
 
-## 📜 License
+`scratch/` holds legacy scripts written for the previous API, kept for reference;
+`examples/multi_agent_handover.py` is the maintained multi-agent demo (the agents use an LLM;
+Recallix does not).
+
+## License
+
 Apache-2.0
-
-## 💬 Feedback
-
-If you cloned this and hit issues — please open a 
-GitHub issue or reach out directly.
-
-If it worked — I'd love to know what you're building.
-
-[ayishik2003@gmail.com]

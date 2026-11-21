@@ -1,68 +1,63 @@
-from dotenv import load_dotenv
-load_dotenv()
+"""
+Recallix API server.
+
+  python -m backend.tools.setup_env     # once: creates .env (engine secret) and an admin API key
+  ./backend/infra_cpp/build/memory_service &   # vector engine (reads RECALLIX_* from the environment)
+  python server.py                      # or: uvicorn server:app
+
+Startup: verify the engine is reachable, push HNSW parameters, rebuild any
+vector index that does not match SQLite, watch for engine restarts, start
+background jobs.
+"""
 import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api.public.public_api import router as public_router
-from backend.api.internal.internal_api import router as internal_router
-from backend.api.agents.router import router as agents_router
-from backend.api.deps import get_memory_manager
 
-from backend.utils.internal_client import internal_post
-from contextlib import asynccontextmanager
-import time
+from backend import settings
+from backend.api.agents.router import router as agents_router
+from backend.api.deps import get_memory_manager, get_scheduler
+from backend.api.internal.internal_api import router as internal_router
+from backend.api.public.public_api import router as public_router
+from backend.brain.memory import index_sync
+from backend.utils.internal_client import EngineError
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🚀 Starting Recallix Server... Loading HNSW Graph Snapshot.")
+    settings.internal_key()  # fail fast if the engine secret is missing
+    mm = get_memory_manager()
     try:
-        # Give C++ engine a second to boot if it was started simultaneously
-        time.sleep(1)
-        res = internal_post("http://localhost:8080/snapshot/load", {"path": "memory_snapshot.bin"})
-        if res and res.status_code == 200:
-            print("✅ HNSW Graph loaded successfully.")
-        else:
-            print("⚠️ Failed to load HNSW graph or no snapshot found.")
-    except Exception as e:
-        print(f"⚠️ Could not reach C++ vector engine for loading: {e}")
-    
+        index_sync.sync(mm.episodic, mm.semantic)
+    except EngineError as e:
+        print(f"[Startup] Vector engine unavailable ({e}). Recall runs lexical-only until it is reachable; "
+              f"indexes are rebuilt automatically when it is.")
+    index_sync.watch_engine_restarts(get_memory_manager)
+    get_scheduler().start()
     yield
-    
-    print("🛑 Shutting down Recallix Server... Saving HNSW Graph Snapshot.")
-    try:
-        res = internal_post("http://localhost:8080/snapshot/save", {"path": "memory_snapshot.bin"})
-        if res and res.status_code == 200:
-            print("✅ HNSW Graph saved successfully.")
-        else:
-            print("⚠️ Failed to save HNSW graph.")
-    except Exception as e:
-        print(f"⚠️ Could not reach C++ vector engine for saving: {e}")
+    get_scheduler().stop()
+
 
 app = FastAPI(title="Recallix API", lifespan=lifespan)
-
-# Fix #14: Environment-configurable CORS
-allowed_origins = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=settings.cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Mount Routers
 app.include_router(public_router)
-app.include_router(internal_router)
 app.include_router(agents_router)
+app.include_router(internal_router)
 
-# Initialize global memory manager
-memory = get_memory_manager()
 
 @app.get("/")
-async def root():
-    return {"message": "Recallix API is running (Audit Mode)"}
+def root():
+    return {"service": "recallix", "status": "running"}
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=os.environ.get("RECALLIX_API_HOST", "127.0.0.1"),
+                port=int(os.environ.get("RECALLIX_API_PORT", "8000")))

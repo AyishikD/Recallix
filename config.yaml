@@ -18,9 +18,18 @@
 # ============================================================================
 
 models:
+  # The memory pipeline (store/recall/workers) makes NO LLM calls; it only needs
+  # embeddings. `provider` is used only by scripts that drive LLM agents
+  # (e.g. scratch/multi_agent_benchmark.py).
   # Which provider to use: "ollama", "openai", "anthropic", "groq", "nvidia", or "custom"
   provider: "nvidia"
+  # Embeddings: "ollama", "local" (in-process sentence-transformers, fully offline),
+  # or any OpenAI-compatible provider below.
   embedding_provider: "ollama"
+
+  # --- Local (in-process, offline) ---
+  local:
+    embedding_model: "sentence-transformers/all-MiniLM-L6-v2"   # 384-d, ~90 MB
 
   # --- Ollama (Local) ---
   # Any model pulled via `ollama pull <name>` works here.
@@ -70,16 +79,68 @@ models:
     embedding_model: ""
 
 # ============================================================================
-# Database Configuration
+# Storage (SQLite databases, API key hashes, learned model files)
 # ============================================================================
-database:
-  journal_mode: "WAL"
-  synchronous: "NORMAL"
+storage:
+  root: "backend/storage"   # relative to the project root; env RECALLIX_STORAGE_ROOT overrides
 
 # ============================================================================
-# HNSW Index Parameters
+# Vector engine (C++ service, backend/infra_cpp)
+# The shared secret is NOT configured here: set RECALLIX_INTERNAL_KEY in the
+# environment / .env (python -m backend.tools.setup_env creates one).
+# ============================================================================
+engine:
+  url: "http://127.0.0.1:8080"   # env RECALLIX_ENGINE_URL overrides
+  timeout_seconds: 10
+  bulk_batch_size: 1000          # vectors per request when rebuilding an index
+
+# ============================================================================
+# HNSW Index Parameters (pushed to the engine at startup; changing M or
+# ef_construction triggers a rebuild of every index on next start)
 # ============================================================================
 hnsw:
   M: 16                   # Max neighbors per node per layer
   ef_construction: 100    # Construction beam width (higher = better graph, slower build)
   ef_search: 50           # Search beam width (higher = better recall, slower search)
+
+# ============================================================================
+# Memory tiers
+# ============================================================================
+memory:
+  long_term_min_importance: 8.0   # importance (1-10) at which a memory is promoted to long-term
+  decay_unit_hours: 24            # time unit of the Ebbinghaus stability for long-term facts
+  sensory_ttl_seconds: 60
+  sensory_size: 10
+  working_window: 15              # messages kept in working memory per user
+
+# ============================================================================
+# Recall
+# ============================================================================
+recall:
+  candidate_pool: 200        # max candidates from each of lexical and vector search
+  backfill_per_query: 50     # max legacy rows embedded lazily per query
+
+# ============================================================================
+# HTTP API
+# ============================================================================
+api:
+  cors_allowed_origins: ["http://localhost:3000", "http://127.0.0.1:3000"]   # env CORS_ALLOWED_ORIGINS overrides
+  writes_per_second_per_user: 50   # store requests above this get HTTP 429
+
+# ============================================================================
+# Background jobs (run inside the API process)
+# ============================================================================
+workers:
+  enabled: true
+  active_user_days: 30           # jobs only process users with memories this recent
+  state_inference_minutes: 15    # world-state from fact slots + schema shares
+  prediction_minutes: 30         # Markov next-topic prediction
+  replay_hours: 6                # reflections from long-term facts
+  forgetting_hours: 24           # memory forgetting policy (below)
+  forgetting:
+    enabled: true
+    delete_max_importance: 3.0   # delete never-recalled memories at or below this importance ...
+    delete_min_age_days: 7       # ... once older than this
+    archive_max_importance: 5.0  # archive (move to archive DB) at or below this importance ...
+    archive_min_age_days: 30     # ... once older than this
+    protect_min_importance: 8.0  # never forget memories at or above this importance

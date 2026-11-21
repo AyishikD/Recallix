@@ -1,3 +1,6 @@
+# LEGACY SCRIPT: written for the pre-2026-11 API and engine protocol; kept for reference only.
+# Maintained equivalents: eval/run_eval.py (retrieval, gauntlet, retention), backend/infra_cpp/benchmark_hnsw,
+# examples/multi_agent_handover.py. Keys come from RECALLIX_API_KEY / RECALLIX_INTERNAL_KEY.
 import requests
 import time
 import numpy as np
@@ -13,7 +16,7 @@ WARMUP_RUNS = 100 # To remove cold-start effects
 def cpp_search(query, top_k=5, ef_search=200):
     start = time.time()
     payload = {"query": query.tolist(), "top_k": top_k, "ef_search": ef_search}
-    headers = {"X-Internal-Key": "Recallix-Core-8892"}
+    headers = {"X-Internal-Key": os.environ["RECALLIX_INTERNAL_KEY"]}
     res = requests.post(f"{INFRA_URL}/search_vector", json=payload, headers=headers)
     end = time.time()
     if res.status_code != 200:
@@ -46,7 +49,7 @@ def run_scale_benchmark():
         print(f"\n📊 Testing Scale: {scale:,} nodes")
         
         # Clear C++
-        headers = {"X-Internal-Key": "Recallix-Core-8892"}
+        headers = {"X-Internal-Key": os.environ["RECALLIX_INTERNAL_KEY"]}
         requests.post(f"{INFRA_URL}/clear", headers=headers)
 
         # 1. Generate Clustered Data (Realistic Semantics)
@@ -208,7 +211,7 @@ def run_concurrency_benchmark():
     user_id = "test_user_concurrent"
     
     # 1. Clear existing
-    headers = {"X-Internal-Key": "Recallix-Core-8892"}
+    headers = {"X-Internal-Key": os.environ["RECALLIX_INTERNAL_KEY"]}
     mm.episodic.cleanup_low_importance_memories(user_id) # pseudo clear
     requests.post(f"http://localhost:8080/clear", headers=headers)
     

@@ -1,416 +1,218 @@
+"""
+Recall pipeline (no LLM):
+
+  0. alias expansion from stored "X is also known as Y" facts
+  1. candidates: lexical (FTS5 + entity index) and vector (this user's HNSW
+     namespace), both bounded by recall.candidate_pool and filtered by agent
+     visibility in SQL
+  2. scoring: learned logistic relevance model over interpretable features
+     (memory_ranking/ranker.py)
+  3. truth arbitration: newest value per fact slot (TruthEngine)
+  4. multi-hop: facts about entities a top memory points to ("contains",
+     "powered by", "depends on")
+  5. abstention: if the best candidate's relevance is below the learned
+     threshold, return nothing rather than a guess
+"""
 import json
+import re
 import sqlite3
 import time
-import math
-import re
-from ..prediction.predictive_recall import PredictiveRecall
-from ..schema_engine.registry.manager import SchemaRegistry
-from ..retrieval.manager import IntentRetrievalManager
-from .scorers import (
-    SemanticScorer, LexicalScorer, EntityScorer, 
-    RelationScorer, SalienceScorer, TemporalScorer
-)
+import uuid
+
+from backend import settings
+from ..features.query import analyze_query, capitalised_entities, norm_id, entity_matches, slot_matches
+from ..memory_ranking.ranker import Ranker, RecallLog, candidate_features, memory_slots
+from ..memory_ranking.reinforcement_learning import MemoryRL
+
+_INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
+                  "symbolic_match", "pool")
+
 
 class RecallEngine:
-    def __init__(self, episodic, semantic, long_term, reflective, graph_infra_url="http://localhost:8080"):
+    def __init__(self, episodic, semantic):
         self.episodic = episodic
         self.semantic = semantic
-        self.long_term = long_term
-        self.reflective = reflective
-        self.graph_url = graph_infra_url
-        self.schema_registry = SchemaRegistry()
-        
-        # Modular Scorers
-        self.scorers = {
-            "semantic": SemanticScorer(),
-            "lexical": LexicalScorer(),
-            "entity": EntityScorer(),
-            "relation": RelationScorer(),
-            "salience": SalienceScorer(),
-            "temporal": TemporalScorer()
-        }
-        
-        self.intent_manager = None 
-        self.predictive = None 
-        self.attention = None 
-        self.reranker = None 
+        self.recall_log = RecallLog()
+        self.rl = MemoryRL()
 
-    def _classify_query(self, query):
-        q_lower = query.lower()
-        symbolic_triggers = ["what is", "who is", "name", "id", "code", "deadline", "date", "when", "where", "project", "number"]
-        identity_triggers = ["my name", "i am", "who am i", "my cat", "my dog", "my preference", "i like"]
-        
-        # Identity Logic (High Priority)
-        if any(t in q_lower for t in identity_triggers):
+    @staticmethod
+    def classify_query(analysis):
+        """Reported as `intent`: identity / symbolic / conceptual."""
+        if "user" in analysis["strong_entities"] and analysis["asks_relation"]:
             return "identity"
-        
-        # Symbolic Logic (Check for IDs or Triggers)
-        symbolic_id_match = re.search(r"\b(galaxy x-\d+|x-\d+|x\d+|project [a-z]+|starship [a-z]+)\b", q_lower)
-        if symbolic_id_match or any(t in q_lower for t in symbolic_triggers):
+        if [e for e in analysis["strong_entities"] if e != "user"] or analysis["asks_relation"]:
             return "symbolic"
-            
         return "conceptual"
 
-    @staticmethod
-    def _extract_entities_from_query(query):
-        patterns = [
-            (r"\bGalaxy X-\d+\b", "galaxy"), 
-            (r"\bX-\d+\b", "symbolic"), 
-            (r"\bProject [A-Z][a-z]+\b", "project"), 
-            (r"\bStarship [A-Z][a-z]+\b", "starship"),
-            (r"\bID[:\s]\d+\b", "id"),
-            (r"\b[A-Z]{2,}-\d+\b", "code")
-        ]
-        entities = []
-        for p, t in patterns:
-            found = re.findall(p, query, re.IGNORECASE)
-            for f in found:
-                # Canonicalize ID for retrieval lock (consistent with manager.py storage)
-                clean_id = re.sub(r"^(galaxy|project|starship|patient|user|pulsar)\s+", "", f, flags=re.IGNORECASE).strip()
-                canonical_id = re.sub(r"[^a-z0-9]+", "", clean_id.lower())
-                entities.append({"type": t, "id": canonical_id})
-        return entities
+    # ------------------------------------------------------------------
+    def _resolve_aliases(self, user_id, query, agent_id):
+        expansions, sources = [], set()
+        q_norm = norm_id(query)
+        pool = int(settings.get("recall.candidate_pool", 200))
+        for m in self.episodic.search(user_id, query, agent_id=agent_id, limit=pool):
+            for s in memory_slots(m):
+                if s.get("relation") != "alias_of":
+                    continue
+                name, thing = s.get("entity", ""), s.get("value", "")
+                display = next((span for span in re.findall(r"\b[A-Z][\w-]*(?:\s+[A-Z][\w-]*)*", m.get("content", ""))
+                                if norm_id(span) == name), name)
+                if norm_id(thing) and norm_id(thing) in q_norm and name not in q_norm:
+                    expansions.append(display)
+                    sources.add(m["id"])
+                elif name and name in q_norm and norm_id(thing) not in q_norm:
+                    expansions.append(thing)
+                    sources.add(m["id"])
+        return list(dict.fromkeys(expansions)), sources
 
-    @staticmethod
-    def _extract_relations_from_query(query):
-        q_lower = query.lower()
-        relations = []
-        if "primary" in q_lower or "main" in q_lower or "cause" in q_lower or "emission" in q_lower or "defines" in q_lower:
-            relations.append("primary_emission")
-        if "secondary" in q_lower or "signature" in q_lower:
-            relations.append("secondary_signature")
-        if "safety" in q_lower or "status" in q_lower or "core" in q_lower:
-            relations.append("safety_status")
-        if "phase" in q_lower or "state" in q_lower:
-            relations.append("state_phase")
-        if "secret project code" in q_lower or "secret" in q_lower or "code" in q_lower:
-            relations.append("secret_code")
-        return relations
+    def _generate_candidates(self, user_id, query, agent_id, q_vec):
+        pool = int(settings.get("recall.candidate_pool", 200))
+        lexical = self.episodic.search(user_id, query, agent_id=agent_id, limit=pool)
+        candidates = {c["id"]: c for c in lexical}
+        vector_hits = self.semantic.search(user_id, query, top_k=pool, vector=q_vec) if q_vec is not None else []
+        missing = [mid for mid, _ in vector_hits if mid not in candidates]
+        fetched = self.episodic.get_many(user_id, missing, agent_id=agent_id)  # one batched query
+        for mid, score in vector_hits:
+            if mid in candidates:
+                candidates[mid]["semantic_score"] = score
+            elif mid in fetched:
+                fetched[mid]["semantic_score"] = score
+                candidates[mid] = fetched[mid]
+        out = list(candidates.values())
+        self._attach_semantic_scores(q_vec, out)
+        return out
 
-    def _infer_slot(self, query):
-        entities = self._extract_entities_from_query(query)
-        relations = self._extract_relations_from_query(query)
-        
-        relation_map = {
-            "code": "secret_code",
-            "project code": "secret_code",
-            "secret project code": "secret_code",
-            "primary emission": "primary_emission",
-            "primary cause": "primary_emission",
-            "secondary signature": "secondary_signature",
-            "safety status": "safety_status",
-            "safety": "safety_status",
-            "core": "safety_status",
-            "status": "safety_status",
-            "core state": "state_phase",
-            "state": "state_phase",
-            "phase": "state_phase"
-        }
-        entity_map = {
-            "the project": "project"
-        }
-        
-        if entities and relations:
-            e = entities[0].get("id", "") if isinstance(entities[0], dict) else entities[0]
-            r = relations[0].get("type", "") if isinstance(relations[0], dict) else relations[0]
-            
-            e_norm = entity_map.get(e.lower(), e.lower())
-            r_norm = relation_map.get(r.lower(), r.lower())
-            
-            e_norm = re.sub(r"[^a-z0-9_]+", "", e_norm)
-            r_norm = re.sub(r"[^a-z0-9_]+", "", r_norm)
-            
-            return f"{e_norm}::{r_norm}"
-        return None
+    def _attach_semantic_scores(self, q_vec, candidates):
+        """q · v from stored embeddings for lexical-only candidates; legacy rows are embedded once and saved."""
+        pending = [c for c in candidates if c.get("semantic_score") is None]
+        if not pending:
+            return
+        if q_vec is None:
+            for c in pending:
+                c["semantic_score"] = 0.0
+            return
+        model = self.semantic.model_name
+        cached = self.episodic.get_embeddings([c["id"] for c in pending], model)
+        budget = int(settings.get("recall.backfill_per_query", 50))
+        for c in pending:
+            vec = cached.get(c["id"])
+            if vec is None and budget > 0:
+                vec = self.semantic.embed(c.get("content", ""))
+                if vec is not None:
+                    self.episodic.set_embedding(c["id"], vec, model)
+                    self.semantic.index(c["user_id"], c["id"], vec)
+                    budget -= 1
+            sim = self.semantic.cosine(q_vec, vec)
+            c["semantic_score"] = 0.0 if sim is None else sim
 
-    def _generate_candidates(self, user_id, query, agent_id, limit=1000):
-        """Stage 1: Broad Recall (Nuclear Depth)"""
-        # Pool A: Lexical/FTS5
-        episodic_candidates = self.episodic.search(user_id, query, agent_id=agent_id, limit=limit)
-        
-        # Pool B: Semantic ANN
-        semantic_results = self.semantic.search(user_id, query, top_k=limit)
-        
-        candidates = []
-        seen_ids = set()
-        
-        # Merge by Memory ID
-        for i, c in enumerate(episodic_candidates):
-            cid = c.get("id")
-            if cid and cid not in seen_ids:
-                c["pool"] = "A"
-                # Fix #2: Late-Binding Semantic Check for top Pool A results
-                if i < 50:
-                    c["semantic_score"] = self.semantic.compute_similarity(query, c["content"])
-                else:
-                    c["semantic_score"] = 0.5
-                
-                candidates.append(c)
-                seen_ids.add(cid)
-                
-        for s in semantic_results:
-            sqlite_id = s.get("sqlite_id")
-            if sqlite_id and sqlite_id not in seen_ids:
-                real_m = self.episodic.get_by_id(user_id, sqlite_id)
-                if real_m:
-                    real_m["pool"] = "B"
-                    real_m["semantic_score"] = s.get("score", 0.5)
-                    real_m["memory_type"] = s.get("memory_type", "private")
-                    real_m["agent_id"] = s.get("agent_id", "")
-                    candidates.append(real_m)
-                    seen_ids.add(sqlite_id)
-        
-        return candidates
-
-    def _rank_candidates(self, query, candidates, query_type, agent_id="default_agent"):
-        """Stage 2: Precision-Biased Ranking"""
-        context = {
-            "query_entities": self._extract_entities_from_query(query),
-            "query_relations": self._extract_relations_from_query(query),
-            "recall_engine": self 
-        }
-        
-        # Fine-tuned weights for Resilient Cognitive Retrieval (Fix #33: Trust Semantic)
-        weights = {
-            "symbolic": {"semantic": 0.15, "lexical": 0.05, "entity": 0.40, "relation": 0.35, "salience": 0.0, "temporal": 0.05},
-            "identity": {"semantic": 0.20, "lexical": 0.05, "entity": 0.60, "relation": 0.10, "salience": 0.0, "temporal": 0.05},
-            "conceptual": {"semantic": 0.70, "lexical": 0.10, "entity": 0.10, "relation": 0.05, "salience": 0.0, "temporal": 0.05}
-        }.get(query_type, {"semantic": 0.7, "lexical": 0.1, "entity": 0.1, "relation": 0.05, "salience": 0.0, "temporal": 0.05})
-
-        # Fix #3: Compute Age Variance to prevent temporal blindness during benchmarks
-        ages = [time.time() - float(c.get("timestamp", 0.0)) for c in candidates]
-        age_variance = max(ages) - min(ages) if ages else 0
-
+    def _score(self, candidates, analysis, agent_id, alias_sources=()):
+        candidate_features(candidates, analysis, agent_id, alias_sources)
         for c in candidates:
-            # Fix #4: Last-Minute Semantic Score Check (Ensure no defaults reach the ranker)
-            if c.get("semantic_score", 0.5) == 0.5:
-                c["semantic_score"] = self.semantic.compute_similarity(query, c.get("content", ""))
-            
-            signals = {}
-            for name, scorer in self.scorers.items():
-                signals.update(scorer.score(query, c, context))
-            
-            # Dynamic Tiered Weighting: 
-            # 1. Fresh Data (< 1 hour): Recency is King (Timeline Sort)
-            # 2. Old Data (> 1 hour): Importance is King (Knowledge Sort)
-            age_sec = time.time() - float(c.get("timestamp", 0.0))
-            current_weights = weights.copy()
-            
-            # Only boost temporal if there's meaningful time spread (Fix #3)
-            if age_sec < 3600 and age_variance > 300: # Fresh + >5 min spread
-                current_weights["temporal"] = 0.40 # High recency boost for timeline
-                current_weights["salience"] = 0.05
-            else: # Old or low variance
-                current_weights["temporal"] = 0.05
-                current_weights["salience"] = 0.40 # High importance boost for long-term knowledge
-            
-            # Weighted Fusion with Blended Priority Layering
-            m_type = c.get("memory_type", "private")
-            c_agent = c.get("agent_id", "")
-            layer_bonus = 0.0
-            if m_type == "private" and c_agent == agent_id:
-                layer_bonus = 0.1
-            elif m_type == "shared":
-                layer_bonus = 0.05
-                
-            final_score = 0.0
-            for sig, weight in current_weights.items():
-                final_score += signals.get(sig, 0.5) * weight
-            
-            final_score += layer_bonus
-            
-            # Explainability breakdown
-            c["unified_score"] = final_score
-            c["explain"] = {k: v for k, v in signals.items() if k in weights}
-            
-            # Confidence Floor: Squelch hallucinations
-            if c["unified_score"] < 0.2:
-                c["unified_score"] *= 0.1 # Exponential drop for low-confidence matches
-                c["is_uncertain"] = True
-
-            # Resilient Multiplier: Soft suppression instead of hard vaporizing
-            if signals.get("exact_match") == False and context["query_entities"]:
-                c["unified_score"] *= 0.3 # Allow semantic rescue for extraction failures
-                c["rejected_reason"] = "entity_mismatch"
-        
-        candidates.sort(key=lambda x: x["unified_score"], reverse=True)
+            c["relevance"] = Ranker.score(c["features"])
+            # The fact slot that answers the question (TruthEngine arbitrates on it).
+            q_slot = next((s for s in memory_slots(c) if slot_matches(s, analysis)), None)
+            if q_slot:
+                c["_query_slot"] = q_slot
+        candidates.sort(key=lambda x: x["relevance"], reverse=True)
         return candidates
 
-    def multi_stage_recall(self, user_id, query, agent_id="default_agent", top_k=5):
-        t0 = time.time()
-        
-        # --- Stage 0: Reasoning Expansion (Fix #27) ---
+    # ------------------------------------------------------------------
+    def multi_stage_recall(self, user_id, query, agent_id="default_agent", top_k=5, return_candidates=False):
         from .reasoning_engine import ReasoningEngine
-        reasoner = ReasoningEngine(self)
-        
-        # 1. Alias Resolution (Dragon's Breath -> X-77)
-        alias_id = reasoner.resolve_aliases(query)
-        effective_query = f"{query} {alias_id}" if alias_id else query
-        
-        # 2. Contextual Expansion (dormant -> quiescent)
-        expanded_query = reasoner.expand_query(effective_query)
-        
-        # 1. Candidate Generation
-        query_slot_id = self._infer_slot(expanded_query)
-        candidates = self._generate_candidates(user_id, expanded_query, agent_id)
-        
-        # 1.5 Query -> Slot Inference Bias
-        if query_slot_id:
-            slot_candidates = []
-            for c in candidates:
-                metadata = c.get("metadata", {})
-                if isinstance(metadata, str):
-                    try: metadata = json.loads(metadata)
-                    except: metadata = {}
-                
-                slots = metadata.get("slots", [])
-                if isinstance(slots, list) and any(s.get("slot_id") == query_slot_id for s in slots):
-                    slot_candidates.append(c)
-            
-            if slot_candidates:
-                print(f"[RecallEngine] Slot Inference Matched: {query_slot_id}. Biasing retrieval to {len(slot_candidates)} exact matches.")
-                candidates = slot_candidates
-                
-        candidate_count = len(candidates)
-        
-        # 2. Primary Ranking
-        query_type = self._classify_query(expanded_query)
-        ranked = self._rank_candidates(expanded_query, candidates, query_type, agent_id)
-        
-        # 3. Truth Arbitration (Epistemic Discipline)
         from .truth_engine import TruthEngine
-        truth_engine = TruthEngine(threshold=0.35)
-        
-        # Build context for Truth Engine (Fix #29: Fuzzy Relation Alignment)
-        raw_relations = self._extract_relations_from_query(expanded_query)
-        expanded_relations = reasoner.expand_relations(raw_relations)
-        
-        query_context = {
-            "query_entities": self._extract_entities_from_query(expanded_query),
-            "query_relations": expanded_relations
-        }
-        resolved, status = truth_engine.resolve(ranked, query_context)
-        
-        # --- Stage 3.5: Multi-Hop Chaining (Fix #28) ---
-        source_ids = [m["id"] for m in resolved[:2]]
-        hops = reasoner.identify_multi_hop_opportunities(resolved[:2], query_context)
-        if hops:
-            print(f"[ReasoningEngine] Identified Multi-Hop targets: {hops}. Triggering Second Hop...")
-            # Squelch sources in the original ranked pool to force promotion of hop targets
-            for r in ranked:
-                if r["id"] in source_ids:
-                    r["unified_score"] *= 0.01 # Near-absolute squelch
-            
+        t0 = time.time()
+
+        aliases, alias_sources = self._resolve_aliases(user_id, query, agent_id)
+        effective_query = f"{query} {' '.join(aliases)}" if aliases else query
+        analysis = analyze_query(effective_query)
+        q_vec = self.semantic.embed(effective_query)
+
+        candidates = self._generate_candidates(user_id, effective_query, agent_id, q_vec)
+        ranked = self._score(candidates, analysis, agent_id, alias_sources)
+        all_scored = list(ranked)
+
+        truth = TruthEngine()
+        resolved = truth.resolve(ranked)
+
+        # Multi-hop: pull in facts about an entity the top memories point to;
+        # rank them above the source only if they answer the asked relation better.
+        sources = resolved[:2]
+        hops = ReasoningEngine().identify_multi_hop_opportunities(sources, analysis)
+        if hops and sources:
+            src = sources[0]
+            source_ids = {m["id"] for m in sources}
+            known = {r["id"]: r for r in ranked}
             for hop_target in hops:
-                # Update context for the second hop validation
-                hop_entities = self._extract_entities_from_query(hop_target)
-                query_context["query_entities"].extend(hop_entities)
-                
-                hop_candidates = self._generate_candidates(user_id, hop_target, agent_id)
-                hop_ranked = self._rank_candidates(hop_target, hop_candidates, "symbolic", agent_id)
-                # Merge hop results into candidates pool (exclude sources and give high priority)
-                for h in hop_ranked:
-                    if h["id"] in source_ids: continue # Skip the fact that triggered the hop
-                    
-                    # Force-promote and tag hop results (even if already in pool)
-                    h["is_hop_result"] = True
-                    h["unified_score"] = 99.0 # Hard Priority for Reasoned Truth
-                    
-                    found_in_ranked = False
-                    for r in ranked:
-                        if r["id"] == h["id"]:
-                            r["is_hop_result"] = True
-                            r["unified_score"] = 99.0
-                            found_in_ranked = True
-                            break
-                    
-                    if not found_in_ranked:
+                target_id = norm_id(hop_target)
+                hop_cands = self._generate_candidates(user_id, hop_target, agent_id, q_vec)
+                for h in self._score(hop_cands, analysis, agent_id)[:20]:
+                    if h["id"] in source_ids:
+                        continue
+                    mentions = any(entity_matches(target_id, e) for e in capitalised_entities(h.get("content", ""))) \
+                        or any(entity_matches(target_id, s.get("entity", "")) for s in memory_slots(h))
+                    if not mentions:
+                        continue
+                    better = h["features"]["relation_match"] > src["features"]["relation_match"]
+                    target = known.setdefault(h["id"], h)
+                    if target is h:
                         ranked.append(h)
-            
-            # Re-sort and re-arbitrate after hopping
-            ranked.sort(key=lambda x: x["unified_score"], reverse=True)
-            resolved, status = truth_engine.resolve(ranked, query_context)
+                    target["is_hop_result"] = better
+                    target["relevance"] = max(target["relevance"], src["relevance"] * (1.01 if better else 0.99))
+            ranked.sort(key=lambda x: x["relevance"], reverse=True)
+            resolved = truth.resolve(ranked)
 
-        # 4. Adaptive Recovery: If Truth Engine squelches symbolic but we have semantic candidates
-        if status == "UNCERTAIN" and query_type in ["symbolic", "identity"]:
-            print(f"[RecallEngine] Truth Engine rejected symbolic matches. Triggering Semantic Recovery...")
-            ranked_conceptual = self._rank_candidates(expanded_query, candidates, "conceptual", agent_id)
-            resolved, status = truth_engine.resolve(ranked_conceptual, query_context)
-        
-        # 5. Finalization
-        final_memories = resolved[:top_k]
-        
-        fallback_triggered = False
-        decision = "standard_cognitive_retrieval"
-        if not final_memories:
-            print("[RecallEngine] Triggering thresholded vector fallback...")
-            raw_semantic = self.semantic.search(user_id, expanded_query, top_k=top_k*2)
-            for s in raw_semantic:
-                if s.get("score", 0.0) > 0.65:
-                    sqlite_id = s.get("sqlite_id")
-                    if sqlite_id:
-                        real_m = self.episodic.get_by_id(user_id, sqlite_id)
-                        if real_m:
-                            real_m["is_fallback"] = True
-                            real_m["unified_score"] = s.get("score", 0.0)
-                            final_memories.append(real_m)
-                            if len(final_memories) >= top_k:
-                                break
-            if final_memories:
-                fallback_triggered = True
-                decision = "fallback_used_due_to_overfiltering"
+        threshold = Ranker.threshold()
+        if not resolved:
+            status, final = "NO_MATCH", []
+        elif resolved[0]["relevance"] < threshold:
+            status, final = "ABSTAINED", []
+        else:
+            status, final = "CONSISTENT", resolved[:top_k]
 
-        self._reinforce_memories(user_id, final_memories)
-        
-        return {
-            "intent": query_type,
+        recall_id = uuid.uuid4().hex
+        self.recall_log.log(recall_id, user_id, all_scored)
+        self._reinforce(final)
+
+        memories = []
+        for m in final:
+            out = {k: v for k, v in m.items() if k not in _INTERNAL_KEYS}
+            out["explain"] = {k: round(v, 3) for k, v in m.get("features", {}).items()}
+            out["relevance"] = round(m["relevance"], 4)
+            if isinstance(out.get("metadata"), str):
+                try:
+                    out["metadata"] = json.loads(out["metadata"])
+                except ValueError:
+                    pass
+            memories.append(out)
+
+        result = {
+            "recall_id": recall_id,
+            "intent": self.classify_query(analysis),
             "status": status,
-            "memories": final_memories,
+            "memories": memories,
             "debug": {
-                "inferred_slot_id": query_slot_id,
-                "semantic_hits": candidate_count,
-                "after_filter": len(ranked),
-                "after_truth": len(resolved),
-                "fallback_triggered": fallback_triggered,
-                "top_scores": [round(m.get("unified_score", 0.0), 3) for m in final_memories[:3]],
-                "decision": decision
+                "aliases": aliases,
+                "query_entities": analysis["strong_entities"],
+                "candidates": len(all_scored),
+                "threshold": round(threshold, 4),
+                "top_relevance": round(resolved[0]["relevance"], 4) if resolved else None,
+                "model": Ranker.model().get("source", ""),
             },
-            "metrics": {
-                "total_candidates": candidate_count,
-                "latency_ms": round((time.time() - t0) * 1000, 1),
-                "truth_status": status
-            },
-            "schema_insights": self._get_schema_insights(expanded_query)
+            "latency_ms": round((time.time() - t0) * 1000, 1),
         }
+        if return_candidates:
+            result["_candidates"] = all_scored
+        return result
 
-    def _get_schema_insights(self, query):
-        schemas = self.schema_registry.list_schemas()
-        relevant = []
-        q_lower = query.lower()
-        for s in schemas:
-            if s["name"].lower() in q_lower or any(f.lower() in q_lower for f in s["fields"]):
-                relevant.append(s)
-        return relevant
-
-    def _reinforce_memories(self, user_id, memories_list):
-        from ..memory_ranking.reinforcement_learning import MemoryRL
-        rl = MemoryRL()
-        db_path = "backend/storage/sqlite_db/memory.db"
+    def _reinforce(self, memories):
+        if not memories:
+            return
+        conn = sqlite3.connect(self.episodic.db_path, timeout=30)
         try:
-            conn = sqlite3.connect(db_path, timeout=30)
-            cursor = conn.cursor()
-            cursor.execute("PRAGMA journal_mode=WAL")
-            for m in memories_list:
-                m_id = m.get("id")
-                if m_id:
-                    cursor.execute("SELECT reinforcement_score FROM episodic_events WHERE id = ?", (m_id,))
-                    row = cursor.fetchone()
+            with conn:
+                for m in memories:
+                    row = conn.execute("SELECT reinforcement_score FROM episodic_events WHERE id = ?", (m["id"],)).fetchone()
                     if row:
-                        new_score = rl.reinforce_positive(row[0])
-                        cursor.execute('''
-                            UPDATE episodic_events SET reinforcement_score = ?, retrieval_count = retrieval_count + 1 
-                            WHERE id = ?
-                        ''', (new_score, m_id))
-            conn.commit()
+                        conn.execute("UPDATE episodic_events SET reinforcement_score = ?, retrieval_count = retrieval_count + 1 "
+                                     "WHERE id = ?", (self.rl.reinforce_positive(row[0] or 1.0), m["id"]))
+        finally:
             conn.close()
-        except: pass

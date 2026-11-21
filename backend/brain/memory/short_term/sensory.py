@@ -1,23 +1,33 @@
-from collections import deque
+import threading
 import time
+from collections import deque
+
+from backend import settings
+
 
 class SensoryMemory:
-    def __init__(self, ttl=60):
-        self.memories = {} # user_id -> deque
-        self.ttl = ttl
+    """Per-user in-process ring buffer of the most recent raw messages."""
+
+    def __init__(self, ttl=None, size=None):
+        self.ttl = float(ttl if ttl is not None else settings.get("memory.sensory_ttl_seconds", 60))
+        self.size = int(size if size is not None else settings.get("memory.sensory_size", 10))
+        self.memories = {}
+        self._lock = threading.Lock()
 
     def add(self, user_id, message):
-        if user_id not in self.memories:
-            self.memories[user_id] = deque(maxlen=10)
-        self.memories[user_id].append({
-            "content": message,
-            "timestamp": time.time()
-        })
+        with self._lock:
+            self.memories.setdefault(user_id, deque(maxlen=self.size)).append(
+                {"content": message, "timestamp": time.time()})
 
     def get(self, user_id):
-        if user_id not in self.memories:
-            return []
-        
-        # Filter by TTL
         now = time.time()
-        return [m for m in self.memories[user_id] if now - m["timestamp"] < self.ttl]
+        with self._lock:
+            return [m for m in self.memories.get(user_id, ()) if now - m["timestamp"] < self.ttl]
+
+    def clear_user(self, user_id):
+        with self._lock:
+            self.memories.pop(user_id, None)
+
+    def clear_all(self):
+        with self._lock:
+            self.memories.clear()

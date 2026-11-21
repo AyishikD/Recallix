@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { headline, largestClustered, ms, pct } from "@/lib/results";
 import { 
   LineChart, 
   Line, 
@@ -35,20 +36,6 @@ function AnimatedSection({ children, className = "", delay = 0 }: { children: Re
     </motion.div>
   );
 }
-
-// Chart Data points for Audit sections
-const scaleData = [
-  { nodes: '1,000', latency: 1.15, baseline: 3.69, accuracy: 96.4 },
-  { nodes: '10,000', latency: 1.81, baseline: 37.51, accuracy: 80.9 },
-  { nodes: '100,000', latency: 5.17, baseline: 419.59, accuracy: 57.4 },
-];
-
-const retentionData = [
-  { turn: 10, recallix: 100, vanilla: 0 },
-  { turn: 100, recallix: 0, vanilla: 0 }, 
-  { turn: 250, recallix: 100, vanilla: 0 },
-  { turn: 400, recallix: 100, vanilla: 0 },
-];
 
 interface TooltipProps {
   active?: boolean;
@@ -215,7 +202,7 @@ function ProblemSolutionDemo() {
               <div className="flex items-center gap-2 mb-7 relative z-10">
                 <AlertTriangle className="w-4 h-4 text-red-400" />
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Without Memory</span>
-                <Badge className="ml-auto text-[8px] bg-zinc-900 border-zinc-800 text-zinc-600 font-black">STANDARD LLM</Badge>
+                <Badge className="ml-auto text-[8px] bg-zinc-900 border-zinc-800 text-zinc-600 font-black">AGENT WITHOUT MEMORY</Badge>
               </div>
               <div className="space-y-4 min-h-[340px] relative z-10">
                 {demoConversation.map((msg, i) => (
@@ -336,14 +323,14 @@ function ProblemSolutionDemo() {
 }
 
 const features = [
-  { icon: Database, title: "Shared Substrate", desc: "A unified memory layer accessible by any agent architecture, bridging the gap between Llama, Mistral, and GPT ecosystems.", color: "cyan" },
-  { icon: Search, title: "Model Interoperability", desc: "Zero-loss context handover. Store with a reasoning model, retrieve with a coding assistant, or scale across thousands of specialized agents.", color: "blue" },
+  { icon: Database, title: "Shared Substrate", desc: "One memory layer any agent can use, whatever model it runs on: memories are text plus embeddings, scoped per user.", color: "cyan" },
+  { icon: Search, title: "Agent Handover", desc: "Shared memories are visible to all of a user's agents; private ones stay with the agent that wrote them, enforced in SQL.", color: "blue" },
   { icon: Clock, title: "Universal Continuity", desc: "True cross-session persistence. Your agents maintain a permanent cognitive history that evolves as your user does.", color: "purple" },
-  { icon: Lightbulb, title: "Reflection Insights", desc: "Background LLM threads extract behavioral patterns and high-level insights from raw episodic logs.", color: "amber" },
-  { icon: Sparkles, title: "Meta-Memory", desc: "Self-optimizing retrieval policies and schema evolution that adapts to user-specific interaction patterns.", color: "emerald" },
-  { icon: ShieldCheck, title: "Hardware Moat", desc: "C++ HNSW engines with Cross-Platform SIMD acceleration (AVX2/SSE/NEON). Millisecond search at 1,000,000 nodes.", color: "rose" },
-  { icon: Activity, title: "Observability", desc: "Full system metrics: memory growth, recall latency, cluster health, schema evolution.", color: "orange" },
-  { icon: Shield, title: "Local-First", desc: "No cloud dependencies. All models run locally via Ollama. Data never leaves your machine.", color: "teal" },
+  { icon: Lightbulb, title: "Reflection Insights", desc: "A background replay job builds extractive reflections from long-term facts (MMR over embeddings), no LLM.", color: "amber" },
+  { icon: Sparkles, title: "Learned Ranking", desc: "Recall relevance is a logistic model over explainable features, fitted by cross-validation and retrainable from your feedback; low-confidence questions abstain.", color: "emerald" },
+  { icon: ShieldCheck, title: "Hardware Moat", desc: "C++ HNSW, one index per user, NEON (ARM) and AVX2 (x86) dot products. Recall measured against exact search; see Benchmarks.", color: "rose" },
+  { icon: Activity, title: "Observability", desc: "Per-user memory counts, index statistics, reflections and world state, live from the API.", color: "orange" },
+  { icon: Shield, title: "No LLM Required", desc: "The memory pipeline makes no LLM calls. Embeddings run locally (Ollama or in-process) or via an API you choose.", color: "teal" },
 ];
 
 const colorMap: Record<string, string> = {
@@ -425,14 +412,14 @@ function HeroPipeline() {
 
 const lifecycleDetailed = [
   { step: "Input", label: "User sends a message", detail: "Raw text enters the system via POST /memory/store API with API key authentication.", icon: <Eye className="w-5 h-5" />, system: "API", color: "from-cyan-500 to-blue-500" },
-  { step: "Intent Engine", label: "Detects user's cognitive intent", detail: "Sub-10ms NLP classifier detects goal, preference, or research intent to guide recall strategy.", icon: <Target className="w-5 h-5" />, system: "Python", color: "from-rose-500 to-red-500" },
+  { step: "Fact Extraction", label: "Facts become slots", detail: "A rule grammar extracts (entity, relation, value) facts such as user::location = Pune; newer values supersede older ones at recall.", icon: <Target className="w-5 h-5" />, system: "Python", color: "from-rose-500 to-red-500" },
   { step: "Sensory Buffer", label: "60s TTL deque captures it", detail: "Bounded deque (maxlen=10) with 60-second time-to-live. Ultra-short-term iconic memory.", icon: <Eye className="w-5 h-5" />, system: "Python", color: "from-blue-500 to-indigo-500" },
-  { step: "Working Memory", label: "Active context updated", detail: "Rolling conversation summary maintained in JSON. The AI's scratchpad for current session.", icon: <Brain className="w-5 h-5" />, system: "Python", color: "from-indigo-500 to-purple-500" },
-  { step: "Episodic Storage", label: "Stored as timeline event", detail: "Persisted to SQLite (WAL mode) with importance scoring, reinforcement tracking, and keyword indexing.", icon: <Database className="w-5 h-5" />, system: "Python", color: "from-purple-500 to-violet-500" },
-  { step: "Semantic Embedding", label: "Embedded in 128D vector space", detail: "128-dimensional vector generated and sent to C++ VectorEngine for cosine similarity indexing.", icon: <Cpu className="w-5 h-5" />, system: "C++", color: "from-orange-500 to-amber-500" },
-  { step: "Long-Term Gate", label: "High-importance promoted", detail: "Memories scoring >8.0 importance are promoted to long-term storage with Ebbinghaus decay protection.", icon: <Shield className="w-5 h-5" />, system: "Python", color: "from-emerald-500 to-teal-500" },
-  { step: "Reflection", label: "LLM generates insights", detail: "Background threads via diverse LLM architectures analyze memory patterns and generate high-level behavioral reflections.", icon: <Lightbulb className="w-5 h-5" />, system: "Ollama", color: "from-amber-500 to-yellow-500" },
-  { step: "Meta-Memory", label: "System self-optimizes", detail: "Meta-analyzer evolves schemas, optimizes retrieval policies, and tunes attention weights autonomously for cross-model continuity.", icon: <Sparkles className="w-5 h-5" />, system: "Python", color: "from-rose-500 to-pink-500" },
+  { step: "Working Memory", label: "Active context updated", detail: "Sliding window of the user's recent messages, one SQLite row per user.", icon: <Brain className="w-5 h-5" />, system: "Python", color: "from-indigo-500 to-purple-500" },
+  { step: "Episodic Storage", label: "Stored as timeline event", detail: "Persisted to SQLite (WAL) with its embedding, a learned importance score and an FTS5 index. SQLite is the source of truth.", icon: <Database className="w-5 h-5" />, system: "Python", color: "from-purple-500 to-violet-500" },
+  { step: "Semantic Embedding", label: "Embedded once, indexed per user", detail: "One embedding (dimension set by the configured model) is stored with the memory and added to the user's HNSW index.", icon: <Cpu className="w-5 h-5" />, system: "C++", color: "from-orange-500 to-amber-500" },
+  { step: "Long-Term Gate", label: "High-importance promoted", detail: "Memories at or above memory.long_term_min_importance are promoted to long-term facts with Ebbinghaus decay.", icon: <Shield className="w-5 h-5" />, system: "Python", color: "from-emerald-500 to-teal-500" },
+  { step: "Reflection", label: "Replay job summarises", detail: "A background job selects the most representative long-term facts (MMR) and records theme shares as a reflection.", icon: <Lightbulb className="w-5 h-5" />, system: "Python", color: "from-amber-500 to-yellow-500" },
+  { step: "Learned Recall", label: "Rank, arbitrate, or abstain", detail: "Candidates are scored by a fitted logistic model; one value per fact survives; below the learned threshold Recallix returns nothing.", icon: <Sparkles className="w-5 h-5" />, system: "Python", color: "from-rose-500 to-pink-500" },
 ];
 
 function MemoryLifecycleSection() {
@@ -591,8 +578,8 @@ export default function HomePage() {
         </AnimatedSection>
         <AnimatedSection delay={0.2}>
           <p className="text-xl md:text-2xl text-zinc-500 font-bold max-w-3xl mx-auto mb-12 leading-relaxed">
-            0.01ms writes. Sub-2ms search.<br />
-            The first verified cross-model memory substrate for AI agents.
+            {largestClustered ? `${ms(largestClustered.search_avg_ms, 2)} vector search at ${largestClustered.n.toLocaleString()} vectors (recall@10 ${pct(largestClustered.recall_at_10, 1)}).` : null}<br />
+            Persistent, LLM-free memory for AI agents.
           </p>
         </AnimatedSection>
         <AnimatedSection delay={0.3} className="relative z-10">
@@ -623,10 +610,10 @@ export default function HomePage() {
       {/* STATS OVERVIEW */}
       <section className="relative max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-6 py-12">
         {[
-          { label: 'Writes', value: '0.01ms', unit: '', icon: Zap, color: 'text-blue-400' },
-          { label: 'Recall@5 (1k nodes)', value: '96.4%', unit: '', icon: Activity, color: 'text-purple-400' },
-          { label: 'Multi-Agent Fidelity', value: '100%', unit: '', icon: Database, color: 'text-orange-400' },
-          { label: '500-Turn Retention', value: '75%', unit: '', icon: ShieldCheck, color: 'text-emerald-400' },
+          { label: 'Held-out recall hit@1', value: pct(headline?.retrieval?.['hit@1']), unit: '', icon: Activity, color: 'text-purple-400' },
+          { label: 'Unanswerable declined', value: pct(headline?.retrieval?.abstain_accuracy), unit: '', icon: ShieldCheck, color: 'text-emerald-400' },
+          { label: `Engine recall@10 (${largestClustered ? (largestClustered.n / 1e6).toFixed(1) + 'M' : '—'})`, value: pct(largestClustered?.recall_at_10, 1), unit: '', icon: Database, color: 'text-orange-400' },
+          { label: '500-Turn Retention', value: headline?.legacy ? `${headline.legacy.retention_hits}/${headline.legacy.retention_total}` : '—', unit: '', icon: Zap, color: 'text-blue-400' },
         ].map((stat, i) => (
           <div key={i} className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-3`} />
@@ -702,7 +689,7 @@ export default function HomePage() {
               </div>
               <p className="text-zinc-400 font-bold leading-relaxed">
                 Recallix is a plug-and-play cognitive memory engine. A universal interop substrate with
-                HNSW indexing, hardware-accelerated search, and self-evolving schemas for any AI.
+                per-user HNSW indexes, learned and explainable ranking, and no LLM in the loop.
               </p>
             </AnimatedSection>
             <AnimatedSection delay={0.3}>
@@ -737,7 +724,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-black">Python AI Brain</h3>
               </div>
               <div className="space-y-3">
-                {["Memory Manager", "Recall Engine", "Attention Controller", "Model Router (Ollama)", "World Model", "Meta-Memory Optimizer"].map((item) => (
+                {["Memory Manager", "Recall Engine + learned ranker", "Truth arbitration", "Index sync (SQLite → HNSW)", "World-model jobs", "Embedding router"].map((item) => (
                   <div key={item} className="flex items-center gap-2 text-sm font-bold text-zinc-400">
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
                     {item}

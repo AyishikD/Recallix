@@ -1,0 +1,205 @@
+"""
+Learned relevance model for recall.
+
+    P(relevant | query, memory) = sigmoid(bias + sum_k w_k * x_k)
+
+Features (all in [0, 1]) for one candidate memory:
+  semantic          cosine(query embedding, memory embedding), clipped to [0, 1]
+  lexical           BM25 magnitude / max BM25 magnitude among this query's candidates
+  entity_index      memory was found through the entity index (its fact is about a named query entity)
+  entity_match      memory mentions a named entity of the question
+  entity_conflict   question names entities; memory only names other ones
+  relation_match    one of the memory's fact slots has the relation asked about
+  relation_text     no such slot, but the memory text uses a word of that relation group
+  relation_conflict question asks a relation; memory has fact slots, none of them that relation
+  slot_match        a fact slot matches both the entity and the relation asked about
+  salience          importance / 10
+  recency           rank of the memory's timestamp among the candidates (1 = newest)
+  alias_bridge      memory only defines an alias used to expand the query
+  own_private       memory is private to the calling agent (vs shared)
+
+Weights and the abstention threshold are fitted (fit_ranker.py) on labelled
+recall data — the eval dev split, and/or real feedback logged through
+POST /memory/feedback. A fitted model in <storage>/ranker_model.json
+overrides the defaults below.
+"""
+import json
+import os
+import re
+import sqlite3
+import time
+
+from backend.utils.paths import get_db_path
+
+FEATURES = ["semantic", "lexical", "entity_index", "entity_match", "entity_conflict", "relation_match",
+            "relation_text", "relation_conflict", "slot_match", "salience", "recency", "alias_bridge",
+            "own_private"]
+
+# Shipped default model, produced by `python eval/run_eval.py --fit-ranker` (provenance
+# is recorded inside the file). A deployment-specific fit in <storage>/ranker_model.json
+# (fit_ranker.py --from-db) takes precedence.
+DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(__file__), "ranker_model.default.json")
+
+
+def _load_default():
+    with open(DEFAULT_MODEL_PATH) as f:
+        return json.load(f)
+
+
+DEFAULT_MODEL = _load_default()
+
+
+def model_path():
+    return get_db_path("backend/storage/ranker_model.json")
+
+
+class Ranker:
+    _model = None
+    _mtime = None
+
+    @classmethod
+    def model(cls):
+        path = model_path()
+        mtime = (path, os.path.getmtime(path) if os.path.exists(path) else None)
+        if cls._model is None or mtime != cls._mtime:
+            model = DEFAULT_MODEL
+            if mtime[1] is not None:
+                try:
+                    with open(path) as f:
+                        loaded = json.load(f)
+                    if set(["bias"] + FEATURES) <= set(loaded.get("weights", {})) and "threshold" in loaded:
+                        model = loaded
+                except (OSError, ValueError):
+                    pass
+            cls._model, cls._mtime = model, mtime
+        return cls._model
+
+    @classmethod
+    def score(cls, features, model=None):
+        import math
+        w = (model or cls.model())["weights"]
+        z = w["bias"] + sum(w[k] * features.get(k, 0.0) for k in FEATURES)
+        return 1.0 / (1.0 + math.exp(-z))
+
+    @classmethod
+    def threshold(cls, model=None):
+        return float((model or cls.model())["threshold"])
+
+
+# ---------------------------------------------------------------------------
+# Feature extraction
+# ---------------------------------------------------------------------------
+def memory_slots(memory):
+    metadata = memory.get("metadata") or {}
+    if isinstance(metadata, str):
+        try:
+            metadata = json.loads(metadata)
+        except ValueError:
+            metadata = {}
+    slots = metadata.get("slots", []) if isinstance(metadata, dict) else []
+    return slots if isinstance(slots, list) else []
+
+
+def candidate_features(candidates, analysis, agent_id, alias_sources=()):
+    """Attaches c["features"] to every candidate (needs c["semantic_score"] set)."""
+    from backend.brain.features.query import (memory_entities, entity_matches, relation_matches,
+                                              slot_matches, RELATION_GROUPS)
+    q_ents = analysis["strong_entities"]
+    asks_rel = analysis["asks_relation"]
+    q_rels = analysis["relations"]
+    asked_words = set().union(*(g for g in RELATION_GROUPS if g & q_rels)) if asks_rel else set()
+    asks_name = bool(q_rels & {"name", "called", "alias"})
+
+    max_bm25 = max((abs(c.get("bm25_score") or 0.0) for c in candidates if not c.get("symbolic_match")), default=0.0)
+    order = sorted(range(len(candidates)), key=lambda i: float(candidates[i].get("timestamp") or 0.0))
+    recency = {i: (rank / (len(order) - 1) if len(order) > 1 else 1.0) for rank, i in enumerate(order)}
+
+    for i, c in enumerate(candidates):
+        slots = memory_slots(c)
+        m_ents = memory_entities(c.get("content", ""), slots)
+        ent_match = bool(q_ents) and any(entity_matches(q, m) for q in q_ents for m in m_ents)
+        named = {m for m in m_ents if m != "user"}
+        rel_match = asks_rel and any(relation_matches(s.get("relation", ""), q_rels) for s in slots)
+        words = set(re.findall(r"[a-z]+", c.get("content", "").lower()))
+        bm25 = abs(c.get("bm25_score") or 0.0)
+        c["features"] = {
+            "semantic": min(max(float(c.get("semantic_score") or 0.0), 0.0), 1.0),
+            "lexical": (bm25 / max_bm25) if (max_bm25 > 0 and not c.get("symbolic_match")) else 0.0,
+            "entity_index": 1.0 if c.get("symbolic_match") else 0.0,
+            "entity_match": 1.0 if ent_match else 0.0,
+            "entity_conflict": 1.0 if (q_ents and not ent_match and named) else 0.0,
+            "relation_match": 1.0 if rel_match else 0.0,
+            "relation_text": 1.0 if (asks_rel and not slots and words & asked_words) else 0.0,
+            "relation_conflict": 1.0 if (asks_rel and slots and not rel_match) else 0.0,
+            "slot_match": 1.0 if any(slot_matches(s, analysis) for s in slots) else 0.0,
+            "salience": min(max(float(c.get("importance") or 5.0) / 10.0, 0.0), 1.0),
+            "recency": recency[i],
+            "alias_bridge": 1.0 if (c.get("id") in alias_sources and not asks_name) else 0.0,
+            "own_private": 1.0 if (c.get("memory_type") == "private" and c.get("agent_id") == agent_id) else 0.0,
+        }
+    return candidates
+
+
+# ---------------------------------------------------------------------------
+# Recall log (training data from real usage)
+# ---------------------------------------------------------------------------
+class RecallLog:
+    """
+    Stores the features of the top candidates of each recall so that explicit
+    feedback (POST /memory/feedback) turns them into labelled training data.
+    """
+
+    def __init__(self, db_path=None):
+        self.db_path = db_path or get_db_path("backend/storage/sqlite_db/recall_log.db")
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS recall_candidates (
+                recall_id TEXT, user_id TEXT, memory_id INTEGER, rank INTEGER,
+                features TEXT, label INTEGER, timestamp REAL,
+                PRIMARY KEY (recall_id, memory_id)
+            )
+        ''')
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_recall_user ON recall_candidates(user_id, recall_id)")
+        conn.commit()
+        conn.close()
+
+    def log(self, recall_id, user_id, ranked, top_n=20):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            conn.executemany(
+                "INSERT OR REPLACE INTO recall_candidates VALUES (?, ?, ?, ?, ?, NULL, ?)",
+                [(recall_id, user_id, c["id"], rank, json.dumps(c.get("features", {})), time.time())
+                 for rank, c in enumerate(ranked[:top_n]) if c.get("features")])
+        conn.close()
+
+    def feedback(self, recall_id, user_id, relevant_ids):
+        """Marks the listed memories relevant (1) and the other logged candidates not relevant (0)."""
+        relevant = {int(i) for i in relevant_ids}
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            rows = conn.execute("SELECT memory_id FROM recall_candidates WHERE recall_id = ? AND user_id = ?",
+                                (recall_id, user_id)).fetchall()
+            for (mid,) in rows:
+                conn.execute("UPDATE recall_candidates SET label = ? WHERE recall_id = ? AND memory_id = ?",
+                             (1 if mid in relevant else 0, recall_id, mid))
+        conn.close()
+        return len(rows)
+
+    def labelled(self):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        rows = conn.execute("SELECT recall_id, features, label FROM recall_candidates WHERE label IS NOT NULL").fetchall()
+        conn.close()
+        return [(rid, json.loads(f), int(lbl)) for rid, f, lbl in rows]
+
+    def clear_user(self, user_id):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            conn.execute("DELETE FROM recall_candidates WHERE user_id = ?", (user_id,))
+        conn.close()
+
+    def clear_all(self):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            conn.execute("DELETE FROM recall_candidates")
+        conn.close()

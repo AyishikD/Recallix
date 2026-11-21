@@ -1,35 +1,26 @@
 import math
 import time
 
+from backend import settings
+
+
 class DecayLogic:
     @staticmethod
-    def calculate_strength(base_importance, last_accessed, access_count):
+    def calculate_strength(base_importance, last_accessed, access_count, now=None):
         """
-        Human-like memory strength based on Ebbinghaus Forgetting Curve.
-        R = e^(-t/S) where R is retention, t is time, S is stability.
+        Ebbinghaus forgetting curve: strength = importance * exp(-t / S).
+
+        Stability S grows with importance and (logarithmically) with the number
+        of accesses, and is measured in units of memory.decay_unit_hours
+        (config.yaml), applied consistently at every age.
         """
-        # Time elapsed in hours (for development we might use seconds)
-        # Using seconds for demonstration purposes
-        # Default to current time if never accessed
+        now = time.time() if now is None else now
         if last_accessed is None:
-            last_accessed = time.time()
-            
-        t = time.time() - last_accessed
-        
-        # Stability S increases with more accesses
-        stability = (base_importance * 0.5) * (1 + math.log(access_count + 1))
-        
-        # Prevent division by zero
-        stability = max(stability, 0.1)
-        
-        # R = e^(-t/S)
-        retention = math.exp(-t / (stability * 3600)) # Scale stability to hours
-        
-        # For dev/demo: scale to seconds instead of hours if elapsed time is short
-        if t < 3600:
-             retention = math.exp(-t / stability)
-             
-        return retention * base_importance
+            last_accessed = now
+        t_hours = max(0.0, now - float(last_accessed)) / 3600.0
+        unit = float(settings.get("memory.decay_unit_hours", 24))
+        stability = max((float(base_importance) * 0.5) * (1 + math.log((access_count or 0) + 1)), 0.1)
+        return float(base_importance) * math.exp(-t_hours / (stability * unit))
 
     @staticmethod
     def reinforce(access_count):

@@ -1,48 +1,34 @@
 @startuml High_Level_Architecture
+title Recallix — high-level architecture (no LLM in the memory pipeline)
 
-!define RECTANGLE class
+actor "Client / Agent\n(SDK, RAG app, dashboard)" as Client
 
-package "User Interface" {
-    [Next.js Dashboard] <<Frontend>>
-    [Streamlit Chat] <<RAG App>>
+package "API process (Python, FastAPI)" {
+  [Auth\n(hashed API keys, roles,\nper-user rate limit)] as Auth
+  [MemoryManager\nstore / delete / clear] as MM
+  [RecallEngine\ncandidates → learned ranker\n→ truth arbitration → abstain] as RE
+  [IndexSync\nrebuild indexes from SQLite] as Sync
+  [Scheduler\nstate inference · prediction\nreplay · forgetting] as Jobs
 }
 
-package "Orchestration Layer" {
-    [FastAPI Backend] <<Python>>
-}
+database "SQLite (storage.root)\nsystem of record:\nmemories + embeddings, FTS5,\nlong-term, timeline, reflections,\nworld state, recall log, archive" as DB
 
-package "Cognitive Brain (Python)" {
-    [MemoryManager]
-    [RecallEngine]
-    [StateInference]
-    [MetaMemoryEngine]
-}
+node "Vector engine (C++)\none HNSW index per user\nNEON / AVX2 dot product" as Engine
+cloud "Embedding provider\n(ollama | local | API)" as Emb
 
-package "Infrastructure Layer (C++)" {
-    [VectorEngine]
-    [GraphEngine]
-    [ClusteringEngine]
-    [TimelineEngine]
-}
-
-package "Models & AI" {
-    [Ollama (Llama 3.1:8B)]
-}
-
-package "Storage & Persistence" {
-    database "SQLite (Episodic, States, Registry)"
-    database "Vector Storage (128D Embeddings)"
-}
-
-' Interactions
-[Next.js Dashboard] --> [FastAPI Backend] : REST API
-[Streamlit Chat] --> [FastAPI Backend] : REST API / SDK
-[FastAPI Backend] --> [MemoryManager] : Method Call
-[MemoryManager] --> [VectorEngine] : HTTP POST (8080)
-[MemoryManager] --> [GraphEngine] : HTTP POST (8080)
-[MemoryManager] --> [TimelineEngine] : HTTP POST (8080)
-[MemoryManager] --> [Ollama (Llama 3.1:8B)] : REST API
-[MemoryManager] --> [SQLite (Episodic, States, Registry)] : SQL (WAL Mode)
-[VectorEngine] --> [Vector Storage (128D Embeddings)] : Direct IO
+Client --> Auth : HTTPS + X-API-Key
+Auth --> MM
+Auth --> RE
+MM --> Emb : 1 embedding per store
+RE --> Emb : 1 embedding per recall
+MM --> DB
+RE --> DB : FTS5 + batched reads
+MM --> Engine : /add (namespace = user)
+RE --> Engine : /search
+Sync --> Engine : /configure /bulk_add /drop
+Sync --> DB
+Jobs --> DB
+Jobs --> MM
+Engine ..> Sync : X-Engine-Instance change\n(restart) triggers rebuild
 
 @enduml

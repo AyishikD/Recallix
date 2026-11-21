@@ -1,23 +1,14 @@
-from backend.brain.models.model_router import ModelRouter
-
 class PredictiveRecall:
     def __init__(self, memory_manager):
         self.memory = memory_manager
-        self.router = ModelRouter()
 
-    def preload_context(self, user_id, current_message):
+    def preload_context(self, user_id, current_message, limit=5):
         """
-        Predictive Recall Pipeline
+        Predictive recall without an LLM: the topic is the message's schema
+        (nearest prototype), and the predicted memories are the top lexical
+        matches for the message among the user's stored memories.
         """
-        # 1. Detect active topic using Smart Model
-        prompt = f"Detect the primary topic of this user message: {current_message}"
-        topic = self.router.route("reasoning", prompt)
-        
-        # 2. Predict relevant memories based on topic
-        # Expand through graph neighbors (graphEngine call)
-        # Search relevant semantic vectors
-        
-        # 3. Preload into cache
-        print(f"[Predictive] Preloading context for topic: {topic}")
-        # This would return structured context for the final reasoning stage
-        return {"topic": topic, "predicted_memories": []}
+        vec = self.memory.semantic.embed(current_message)
+        topic = self.memory.schema_classifier.classify(current_message, vec)
+        predicted = self.memory.episodic.search(user_id, current_message, limit=limit)[:limit]
+        return {"topic": topic, "predicted_memories": predicted}

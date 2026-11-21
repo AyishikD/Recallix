@@ -1,3 +1,7 @@
+# LEGACY SCRIPT: written for the pre-2026-11 API and engine protocol; kept for reference only.
+# Maintained equivalents: eval/run_eval.py (retrieval, gauntlet, retention), backend/infra_cpp/benchmark_hnsw,
+# examples/multi_agent_handover.py. Keys come from RECALLIX_API_KEY / RECALLIX_INTERNAL_KEY.
+import os
 import requests
 import numpy as np
 import time
@@ -5,7 +9,7 @@ import random
 
 INFRA_URL = "http://localhost:8080"
 VECTOR_DIM = 128
-headers = {"X-Internal-Key": "Recallix-Core-8892"}
+headers = {"X-Internal-Key": os.environ["RECALLIX_INTERNAL_KEY"]}
 
 def test_recall(scale, num_clusters, noise):
     requests.post(f"{INFRA_URL}/clear", headers=headers)

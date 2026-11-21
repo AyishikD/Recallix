@@ -13,7 +13,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from "recharts";
-import { memoryApi } from "@/lib/api";
+import { memoryApi, API_BASE } from "@/lib/api";
 import Link from "next/link";
 
 const chartData = [
@@ -49,7 +49,7 @@ export default function ObservabilityPage() {
     const [isClient, setIsClient] = useState(false);
     const [stats, setStats] = useState<any>(null);
     const [sysStats, setSysStats] = useState<any>(null);
-    const [metaInsights, setMetaInsights] = useState<any[]>([]);
+    const [insights, setInsights] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [history, setHistory] = useState<any[]>([]);
     const [prevStats, setPrevStats] = useState<any>(null);
@@ -64,10 +64,10 @@ export default function ObservabilityPage() {
     }, []);
 
     const loadData = async () => {
-        const [statsRes, sysRes, metaRes] = await Promise.all([
+        const [statsRes, sysRes, insightRes] = await Promise.all([
             memoryApi.stats(),
             memoryApi.systemStats(),
-            memoryApi.metaInsights(),
+            memoryApi.insights(),
         ]);
         
         if (statsRes.data) {
@@ -81,7 +81,7 @@ export default function ObservabilityPage() {
                 const newEntry = {
                     time: timeStr,
                     memories: statsRes.data.episodic_memories,
-                    queries: Math.floor(Math.random() * 20) + 10, // Mock query volume for now
+                    timeline: statsRes.data.timeline_events,
                 };
                 const newHistory = [...prev, newEntry];
                 if (newHistory.length > 20) return newHistory.slice(1);
@@ -89,8 +89,8 @@ export default function ObservabilityPage() {
             });
         }
         
-        if (sysRes.data) setSysStats(sysRes.data);
-        if (metaRes.data) setMetaInsights(Array.isArray(metaRes.data) ? metaRes.data : []);
+        if (sysRes.data) setSysStats({ ...(sysRes.data.user_index || {}), engine: sysRes.data.engine });
+        if (insightRes.data) setInsights(Array.isArray(insightRes.data) ? insightRes.data : []);
         setLoading(false);
     };
 
@@ -106,7 +106,7 @@ export default function ObservabilityPage() {
         { label: "Episodic Recall", usage: Math.min(100, Math.floor(((stats?.episodic_memories || 0) / 1000) * 100)), color: "bg-cyan-500" },
         { label: "Timeline Nodes", usage: Math.min(100, Math.floor(((stats?.timeline_events || 0) / 500) * 100)), color: "bg-purple-500" },
         { label: "Reflection Density", usage: Math.min(100, Math.floor(((stats?.reflections || 0) / 100) * 100)), color: "bg-blue-500" },
-        { label: "HNSW Max Layer", usage: Math.min(100, (sysStats?.max_layer || 1) * 20), color: "bg-zinc-500" },
+        { label: "HNSW Max Layer", usage: Math.min(100, Math.max(0, sysStats?.max_level ?? 0) * 20), color: "bg-zinc-500" },
     ];
 
     return (
@@ -133,10 +133,10 @@ export default function ObservabilityPage() {
                 {/* Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                     <MetricCard title="Stored Memories" value={stats?.episodic_memories ?? 0} unit="events" icon={Database} trend={calculateTrend(stats?.episodic_memories, prevStats?.episodic_memories)} loading={loading} />
-                    <MetricCard title="HNSW Nodes" value={sysStats?.total_nodes ?? 0} unit="vectors" icon={Zap} loading={loading} />
+                    <MetricCard title="HNSW Nodes" value={sysStats?.live ?? 0} unit="vectors" icon={Zap} loading={loading} />
                     <MetricCard title="Reflections" value={stats?.reflections ?? 0} unit="insights" icon={RefreshCw} loading={loading} />
-                    <MetricCard title="Max Layer" value={sysStats?.max_layer ?? 0} unit="lvl" icon={Layers} loading={loading} />
-                    <MetricCard title="Active Agents" value={stats?.active_agents ?? 0} unit="registered" icon={Brain} loading={loading} />
+                    <MetricCard title="Max Layer" value={sysStats?.max_level ?? 0} unit="lvl" icon={Layers} loading={loading} />
+                    <MetricCard title="World-State Keys" value={stats?.world_state_keys ?? 0} unit="facts" icon={Brain} loading={loading} />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -145,11 +145,11 @@ export default function ObservabilityPage() {
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h3 className="text-lg font-black tracking-tight">System Utilization</h3>
-                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Memory growth vs Query volume (Real-time)</p>
+                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Stored memories vs timeline events (polled every 3s)</p>
                             </div>
                             <div className="flex gap-4">
                                 <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-cyan-500" /><span className="text-[10px] font-black uppercase text-zinc-500">Memories</span></div>
-                                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /><span className="text-[10px] font-black uppercase text-zinc-500">Queries</span></div>
+                                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500" /><span className="text-[10px] font-black uppercase text-zinc-500">Timeline</span></div>
                             </div>
                         </div>
                         <div className="flex-1 w-full">
@@ -171,7 +171,7 @@ export default function ObservabilityPage() {
                                         <YAxis stroke="#6b7280" fontSize={10} axisLine={false} tickLine={false} />
                                         <Tooltip contentStyle={{ backgroundColor: "#09090b", border: "1px solid #1f2937", borderRadius: "12px" }} itemStyle={{ color: "#fff" }} />
                                         <Area type="monotone" dataKey="memories" stroke="#22d3ee" strokeWidth={2} fillOpacity={1} fill="url(#colorMem)" isAnimationActive={false} />
-                                        <Area type="monotone" dataKey="queries" stroke="#a78bfa" strokeWidth={2} fillOpacity={1} fill="url(#colorQue)" isAnimationActive={false} />
+                                        <Area type="monotone" dataKey="timeline" stroke="#a78bfa" strokeWidth={2} fillOpacity={1} fill="url(#colorQue)" isAnimationActive={false} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             ) : (
@@ -207,33 +207,33 @@ export default function ObservabilityPage() {
                             </div>
                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
                                 <span className="text-zinc-500">Pending Background</span>
-                                <span className="text-amber-400">{sysStats?.pending_nodes || 0}</span>
+                                <span className="text-amber-400">{sysStats?.pending || 0}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Meta-Memory Insights (live from backend) */}
+                {/* Reflections (live from backend) */}
                 <div className="glass-card rounded-[28px] border-white/5 p-6 mb-8">
                     <div className="flex items-center gap-3 mb-6">
                         <Sparkles className="w-5 h-5 text-purple-400" />
-                        <h3 className="text-lg font-black tracking-tight">Meta-Memory Insights</h3>
+                        <h3 className="text-lg font-black tracking-tight">Reflections</h3>
                         <Badge className="text-[9px] bg-purple-500/10 border-purple-500/20 text-purple-400 font-black">LIVE FROM BACKEND</Badge>
                     </div>
-                    {metaInsights.length > 0 ? (
+                    {insights.length > 0 ? (
                         <div className="space-y-3">
-                            {metaInsights.map((ins, i) => (
+                            {insights.map((ins, i) => (
                                 <div key={i} className="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/50 flex items-start gap-3">
-                                    <Badge className="text-[9px] bg-zinc-800 text-zinc-400 border-zinc-700 shrink-0 mt-0.5">{ins.meta_type}</Badge>
+                                    <Badge className="text-[9px] bg-zinc-800 text-zinc-400 border-zinc-700 shrink-0 mt-0.5">replay</Badge>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-bold text-zinc-300 leading-relaxed">{ins.insight_text}</p>
-                                        <p className="text-[10px] text-zinc-600 mt-1">Component: {ins.component} · Confidence: {Math.round(ins.confidence * 100)}%</p>
+                                        <p className="text-xs font-bold text-zinc-300 leading-relaxed">{ins.summary}</p>
+                                        <p className="text-[10px] text-zinc-600 mt-1">Confidence: {Math.round((ins.confidence || 0) * 100)}%</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-xs font-bold text-zinc-600 text-center py-8">No meta-memory insights yet. Insights generate as you interact with agents.</p>
+                        <p className="text-xs font-bold text-zinc-600 text-center py-8">No reflections yet. The replay job writes them from long-term facts (workers.replay_hours).</p>
                     )}
                 </div>
 
@@ -244,18 +244,18 @@ export default function ObservabilityPage() {
                             <Cpu className="w-6 h-6 text-zinc-500" />
                         </div>
                         <div>
-                            <h4 className="text-sm font-black tracking-tight">Recallix Core v1.0.4</h4>
-                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Engine: HNSW+NEON · Environment: macOS ARM64 · API: :8000</p>
+                            <h4 className="text-sm font-black tracking-tight">Recallix vector engine</h4>
+                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Status: {sysStats?.engine?.status ?? "unreachable"} · API: {API_BASE}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="text-right">
-                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Engine Latency</p>
-                            <p className="text-xs font-bold text-white">0.106ms Avg</p>
+                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Indexes (users)</p>
+                            <p className="text-xs font-bold text-white">{sysStats?.engine?.namespaces ?? "—"}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Memory Moat</p>
-                            <p className="text-xs font-bold text-cyan-400">NEON SIMD Active</p>
+                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">SIMD Backend</p>
+                            <p className="text-xs font-bold text-cyan-400">{sysStats?.engine?.simd ?? "—"}</p>
                         </div>
                     </div>
                 </div>

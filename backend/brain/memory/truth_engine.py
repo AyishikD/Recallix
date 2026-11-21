@@ -1,122 +1,78 @@
-import time
+"""
+Truth arbitration: at most one value per fact slot.
+
+Candidates are grouped by the fact slot that answers the question (or, if
+none, the memory's first fact). Within a slot, memories are walked in time
+order: a newer value supersedes an older one, and an explicit negation of the
+fact ("X is not Y", "X is no longer Y") invalidates it. Only the surviving
+value of each slot is returned; memories without facts pass through.
+
+Scores are not changed here; ordering is by the ranker's relevance.
+"""
+import json
+import re
+from collections import defaultdict
+
+_NEGATED_FACT = re.compile(r"\b(?:is|are|was|were|am)\s+(?:not|no\s+longer|n't)\b|\b(?:isn't|aren't|wasn't)\b", re.I)
+_NEGATED_VALUE = re.compile(r"^\s*(?:not|no\s+longer)\b", re.I)
+_FILLER = {"anymore", "any", "more", "now", "longer", "the", "a", "an", "still"}
+
+
+def _value_tokens(value):
+    return {t for t in re.findall(r"[a-z0-9]+", str(value).lower()) if t not in _FILLER}
+
+
+def _same_value(a, b):
+    """Values match if one's content tokens contain the other's (e.g. 'December 12' vs 'December 12 anymore')."""
+    return bool(a) and bool(b) and (a <= b or b <= a)
+
 
 class TruthEngine:
-    """
-    Recallix Truth Engine v1: The Epistemic Discipline Layer.
-    Responsible for temporal arbitration, hard abstention, and conflict resolution.
-    """
-    def __init__(self, threshold=0.35):
-        self.threshold = threshold
-
-    def resolve(self, ranked_memories, query_context):
-        """
-        Arbitrate between competing memories and enforce truth consistency.
-        """
-        if not ranked_memories:
-            return [], "NO_MATCH"
-
-        # 1. Sort by Hop Priority + Score + Recency
-        # We prioritize facts discovered via Reasoning Engine (is_hop_result)
-        ranked_memories.sort(key=lambda x: (
-            x.get("is_hop_result", False),
-            x.get("unified_score", 0.0), 
-            x.get("timestamp", 0.0)
-        ), reverse=True)
-
-        # 2. Hard Abstention Gate (Squelch Hallucinations)
-        top_mem = ranked_memories[0]
-        top_score = top_mem.get("unified_score", 0.0)
-        is_reasoned = top_mem.get("is_hop_result", False)
-        
-        if top_score < self.threshold and not is_reasoned:
-            print(f"[TruthEngine] Abstaining: Top score {top_score:.2f} below threshold {self.threshold:.2f}")
-            return [], "UNCERTAIN"
-
-        # 3. Temporal Slot Arbitration (State Transitions)
-        import math
-        import json
-        from collections import defaultdict
-        
-        now = time.time()
-        tau = 86400 * 7 # 1 week
-        
+    def resolve(self, ranked):
+        if not ranked:
+            return []
         groups = defaultdict(list)
-        
-        for mem in ranked_memories:
-            # Unified Clamped Scoring before grouping
-            semantic_score = mem.get("unified_score", 0.0)
-            timestamp = float(mem.get("timestamp", 0.0))
-            access_count = float(mem.get("retrieval_count", 0))
-            
-            recency_score = max(0.2, math.exp(-(now - timestamp) / tau))
-            access_freq_norm = min(1.0, access_count / 10.0)
-            
-            if not mem.get("is_hop_result") and not mem.get("is_fallback"):
-                mem["unified_score"] = (semantic_score * 0.6) + (recency_score * 0.3) + (access_freq_norm * 0.1)
-
-            # Slot Assignment
-            metadata = mem.get("metadata", {})
+        free = []
+        for mem in ranked:
+            metadata = mem.get("metadata") or {}
             if isinstance(metadata, str):
-                try: metadata = json.loads(metadata)
-                except: metadata = {}
-
-            slots = metadata.get("slots", [])
-            slot_id = None
-            if slots and isinstance(slots, list):
-                slot_id = slots[0].get("slot_id")
-                mem["_slot_value"] = slots[0].get("value")
-            
-            if slot_id:
-                mem["_slot_id"] = slot_id
-                groups[slot_id].append(mem)
+                try:
+                    metadata = json.loads(metadata)
+                except ValueError:
+                    metadata = {}
+            slots = metadata.get("slots", []) if isinstance(metadata, dict) else []
+            chosen = mem.get("_query_slot") or (slots[0] if slots else None)
+            if chosen and chosen.get("slot_id"):
+                mem["_slot_value"] = chosen.get("value")
+                groups[chosen["slot_id"]].append(mem)
             else:
-                groups["unstructured"].append(mem)
+                mem["truth_status"] = "verified"
+                free.append(mem)
 
-        resolved_memories = []
-        
-        # 4. Resolve Each Slot
+        resolved = list(free)
         for slot_id, items in groups.items():
-            if slot_id == "unstructured":
-                for m in items:
-                    m["truth_status"] = "verified"
-                    resolved_memories.append(m)
-                continue
-            
-            # Sort chronologically to walk history
-            items = sorted(items, key=lambda x: float(x.get("timestamp", 0.0)))
-            
             active = None
-            for m in items:
-                content = str(m.get("content", "")).lower()
-                # Explicit Negation
-                if " not " in content or content.startswith("not "):
-                    active = None
-                    m["truth_status"] = "invalid"
+            history = []  # every asserted (non-negation) memory of this slot, oldest first
+            for m in sorted(items, key=lambda x: float(x.get("timestamp") or 0.0)):
+                if _NEGATED_FACT.search(str(m.get("content", ""))) or _NEGATED_VALUE.match(str(m.get("_slot_value", ""))):
+                    # "X is not V" invalidates the value V only. If V is the current
+                    # value, fall back to the newest earlier value that is not V.
+                    negated = _value_tokens(_NEGATED_VALUE.sub("", str(m.get("_slot_value", ""))))
+                    m["truth_status"] = "negation"
+                    if active is not None and _same_value(_value_tokens(active.get("_slot_value", "")), negated):
+                        active["truth_status"] = "invalidated"
+                        alive = [h for h in history if h.get("truth_status") != "invalidated"
+                                 and not _same_value(_value_tokens(h.get("_slot_value", "")), negated)]
+                        active = alive[-1] if alive else None
                     continue
-                
-                # Explicit Override Detection
-                if active and m.get("_slot_value") != active.get("_slot_value"):
+                history.append(m)
+                if active is not None and m.get("_slot_value") != active.get("_slot_value"):
                     active["truth_status"] = "superseded"
                     active["superseded_by"] = m.get("id")
-                
-                m["truth_status"] = "active"
                 active = m
-            
-            if active:
+            if active is not None:
                 active["truth_status"] = "verified"
-                resolved_memories.append(active)
-        
-        # Enforce Final Return Contract: At most ONE value per slot_id
-        for slot_id, items in groups.items():
-            if slot_id != "unstructured":
-                # Ensure only one is marked verified in the resolved_memories
-                verified_in_slot = [m for m in resolved_memories if m.get("_slot_id") == slot_id and m.get("truth_status") == "verified"]
-                assert len(verified_in_slot) <= 1, f"Bug in Truth Engine: Multiple verified truths for {slot_id}"
+                resolved.append(active)
 
-        # 5. Re-sort by updated unified_score
-        resolved_memories.sort(key=lambda x: (
-            x.get("is_hop_result", False),
-            x.get("unified_score", 0.0)
-        ), reverse=True)
-
-        return resolved_memories, "CONSISTENT"
+        resolved.sort(key=lambda x: (x.get("is_hop_result", False), x.get("relevance", 0.0)), reverse=True)
+        return resolved

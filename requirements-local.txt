@@ -1,0 +1,3 @@
+# embedding_provider: local (in-process sentence-transformers, fully offline)
+-r requirements.txt
+sentence-transformers>=2.6

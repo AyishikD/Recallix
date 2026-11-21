@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import hashlib
+import hmac
 
 DB_PATH = "rag_chat_app/app_data.db"
 
@@ -46,17 +47,29 @@ def init_db():
     conn.commit()
     conn.close()
 
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+PBKDF2_ITERATIONS = 200_000
+
+
+def hash_password(password, salt=None):
+    """Salted PBKDF2-HMAC-SHA256, stored as 'pbkdf2$<iterations>$<salt hex>$<hash hex>'."""
+    salt = salt or os.urandom(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, PBKDF2_ITERATIONS)
+    return f"pbkdf2${PBKDF2_ITERATIONS}${salt.hex()}${digest.hex()}"
+
+
+def verify_password(password, stored):
+    if stored.startswith("pbkdf2$"):
+        _, iterations, salt_hex, digest_hex = stored.split("$")
+        digest = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt_hex), int(iterations))
+        return hmac.compare_digest(digest.hex(), digest_hex)
+    # legacy unsalted SHA-256 rows (upgraded on next successful login)
+    return hmac.compare_digest(hashlib.sha256(password.encode()).hexdigest(), stored)
 
 def register_user(username, password):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        # For simplicity in this demo, every user gets the same local_dev_key
-        # In a real app, you'd manage API keys per user
-        cursor.execute("INSERT INTO users (username, password_hash, api_key) VALUES (?, ?, ?)", 
-                       (username, hash_password(password), "local_dev_key"))
+        cursor.execute("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, hash_password(password)))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -64,14 +77,22 @@ def register_user(username, password):
     finally:
         conn.close()
 
+
 def login_user(username, password):
+    """Returns (id, username) or None."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, username, api_key FROM users WHERE username = ? AND password_hash = ?", 
-                   (username, hash_password(password)))
-    user = cursor.fetchone()
+    cursor.execute("SELECT id, username, password_hash FROM users WHERE username = ?", (username,))
+    row = cursor.fetchone()
+    user = None
+    if row and verify_password(password, row[2]):
+        user = (row[0], row[1])
+        if not row[2].startswith("pbkdf2$"):
+            cursor.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(password), row[0]))
+            conn.commit()
     conn.close()
     return user
+
 
 def create_session(user_id, agent_id='default_agent'):
     conn = sqlite3.connect(DB_PATH)

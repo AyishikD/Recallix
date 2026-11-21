@@ -1,63 +1,58 @@
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-import time
-import os
-import sqlite3
-from backend.utils.internal_client import internal_post
-from backend.utils.paths import get_db_path
+"""
+Maintenance endpoints. Admin keys only.
+"""
+from typing import Literal, Optional
 
-router = APIRouter(prefix="/internal", tags=["Internal System API"])
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+
+from backend.api.deps import get_memory_manager, get_scheduler
+from backend.api.middleware.auth import require_admin
+from backend.api.public.public_api import envelope
+from backend.brain.memory import index_sync
+from backend.utils.internal_client import EngineError
+
+router = APIRouter(prefix="/internal", tags=["Internal System API"], dependencies=[Depends(require_admin)])
+
 
 class ClearRequest(BaseModel):
-    user_id: str
+    user_id: str  # a user id, or "all"
+
+
+class ReindexRequest(BaseModel):
+    force: bool = False
+    backfill: bool = False
+
+
+class JobRequest(BaseModel):
+    job: Literal["state_inference", "prediction", "replay", "forgetting"]
+    user_id: Optional[str] = None
+
 
 @router.post("/clear")
-async def clear_system_memory(request: ClearRequest):
-    """
-    NUCLEAR OPTION: Clears all memory for a specific user or the entire system.
-    """
+def clear_memory(request: ClearRequest):
+    """Deletes one user's data (or everyone's with user_id="all") from every store and the vector index."""
+    mm = get_memory_manager()
     try:
-        # 1. Clear SQLite Episodic Memory
-        db_path = get_db_path("backend/storage/sqlite_db/memory.db")
-        if os.path.exists(db_path):
-            with sqlite3.connect(db_path, timeout=60) as conn:
-                cursor = conn.cursor()
-                cursor.execute("PRAGMA journal_mode=WAL")
-                if request.user_id == "all" or not request.user_id:
-                     cursor.execute("DELETE FROM episodic_events")
-                     cursor.execute("DELETE FROM episodic_fts")
-                else:
-                    # Clear both events and the FTS index for the user
-                    cursor.execute("DELETE FROM episodic_fts WHERE content_id IN (SELECT id FROM episodic_events WHERE user_id = ?)", (request.user_id,))
-                    cursor.execute("DELETE FROM episodic_events WHERE user_id = ?", (request.user_id,))
-                conn.commit()
+        n = mm.clear_all() if request.user_id == "all" else mm.clear_user(request.user_id)
+    except EngineError as e:
+        raise HTTPException(status_code=503, detail=f"SQLite cleared but vector engine failed: {e}")
+    return envelope({"user_id": request.user_id, "memories_deleted": n})
 
-        # 2. Clear C++ Vector Engine with Verification & Retry
-        max_retries = 3
-        cleared = False
-        for attempt in range(max_retries):
-            try:
-                # Fix #13: Use internal_post with auth key
-                res = internal_post("http://localhost:8080/clear", {})
-                if res.status_code == 200:
-                    cleared = True
-                    break
-            except Exception as e:
-                print(f"[InternalAPI] Clear attempt {attempt+1} failed: {e}")
-                time.sleep(1)
-        
-        if not cleared:
-            print("[InternalAPI] CRITICAL: Vector engine clear failed after retries.")
-        
-        return {
-            "status": "success" if cleared else "partial_success", 
-            "message": f"Memory wipe processed for {request.user_id}.",
-            "vector_engine_cleared": cleared,
-            "timestamp": time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/cluster/recompute")
-async def recompute_clusters():
-    return {"status": "success", "message": "Cluster recomputation triggered"}
+@router.post("/reindex")
+def reindex(request: ReindexRequest):
+    mm = get_memory_manager()
+    try:
+        report = {}
+        if request.backfill:
+            report["backfill"] = index_sync.backfill(mm.episodic, mm.semantic)
+        report["sync"] = index_sync.sync(mm.episodic, mm.semantic, force=request.force)
+    except EngineError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    return envelope(report)
+
+
+@router.post("/jobs/run")
+def run_job(request: JobRequest):
+    return envelope(get_scheduler().run_job(request.job, request.user_id))

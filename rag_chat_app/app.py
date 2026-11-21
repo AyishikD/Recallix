@@ -50,8 +50,6 @@ if "user_id" not in st.session_state:
     st.session_state.user_id = None
 if "username" not in st.session_state:
     st.session_state.username = None
-if "api_key" not in st.session_state:
-    st.session_state.api_key = None
 if "session_id" not in st.session_state:
     st.session_state.session_id = None
 if "memory_client" not in st.session_state:
@@ -74,8 +72,8 @@ with st.sidebar:
                     st.session_state.logged_in = True
                     st.session_state.user_id = user[0]
                     st.session_state.username = user[1]
-                    st.session_state.api_key = user[2]
-                    st.session_state.memory_client = MemoryOSClient(user[2])
+                    # one service key for the app; memories are scoped per chat user
+                    st.session_state.memory_client = MemoryOSClient(user_id=f"rag-{user[0]}")
                     st.session_state.session_id = create_session(user[0])
                     st.rerun()
                 else:

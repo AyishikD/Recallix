@@ -1,0 +1,30 @@
+{"text": "My name is Priya Raman.", "slots": {"user::name": "Priya Raman"}}
+{"text": "Call me Dev.", "slots": {"user::name": "Dev"}}
+{"text": "I live in Pune now.", "slots": {"user::location": "Pune"}}
+{"text": "I work at Zomato as a data analyst.", "slots": {"user::employer": "Zomato as a data analyst"}}
+{"text": "I'm a product designer.", "slots": {"user::role": "product designer"}}
+{"text": "I have a dog named Bruno.", "slots": {"user::dog": "Bruno"}}
+{"text": "Mochi is my cat.", "slots": {"user::cat": "Mochi"}}
+{"text": "My birthday is on 14 August.", "slots": {"user::birthday": "14 August"}}
+{"text": "I am 29 years old.", "slots": {"user::age": "29"}}
+{"text": "My email is priya.r@example.com", "slots": {"user::email": "priya.r@example.com"}}
+{"text": "Rahul's phone number is 98300 12345.", "slots": {"rahul::phone": "98300 12345"}}
+{"text": "The Orion launch date is March 4.", "slots": {"orion::launch_date": "March 4"}}
+{"text": "The Orion launch has been pushed to April 2.", "slots": {"orion::launch": "April 2"}}
+{"text": "Project Kestrel deadline is next Friday.", "slots": {"projectkestrel::deadline": "next Friday"}}
+{"text": "The standup is at 10am.", "slots": {"standup::when": "10am"}}
+{"text": "The offsite was moved to the 21st.", "slots": {"offsite::when": "the 21st"}}
+{"text": "Our budget for Q3 is $40,000.", "slots": {"user::budget_for_q3": "$40,000"}}
+{"text": "The capital of Australia is Canberra.", "slots": {"australia::capital": "Canberra"}}
+{"text": "Anita lives in Bangalore.", "slots": {"anita::location": "Bangalore"}}
+{"text": "Marco works at Stripe.", "slots": {"marco::employer": "Stripe"}}
+{"text": "The staging server is also known as Falcon.", "slots": {"falcon::alias_of": "staging server"}}
+{"text": "I'm allergic to shellfish.", "slots": {"user::allergy": "shellfish"}}
+{"text": "My cat is sleeping on the couch.", "slots": {}}
+{"text": "My day is going pretty well.", "slots": {}}
+{"text": "It is really hot today.", "slots": {}}
+{"text": "That was a great movie.", "slots": {}}
+{"text": "I think the build is broken again.", "slots": {}}
+{"text": "Thanks, that helps a lot!", "slots": {}}
+{"text": "My favourite band is Coldplay.", "slots": {"user::favorite_band": "Coldplay"}}
+{"text": "I moved to Hyderabad last year.", "slots": {"user::location": "Hyderabad last year"}}

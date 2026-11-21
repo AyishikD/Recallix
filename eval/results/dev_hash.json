@@ -1,0 +1,348 @@
+{
+  "split": "dev",
+  "embedder": "hash",
+  "facts": {
+    "precision": 0.9583333333333334,
+    "recall": 0.9583333333333334,
+    "f1": 0.9583333333333334
+  },
+  "schemas": {
+    "accuracy": 0.5151515151515151
+  },
+  "importance": {
+    "auc": 0.9936507936507937,
+    "accuracy": 0.8055555555555556
+  },
+  "retrieval": {
+    "hit@1": 0.8571428571428571,
+    "hit@3": 0.8571428571428571,
+    "stale_top": 0,
+    "false_abstain_rate": 0.14285714285714285,
+    "abstain_accuracy": 0.75,
+    "embed_calls_per_query": 1.0,
+    "recall_ms_p50": 3.1,
+    "recall_ms_p95": 3.8499999999999996,
+    "store_ms_p50": 3.9,
+    "store_stage_ms_mean": {
+      "Sensory & Working Memory": 0.537,
+      "Embedding": 0.0,
+      "Fact Extraction": 0.0,
+      "Schema Classification": 0.163,
+      "Importance Scoring": 0.922,
+      "Episodic Storage": 1.439,
+      "Vector Engine": 0.424,
+      "Long-Term Promotion": 0.494
+    }
+  },
+  "legacy": {
+    "gauntlet_passed": 4,
+    "gauntlet_total": 12,
+    "retention_hits": 7,
+    "retention_total": 8
+  },
+  "example": {
+    "stores": [
+      {
+        "content": "I'm allergic to peanuts and prefer dark chocolate.",
+        "importance": 8.03,
+        "schemas": [
+          "preference"
+        ],
+        "promoted": true,
+        "slots": [
+          "user::allergy = peanuts and prefer dark chocolate"
+        ],
+        "processing_log": [
+          {
+            "system": "python",
+            "stage": "Sensory & Working Memory",
+            "detail": "Updated sliding windows",
+            "duration_ms": 0.6
+          },
+          {
+            "system": "embedding",
+            "stage": "Embedding",
+            "detail": "OK",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Fact Extraction",
+            "detail": "Slots: ['user::allergy']",
+            "duration_ms": 0.1
+          },
+          {
+            "system": "python",
+            "stage": "Schema Classification",
+            "detail": "Schemas: ['preference']",
+            "duration_ms": 1.5
+          },
+          {
+            "system": "python",
+            "stage": "Importance Scoring",
+            "detail": "Score: 8.0/10 | novelty=1.00, information=0.93, specificity=0.00, goal=0.00, preference=1.00, explicit=0.00, small_talk=0.00, brevity=0.00",
+            "duration_ms": 1.0
+          },
+          {
+            "system": "python",
+            "stage": "Episodic Storage",
+            "detail": "Stored in SQLite id=561",
+            "duration_ms": 1.5
+          },
+          {
+            "system": "cpp",
+            "stage": "Vector Engine",
+            "detail": "Indexed",
+            "duration_ms": 0.5
+          },
+          {
+            "system": "python",
+            "stage": "Long-Term Promotion",
+            "detail": "importance 8.0",
+            "duration_ms": 0.5
+          }
+        ]
+      },
+      {
+        "content": "My name is Priya and I live in Pune.",
+        "importance": 8.4,
+        "schemas": [
+          "identity"
+        ],
+        "promoted": true,
+        "slots": [
+          "user::name = Priya"
+        ],
+        "processing_log": [
+          {
+            "system": "python",
+            "stage": "Sensory & Working Memory",
+            "detail": "Updated sliding windows",
+            "duration_ms": 0.6
+          },
+          {
+            "system": "embedding",
+            "stage": "Embedding",
+            "detail": "OK",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Fact Extraction",
+            "detail": "Slots: ['user::name']",
+            "duration_ms": 0.1
+          },
+          {
+            "system": "python",
+            "stage": "Schema Classification",
+            "detail": "Schemas: ['identity']",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Importance Scoring",
+            "detail": "Score: 8.4/10 | novelty=1.00, information=0.89, specificity=0.63, goal=0.00, preference=0.00, explicit=0.00, small_talk=0.00, brevity=0.00",
+            "duration_ms": 0.9
+          },
+          {
+            "system": "python",
+            "stage": "Episodic Storage",
+            "detail": "Stored in SQLite id=562",
+            "duration_ms": 1.5
+          },
+          {
+            "system": "cpp",
+            "stage": "Vector Engine",
+            "detail": "Indexed",
+            "duration_ms": 0.5
+          },
+          {
+            "system": "python",
+            "stage": "Long-Term Promotion",
+            "detail": "importance 8.4",
+            "duration_ms": 0.5
+          }
+        ]
+      },
+      {
+        "content": "Need to renew my passport before 1 June.",
+        "importance": 9.57,
+        "schemas": [
+          "task"
+        ],
+        "promoted": true,
+        "slots": [],
+        "processing_log": [
+          {
+            "system": "python",
+            "stage": "Sensory & Working Memory",
+            "detail": "Updated sliding windows",
+            "duration_ms": 0.6
+          },
+          {
+            "system": "embedding",
+            "stage": "Embedding",
+            "detail": "OK",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Fact Extraction",
+            "detail": "Slots: []",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Schema Classification",
+            "detail": "Schemas: ['task']",
+            "duration_ms": 0.1
+          },
+          {
+            "system": "python",
+            "stage": "Importance Scoring",
+            "detail": "Score: 9.6/10 | novelty=1.00, information=0.97, specificity=0.78, goal=1.00, preference=0.00, explicit=0.00, small_talk=0.00, brevity=0.00",
+            "duration_ms": 0.8
+          },
+          {
+            "system": "python",
+            "stage": "Episodic Storage",
+            "detail": "Stored in SQLite id=563",
+            "duration_ms": 1.6
+          },
+          {
+            "system": "cpp",
+            "stage": "Vector Engine",
+            "detail": "Indexed",
+            "duration_ms": 0.4
+          },
+          {
+            "system": "python",
+            "stage": "Long-Term Promotion",
+            "detail": "importance 9.6",
+            "duration_ms": 0.5
+          }
+        ]
+      },
+      {
+        "content": "The weather is nice today.",
+        "importance": 4.1,
+        "schemas": [
+          "identity"
+        ],
+        "promoted": false,
+        "slots": [],
+        "processing_log": [
+          {
+            "system": "python",
+            "stage": "Sensory & Working Memory",
+            "detail": "Updated sliding windows",
+            "duration_ms": 0.5
+          },
+          {
+            "system": "embedding",
+            "stage": "Embedding",
+            "detail": "OK",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Fact Extraction",
+            "detail": "Slots: []",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Schema Classification",
+            "detail": "Schemas: ['identity']",
+            "duration_ms": 0.0
+          },
+          {
+            "system": "python",
+            "stage": "Importance Scoring",
+            "detail": "Score: 4.1/10 | novelty=0.71, information=0.71, specificity=0.00, goal=0.00, preference=0.00, explicit=0.00, small_talk=0.00, brevity=0.00",
+            "duration_ms": 0.8
+          },
+          {
+            "system": "python",
+            "stage": "Episodic Storage",
+            "detail": "Stored in SQLite id=564",
+            "duration_ms": 1.5
+          },
+          {
+            "system": "cpp",
+            "stage": "Vector Engine",
+            "detail": "Indexed",
+            "duration_ms": 0.4
+          }
+        ]
+      }
+    ],
+    "query": "What am I allergic to?",
+    "recall": {
+      "status": "CONSISTENT",
+      "latency_ms": 3.0,
+      "threshold": 0.3282,
+      "memories": [
+        {
+          "content": "I'm allergic to peanuts and prefer dark chocolate.",
+          "relevance": 0.922,
+          "explain": {
+            "semantic": 0.316,
+            "lexical": 1.0,
+            "entity_index": 0.0,
+            "entity_match": 1.0,
+            "entity_conflict": 0.0,
+            "relation_match": 1.0,
+            "relation_text": 0.0,
+            "relation_conflict": 0.0,
+            "slot_match": 1.0,
+            "salience": 0.803,
+            "recency": 0.0,
+            "alias_bridge": 0.0,
+            "own_private": 1.0
+          }
+        },
+        {
+          "content": "Need to renew my passport before 1 June.",
+          "relevance": 0.2937,
+          "explain": {
+            "semantic": 0.316,
+            "lexical": 0.0,
+            "entity_index": 0.0,
+            "entity_match": 1.0,
+            "entity_conflict": 0.0,
+            "relation_match": 0.0,
+            "relation_text": 0.0,
+            "relation_conflict": 0.0,
+            "slot_match": 0.0,
+            "salience": 0.957,
+            "recency": 0.667,
+            "alias_bridge": 0.0,
+            "own_private": 1.0
+          }
+        },
+        {
+          "content": "My name is Priya and I live in Pune.",
+          "relevance": 0.033,
+          "explain": {
+            "semantic": 0.0,
+            "lexical": 0.0,
+            "entity_index": 0.0,
+            "entity_match": 1.0,
+            "entity_conflict": 0.0,
+            "relation_match": 0.0,
+            "relation_text": 0.0,
+            "relation_conflict": 1.0,
+            "slot_match": 0.0,
+            "salience": 0.84,
+            "recency": 0.333,
+            "alias_bridge": 0.0,
+            "own_private": 1.0
+          }
+        }
+      ]
+    }
+  },
+  "engine": "real",
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2"
+}

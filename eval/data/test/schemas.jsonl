@@ -1,0 +1,33 @@
+{"text": "I'm Rohan, a backend developer from Kolkata.", "label": "identity"}
+{"text": "I was born in 1990 in Nairobi.", "label": "identity"}
+{"text": "I'm colour-blind, so red and green look similar to me.", "label": "identity"}
+{"text": "I speak Bengali and English at home.", "label": "identity"}
+{"text": "I can't stand loud restaurants.", "label": "preference"}
+{"text": "Dark chocolate over milk chocolate, always.", "label": "preference"}
+{"text": "I enjoy long walks in the rain.", "label": "preference"}
+{"text": "Please use metric units with me.", "label": "preference"}
+{"text": "Parent-teacher meeting on Tuesday at 5.", "label": "calendar"}
+{"text": "Flight to Delhi is on the 18th.", "label": "calendar"}
+{"text": "The quarterly review got pushed to next week.", "label": "calendar"}
+{"text": "Dinner reservation tonight at 8:15.", "label": "calendar"}
+{"text": "I'm reading a textbook on compilers.", "label": "learning"}
+{"text": "Trying to get my head around Bayesian statistics.", "label": "learning"}
+{"text": "Taking guitar lessons on weekends.", "label": "learning"}
+{"text": "What's the difference between TCP and UDP?", "label": "learning"}
+{"text": "Remind me to water the plants.", "label": "task"}
+{"text": "I must book the car service this week.", "label": "task"}
+{"text": "Todo: migrate the database to Postgres 16.", "label": "task"}
+{"text": "I should call the landlord about the leak.", "label": "task"}
+{"text": "The vault master password is in the safe.", "label": "security"}
+{"text": "Someone tried to log in to my account from Russia.", "label": "security"}
+{"text": "Revoke the old deploy token.", "label": "security"}
+{"text": "My door code is 4-4-1-9.", "label": "security"}
+{"text": "Mom is visiting us for two weeks.", "label": "social"}
+{"text": "Had a long call with my best friend last night.", "label": "social"}
+{"text": "Our team is going bowling on Friday evening.", "label": "social"}
+{"text": "My partner and I just celebrated five years together.", "label": "social"}
+{"text": "Bananas are technically berries.", "label": "general"}
+{"text": "It rained the whole afternoon.", "label": "general"}
+{"text": "The new phone models look boring.", "label": "general"}
+{"text": "Mount Everest keeps getting slightly taller.", "label": "general"}
+{"text": "The match ended in a draw.", "label": "general"}

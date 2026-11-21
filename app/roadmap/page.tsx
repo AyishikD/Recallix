@@ -35,10 +35,10 @@ const roadmapSections = [
     icon: AlertTriangle,
     color: "rose",
     tasks: [
-      { name: "SQLite Bottleneck", detail: "WAL mode locks under concurrent agent writes. Migration to RocksDB/Postgres required for scale.", status: "critical" },
-      { name: "Heuristic Ranking", detail: "ImportanceRanker is fragile and regex-based. Fails on nuanced date/time contexts.", status: "bug" },
-      { name: "Regex Intent Detection", detail: "Sub-optimal accuracy. Defaulting to 'conversational' too often. Needs MiniLM classifier.", status: "debt" },
-      { name: "SIMD Portability", detail: "NEON only. x86 falls back to scalar. AVX2 implementation required for cloud parity.", status: "debt" },
+      { name: "Single-process API", detail: "One API process owns SQLite and the background jobs. Horizontal scaling needs a shared database and job coordination.", status: "debt" },
+      { name: "Small eval sets", detail: "Tens of labelled items per task, written by the same author as the rules. Independent test data needed.", status: "debt" },
+      { name: "Fact-extraction coverage", detail: "Rule grammar misses phrasings such as 'we have a…', 'rescheduled to', 'also called'. Gauntlet: see Benchmarks.", status: "bug" },
+      { name: "Tombstone compaction", detail: "Deleted vectors stay in the HNSW graph until a rebuild (python -m backend.tools.reindex --force).", status: "debt" },
     ]
   },
   {

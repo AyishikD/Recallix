@@ -1,0 +1,3 @@
+{"impl": "hnswlib", "n": 100000, "dim": 128, "data": "clustered", "M": 16, "efConstruction": 100, "efSearch": 50, "recall_at_10": 0.9707, "build_seconds": 7.83, "search_avg_ms": 0.0683}
+{"impl": "hnswlib", "n": 100000, "dim": 128, "data": "uniform", "M": 16, "efConstruction": 100, "efSearch": 50, "recall_at_10": 0.1897, "build_seconds": 29.96, "search_avg_ms": 0.1387}
+{"impl": "hnswlib", "n": 100000, "dim": 128, "data": "uniform", "M": 16, "efConstruction": 100, "efSearch": 200, "recall_at_10": 0.48, "build_seconds": 29.69, "search_avg_ms": 0.4629}
