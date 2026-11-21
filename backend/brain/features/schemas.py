@@ -16,6 +16,7 @@ Seed embeddings are cached on disk per embedding model.
 """
 import json
 import re
+import threading
 
 import numpy as np
 
@@ -132,9 +133,9 @@ class SchemaClassifier:
         self.model_name = model_name
         self.cache_path = cache_path or get_db_path("backend/storage/schema_prototypes.json")
         self.labels = list(SEEDS.keys())
-        self._seeds = None      # np.ndarray [n_seeds_total, dim]
-        self._seed_label = None  # np.ndarray [n_seeds_total] of label index
-        self._centroids = None  # np.ndarray [n_labels, dim]
+        # (seeds [n_seeds, dim], seed_labels [n_seeds], centroids [n_labels, dim]); replaced atomically
+        self._state = None
+        self._lock = threading.Lock()
 
     # -- prototypes -------------------------------------------------------
     def _seed_signature(self):
@@ -171,17 +172,27 @@ class SchemaClassifier:
         return vecs, labels
 
     def _prepare(self, dim):
-        if self._seeds is not None and self._seeds.shape[1] == dim:
-            return True
-        loaded = self._load_cache()
-        if loaded is None or loaded[0].shape[1] != dim:
-            loaded = self._build()
-        if loaded is None:
-            return False
-        self._seeds, self._seed_label = loaded
-        cents = np.vstack([self._seeds[self._seed_label == i].mean(axis=0) for i in range(len(self.labels))])
-        self._centroids = cents / np.linalg.norm(cents, axis=1, keepdims=True)
-        return True
+        """
+        Returns (seeds, seed_labels, centroids) for this dimension, or None.
+        Built under a lock and published as one immutable tuple, so concurrent
+        requests never see seeds without centroids.
+        """
+        state = self._state
+        if state is not None and state[0].shape[1] == dim:
+            return state
+        with self._lock:
+            state = self._state
+            if state is not None and state[0].shape[1] == dim:
+                return state
+            loaded = self._load_cache()
+            if loaded is None or loaded[0].shape[1] != dim:
+                loaded = self._build()
+            if loaded is None:
+                return None
+            seeds, labels = loaded
+            cents = np.vstack([seeds[labels == i].mean(axis=0) for i in range(len(self.labels))])
+            self._state = (seeds, labels, cents / np.linalg.norm(cents, axis=1, keepdims=True))
+            return self._state
 
     # -- classification ---------------------------------------------------
     def cue_hits(self, text):
@@ -189,12 +200,14 @@ class SchemaClassifier:
 
     def scores(self, text, vec):
         """Per-label scores, or None when no embedding is available."""
-        if vec is None or not self._prepare(len(vec)):
+        state = self._prepare(len(vec)) if vec is not None else None
+        if state is None:
             return None
         v = np.asarray(vec, dtype=np.float32)
-        proto = self._centroids @ v
-        seed_sims = self._seeds @ v
-        nearest = np.array([seed_sims[self._seed_label == i].max() for i in range(len(self.labels))])
+        seeds, seed_labels, centroids = state
+        proto = centroids @ v
+        seed_sims = seeds @ v
+        nearest = np.array([seed_sims[seed_labels == i].max() for i in range(len(self.labels))])
         return ALPHA * proto + (1 - ALPHA) * nearest + CUE_WEIGHT * np.minimum(self.cue_hits(text), 3)
 
     def classify(self, text, vec):
