@@ -109,7 +109,7 @@ bool VectorEngine::add(const std::string &id, const std::vector<float> &vec_in) 
     return false;
   std::vector<float> v = normalized(vec_in);
 
-  std::unique_lock<std::shared_mutex> lock(mu_);
+  std::unique_lock<FairSharedMutex> lock(mu_);
   auto it = idToNode_.find(id);
   if (it != idToNode_.end() && !deleted_[it->second]) { // upsert: tombstone old version
     deleted_[it->second] = 1;
@@ -127,7 +127,7 @@ bool VectorEngine::add(const std::string &id, const std::vector<float> &vec_in) 
 }
 
 bool VectorEngine::remove(const std::string &id) {
-  std::unique_lock<std::shared_mutex> lock(mu_);
+  std::unique_lock<FairSharedMutex> lock(mu_);
   auto it = idToNode_.find(id);
   if (it == idToNode_.end())
     return false;
@@ -142,7 +142,7 @@ bool VectorEngine::remove(const std::string &id) {
 std::size_t VectorEngine::indexPending(std::size_t max_items) {
   std::size_t done = 0;
   while (done < max_items) {
-    std::unique_lock<std::shared_mutex> lock(mu_); // per node, so searches interleave
+    std::unique_lock<FairSharedMutex> lock(mu_); // per node, so searches interleave
     if (pending_.empty())
       break;
     int node = pending_.front();
@@ -285,7 +285,7 @@ VectorEngine::search(const std::vector<float> &query, int k, int ef_search) cons
     return {};
   std::vector<float> q = normalized(query);
 
-  std::shared_lock<std::shared_mutex> lock(mu_);
+  std::shared_lock<FairSharedMutex> lock(mu_);
   std::vector<Candidate> hits;
 
   if (entry_ >= 0) {
@@ -313,17 +313,17 @@ VectorEngine::search(const std::vector<float> &query, int k, int ef_search) cons
 }
 
 void VectorEngine::setEfSearch(int ef) {
-  std::unique_lock<std::shared_mutex> lock(mu_);
+  std::unique_lock<FairSharedMutex> lock(mu_);
   efSearch_ = std::max(1, ef);
 }
 
 std::size_t VectorEngine::pendingCount() const {
-  std::shared_lock<std::shared_mutex> lock(mu_);
+  std::shared_lock<FairSharedMutex> lock(mu_);
   return pending_.size();
 }
 
 IndexStats VectorEngine::stats() const {
-  std::shared_lock<std::shared_mutex> lock(mu_);
+  std::shared_lock<FairSharedMutex> lock(mu_);
   return {ids_.size() - deletedCount_, indexedCount_, pending_.size(), deletedCount_,
           dim_, M_, efConstruction_, efSearch_, maxLevel_};
 }

@@ -14,6 +14,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]   # x86-64 (AVX2 path) and ARM64 (NEON path)
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30   # a hang should fail fast, not run for GitHub's 6-hour default
     steps:
       - uses: actions/checkout@v4
       - name: Build

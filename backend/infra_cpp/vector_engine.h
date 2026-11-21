@@ -4,7 +4,7 @@
 // HNSW approximate nearest-neighbour index (Malkov & Yashunin, 2018) over
 // unit-normalised float vectors, distance = 1 - dot(a, b).
 //
-// Concurrency model: one std::shared_mutex per index.
+// Concurrency model: one FairSharedMutex per index (below).
 //   * add / remove / indexPending (graph insertion) take the lock exclusively.
 //   * search takes it shared and never re-locks.
 // Every read of graph state therefore happens under the lock that guards it.
@@ -16,12 +16,53 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <mutex>
 #include <random>
 #include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+// A shared mutex that cannot starve writers.
+//
+// std::shared_mutex makes no fairness promise, and glibc's implementation
+// prefers readers: under continuous search traffic a writer waiting for
+// exclusive access may never get in (new readers keep overlapping), so new
+// memories would stop being added or linked. macOS's implementation is fair,
+// which is why the problem only shows on Linux.
+//
+// Turnstile: every acquisition passes through `gate_`. A writer holds the gate
+// while it waits for exclusive access, so new readers queue behind it while the
+// readers already inside finish. The gate is held only during acquisition,
+// never while the lock is in use, so it adds one uncontended mutex per call.
+// Satisfies SharedMutex for std::unique_lock / std::shared_lock.
+class FairSharedMutex {
+public:
+  void lock() {
+    std::lock_guard<std::mutex> g(gate_);
+    m_.lock();
+  }
+  bool try_lock() {
+    std::unique_lock<std::mutex> g(gate_, std::try_to_lock);
+    return g.owns_lock() && m_.try_lock();
+  }
+  void unlock() { m_.unlock(); }
+
+  void lock_shared() {
+    std::lock_guard<std::mutex> g(gate_);
+    m_.lock_shared();
+  }
+  bool try_lock_shared() {
+    std::unique_lock<std::mutex> g(gate_, std::try_to_lock);
+    return g.owns_lock() && m_.try_lock_shared();
+  }
+  void unlock_shared() { m_.unlock_shared(); }
+
+private:
+  std::mutex gate_;
+  std::shared_mutex m_;
+};
 
 struct IndexStats {
   std::size_t live;      // searchable vectors (indexed + pending, minus deleted)
@@ -68,7 +109,7 @@ private:
   int efSearch_;
   const double levelMult_;
 
-  mutable std::shared_mutex mu_;
+  mutable FairSharedMutex mu_;
 
   std::vector<float> data_; // node i occupies [i*dim, (i+1)*dim)
   std::vector<std::string> ids_;

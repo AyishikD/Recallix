@@ -38,6 +38,8 @@ enable_testing()
 add_executable(test_vector_engine test_vector_engine.cpp)
 target_link_libraries(test_vector_engine PRIVATE recallix_index)
 add_test(NAME vector_engine COMMAND test_vector_engine)
+# A hang (e.g. a lock that starves writers) must fail fast instead of eating CI time.
+set_tests_properties(vector_engine PROPERTIES TIMEOUT 300)
 
 # Same tests under ThreadSanitizer (data-race detection).
 option(RECALLIX_TSAN "Build the ThreadSanitizer test target" ON)
@@ -47,4 +49,5 @@ if(RECALLIX_TSAN)
     target_link_options(test_vector_engine_tsan PRIVATE -fsanitize=thread)
     target_link_libraries(test_vector_engine_tsan PRIVATE Threads::Threads)
     add_test(NAME vector_engine_tsan COMMAND test_vector_engine_tsan)
+    set_tests_properties(vector_engine_tsan PROPERTIES TIMEOUT 900)
 endif()
