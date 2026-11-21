@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "./motion";
 
@@ -99,8 +100,9 @@ const SLOTS = [
     { x: 22, y: 20 }, { x: 78, y: 24 }, { x: 18, y: 78 }, { x: 80, y: 76 }, { x: 50, y: 92 },
 ];
 
-export function MemoryStory({ query, status, memories }: { query: string; status: string; memories: StoryMemory[] }) {
-    const ref = useRef<HTMLDivElement>(null);
+/** Progress (0→1) through a tall section whose child is `position: sticky`. */
+export function usePinnedProgress<T extends HTMLElement>() {
+    const ref = useRef<T>(null);
     const [p, setP] = useState(0);
     useEffect(() => {
         const el = ref.current;
@@ -118,6 +120,11 @@ export function MemoryStory({ query, status, memories }: { query: string; status
         window.addEventListener("resize", onScroll);
         return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); cancelAnimationFrame(frame); };
     }, []);
+    return [ref, p] as const;
+}
+
+export function MemoryStory({ query, status, memories }: { query: string; status: string; memories: StoryMemory[] }) {
+    const [ref, p] = usePinnedProgress<HTMLElement>();
 
     const mems = memories.slice(0, SLOTS.length);
     const top = mems.reduce((best, m, i) => (m.relevance > mems[best].relevance ? i : best), 0);
@@ -242,5 +249,136 @@ export function AgentsHub() {
             <text x={cx} y={cy - 4} textAnchor="middle" fill="#000" fontSize="19" fontWeight="600">Recallix</text>
             <text x={cx} y={cy + 18} textAnchor="middle" fill="#6e6e73" fontSize="12">one memory per user</text>
         </svg>
+    );
+}
+
+/* ------------------------------------------------------------------------------------------
+ * PinnedSteps — a sticky section: the step list on the left advances with scroll while
+ * `visual(active, progress)` on the right changes to match. Scrolling up reverses it.
+ * ---------------------------------------------------------------------------------------- */
+export function PinnedSteps({ eyebrow, title, steps, visual, vhPerStep = 70, tone = "paper" }: {
+    eyebrow?: string; title?: string; steps: { title: string; detail: string }[];
+    visual: (active: number, progress: number) => React.ReactNode; vhPerStep?: number; tone?: "paper" | "cloud";
+}) {
+    const [ref, p] = usePinnedProgress<HTMLElement>();
+    const n = steps.length;
+    const active = Math.min(n - 1, Math.floor(p * n));
+    return (
+        <section ref={ref} className={`relative ${tone === "cloud" ? "bg-cloud" : "bg-paper"} text-ink`} style={{ height: `${100 + n * vhPerStep}vh` }}>
+            <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+                <div className="mx-auto grid w-full max-w-[1080px] gap-8 px-5 md:grid-cols-[0.85fr_1.15fr] md:items-center">
+                    <div>
+                        {eyebrow && <p className="type-eyebrow mb-2 text-accent">{eyebrow}</p>}
+                        {title && <h2 className="type-headline mb-6 md:mb-8">{title}</h2>}
+                        <ol className="space-y-2.5 md:space-y-3">
+                            {steps.map((s, i) => (
+                                <li key={s.title} className="transition-all duration-500" style={{ opacity: i === active ? 1 : i < active ? 0.42 : 0.24 }}>
+                                    <p className={`font-semibold tracking-tight transition-all duration-500 ${i === active ? "text-[21px] md:text-[24px]" : "text-[16px] md:text-[17px]"}`}>
+                                        <span className="mr-3 text-[13px] font-normal tabular-nums text-ink-3">{String(i + 1).padStart(2, "0")}</span>{s.title}
+                                    </p>
+                                    <div className="grid transition-all duration-500" style={{ gridTemplateRows: i === active ? "1fr" : "0fr" }}>
+                                        <p className="overflow-hidden text-[15px] md:text-[16px] text-ink-2 pl-9 max-w-[440px]">{s.detail}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ol>
+                        <div className="mt-7 h-[2px] w-40 rounded-full bg-line overflow-hidden">
+                            <div className="h-full bg-ink" style={{ width: `${p * 100}%` }} />
+                        </div>
+                    </div>
+                    <div className="relative">{visual(active, p)}</div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+/* ------------------------------------------------------------------------------------------
+ * LayerStack — three slabs in 3D that pull apart with `spread` and highlight `active`.
+ * ---------------------------------------------------------------------------------------- */
+export function LayerStack({ layers, active, spread }: { layers: { name: string; sub: string }[]; active: number; spread: number }) {
+    const gap = 46 + 70 * easeOut(clamp01(spread));
+    return (
+        <div className="relative mx-auto h-[46vh] md:h-[min(64vh,540px)] w-full" style={{ perspective: "1400px" }}>
+            <div className="absolute left-1/2 top-1/2" style={{ transformStyle: "preserve-3d", transform: "translate(-50%, -50%) rotateX(58deg) rotateZ(-34deg)" }}>
+                {layers.map((l, i) => {
+                    const on = i === active;
+                    const z = (layers.length - 1 - i) * gap - ((layers.length - 1) * gap) / 2;
+                    return (
+                        <div key={l.name}
+                            className={`absolute left-1/2 top-1/2 w-[260px] h-[260px] md:w-[300px] md:h-[300px] rounded-[34px] transition-[background-color,box-shadow,opacity] duration-500 ${on ? "bg-ink" : "bg-[#2a2a2c]"}`}
+                            style={{
+                                transform: `translate(-50%, -50%) translateZ(${z}px)`,
+                                boxShadow: on ? "0 0 0 1px rgba(255,255,255,0.9)" : "inset 0 0 0 1px rgba(255,255,255,0.08)",
+                            }} />
+                    );
+                })}
+            </div>
+            <div className="absolute right-0 top-0 bottom-0 hidden md:flex flex-col justify-center gap-[18%] text-right pr-1">
+                {layers.map((l, i) => (
+                    <div key={l.name} className="transition-opacity duration-500" style={{ opacity: i === active ? 1 : 0.3 }}>
+                        <p className="text-[17px] font-semibold">{l.name}</p>
+                        <p className="text-[13px] text-ink-2">{l.sub}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/* ------------------------------------------------------------------------------------------
+ * TypeCode — code that writes itself, line by line, when it scrolls into view.
+ * Renders complete without JavaScript or under reduced motion.
+ * ---------------------------------------------------------------------------------------- */
+export function TypeCode({ code, label }: { code: string; label?: string }) {
+    const ref = useRef<HTMLPreElement>(null);
+    const [shown, setShown] = useState<number | null>(null);
+    const lines = code.split("\n");
+    useEffect(() => {
+        const el = ref.current;
+        if (!el || prefersReducedMotion() || !("IntersectionObserver" in window)) return;
+        let timer = 0;
+        const io = new IntersectionObserver(([e]) => {
+            if (!e.isIntersecting) return;
+            io.disconnect();
+            let i = 0;
+            const next = () => { i += 1; setShown(i); if (i < lines.length) timer = window.setTimeout(next, lines[i - 1].trim() ? 90 : 40); };
+            setShown(0);
+            timer = window.setTimeout(next, 250);
+        }, { threshold: 0.35 });
+        io.observe(el);
+        return () => { io.disconnect(); window.clearTimeout(timer); };
+    }, [lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
+    const visible = shown === null ? lines.length : shown;
+    return (
+        <div className="rounded-[20px] bg-card text-white overflow-hidden">
+            {label && <div className="px-5 py-3 border-b border-white/10 type-caption text-night-ink-2">{label}</div>}
+            <pre ref={ref} className="p-5 text-[13px] leading-relaxed whitespace-pre-wrap break-words">
+                <code>
+                    {lines.map((l, i) => (
+                        <span key={i} className="block transition-opacity duration-300" style={{ opacity: i < visible ? 1 : 0 }}>
+                            {l || " "}{i === visible - 1 && shown !== null && shown < lines.length ? <span className="ml-0.5 inline-block w-[7px] h-[14px] -mb-[2px] bg-accent animate-pulse" /> : null}
+                        </span>
+                    ))}
+                </code>
+            </pre>
+        </div>
+    );
+}
+
+/** The closing call to action shared by every page. */
+export function ClosingCTA() {
+    return (
+        <section className="relative overflow-hidden bg-night text-white">
+            <MemoryField density={0.7} />
+            <div className="relative mx-auto max-w-[1080px] px-5 py-24 md:py-32 text-center">
+                <h2 className="type-headline mx-auto max-w-[720px]">Give your agents a memory.</h2>
+                <p className="type-lede mx-auto mt-5 max-w-[620px] text-night-ink-2">Open source. Self-hosted. A few lines of code.</p>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+                    <Link href="/sdk" className="inline-flex h-10 items-center rounded-full px-5 text-[15px] bg-accent text-white hover:bg-accent-hover transition-colors">Get started</Link>
+                    <a href="https://github.com/AyishikD/Recallix" className="text-[17px] text-accent hover:underline">View on GitHub <span aria-hidden="true">›</span></a>
+                </div>
+            </div>
+        </section>
     );
 }

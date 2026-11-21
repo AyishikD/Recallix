@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { Eyebrow, Headline, Lede, Section } from "@/components/site/ui";
+import { Eyebrow, Headline, Lede, Reveal, Section } from "@/components/site/ui";
+import { MemoryField } from "@/components/site/story";
 import { API_BASE, memoryApi } from "@/lib/api";
 
 /* Live view of a running Recallix API. Nothing here is sample data: with no API reachable it says so. */
@@ -14,10 +15,10 @@ const HISTORY = 20;
 
 function Metric({ label, value }: { label: string; value: React.ReactNode }) {
     return (
-        <div className="rounded-[24px] card-edge p-6">
+        <Reveal from="up"><div className="rounded-[24px] card-edge p-6">
             <p className="text-[13px] text-ink-2">{label}</p>
             <p className="mt-2 text-[34px] font-semibold tracking-tight tabular-nums">{value ?? "—"}</p>
-        </div>
+        </div></Reveal>
     );
 }
 
@@ -56,11 +57,11 @@ export default function DashboardPage() {
     return (
         <main>
             <Nav />
-            <Section hero>
+            <Section hero backdrop={<MemoryField density={0.6} />}>
                 <div className="flex flex-wrap items-end justify-between gap-6">
                     <div>
-                        <Eyebrow>Dashboard</Eyebrow>
-                        <Headline as="h1">Your memory, live.</Headline>
+                        <Reveal from="fade"><Eyebrow>Dashboard</Eyebrow></Reveal>
+                        <Headline as="h1"><Reveal as="span" delay={0.1}>Your memory, live.</Reveal></Headline>
                     </div>
                     <div className="flex items-center gap-2 text-[14px] text-ink-2 pb-3">
                         <span className={`h-2 w-2 rounded-full ${reachable ? "bg-good" : reachable === false ? "bg-[#ff5d5d]" : "bg-ink-3"}`} />

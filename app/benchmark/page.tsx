@@ -3,7 +3,8 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { CountUp, DataTable, Eyebrow, Headline, Lede, Reveal, Section, Stat, Tile } from "@/components/site/ui";
+import { CountUp, DataTable, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
+import { ClosingCTA, MemoryField } from "@/components/site/story";
 import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, ms, pct, results } from "@/lib/results";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
@@ -24,15 +25,25 @@ export default function BenchmarkPage() {
         <main>
             <Nav />
 
-            <Section hero className="text-center">
-                <Reveal>
-                    <Eyebrow>Benchmarks</Eyebrow>
-                    <Headline as="h1">Measured. In the open.</Headline>
-                    <Lede className="mx-auto mt-6">
-                        Generated {results.generated_at} on {m.cpu || m.machine}. Reproduce every number with the commands in
-                        <code className="mx-1">eval/README.md</code>.
-                    </Lede>
-                </Reveal>
+            <Section hero className="text-center" backdrop={<MemoryField />}>
+                <ScrollFade>
+                    <Reveal from="fade"><Eyebrow>Benchmarks</Eyebrow></Reveal>
+                    <Headline as="h1">
+                        <Reveal as="span" delay={0.08}>Measured.</Reveal>
+                        <Reveal as="span" delay={0.2} className="text-sheen">In the open.</Reveal>
+                    </Headline>
+                    <Reveal delay={0.34}>
+                        <Lede className="mx-auto mt-6">
+                            Generated {results.generated_at} on {m.cpu || m.machine}. Reproduce every number with the commands in
+                            <code className="mx-1">eval/README.md</code>.
+                        </Lede>
+                    </Reveal>
+                </ScrollFade>
+            </Section>
+
+            <Section>
+                <ScrollWords className="type-headline max-w-[900px]"
+                    text="Every number on this page is produced by code in the repository, on held-out data, and can be reproduced on your own machine." />
             </Section>
 
             {longMemEval && (
@@ -51,11 +62,11 @@ export default function BenchmarkPage() {
                         <Reveal from="right" delay={0.08}><Tile><Stat value={<CountUp value={pct(longMemEval.abstention.unanswerable_declined)} />} label="of unanswerable questions declined"
                             sub={`Wrongly declined ${pct(longMemEval.abstention.answerable_wrongly_declined, 1)} of ${longMemEval.abstention.n_answerable} answerable questions.`} /></Tile></Reveal>
                     </div>
-                    <div className="mt-8">
+                    <Reveal className="mt-8">
                         <DataTable head={["System", "recall@5", "recall@10", "hit@10"]}
                             rows={Object.entries(longMemEval.systems).map(([name, r]) => [SYSTEM_LABEL[name] ?? name,
                                 pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)])} />
-                    </div>
+                    </Reveal>
                 </Section>
             )}
 
@@ -69,11 +80,11 @@ export default function BenchmarkPage() {
                             repeatedly during development, so read them as optimistic.
                         </Lede>
                     </Reveal>
-                    <div className="mt-10">
+                    <Reveal from="right" className="mt-10">
                         <DataTable head={["Split", "System", "recall@5", "recall@10", "hit@10"]}
                             rows={locomoRuns.flatMap(run => Object.entries(run.systems).map(([name, r]) => [run.split ?? "all", SYSTEM_LABEL[name] ?? name,
                                 pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)]))} />
-                    </div>
+                    </Reveal>
                     <p className="mt-5 text-[14px] text-ink-2">
                         {locomoRuns.map(run => `${run.split ?? "All conversations"}: declined ${pct(run.abstention.adversarial_declined)} of ${run.abstention.n_adversarial} adversarial questions, wrongly declined ${pct(run.abstention.answerable_wrongly_declined, 1)} of ${run.abstention.n_answerable} answerable.`).join("  ")}
                     </p>
@@ -97,7 +108,7 @@ export default function BenchmarkPage() {
                     </div>
                 )}
                 {chart.length > 0 && (
-                    <div className="mt-8 h-72 rounded-[20px] bg-night-2 p-5">
+                    <ScrollZoom className="mt-8"><div className="h-72 rounded-[20px] bg-night-2 p-5">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chart} barGap={6}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
@@ -108,7 +119,7 @@ export default function BenchmarkPage() {
                                 <Bar dataKey="hnswlib" fill="#48484a" radius={[6, 6, 0, 0]} isAnimationActive={false} />
                             </BarChart>
                         </ResponsiveContainer>
-                    </div>
+                    </div></ScrollZoom>
                 )}
                 <div className="mt-8">
                     <DataTable dark head={["Implementation", "Vectors", "Dim", "Data", "M / efC / efS", "recall@10", "Average", "p99", "Build"]}
@@ -136,6 +147,8 @@ export default function BenchmarkPage() {
                             r.legacy ? `${r.legacy.retention_hits}/${r.legacy.retention_total}` : "—"])} />
                 </div>
             </Section>
+
+            <ClosingCTA />
 
             <Footer note={<p>Generated {results.generated_at} at commit {results.git_commit}.</p>} />
         </main>

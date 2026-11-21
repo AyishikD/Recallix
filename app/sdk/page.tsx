@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { ButtonLink, CodeBlock, Eyebrow, Headline, Lede, Reveal, Section } from "@/components/site/ui";
+import { ButtonLink, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section } from "@/components/site/ui";
+import { ClosingCTA, MemoryField, TypeCode } from "@/components/site/story";
 
 /* Code samples mirror sdk/python/memoryos, sdk/typescript and docs/quickstart.md. */
 
@@ -98,14 +99,17 @@ export default function DevelopersPage() {
     return (
         <main>
             <Nav />
-            <Section hero className="text-center">
-                <Reveal>
-                    <Eyebrow>Developers</Eyebrow>
-                    <Headline as="h1">Store. Recall.<br />That’s the API.</Headline>
-                    <Lede className="mx-auto mt-6">
-                        Python and TypeScript SDKs over a small REST API. Self-hosted, one config file, no LLM to provision.
-                    </Lede>
-                </Reveal>
+            <Section hero className="text-center" backdrop={<MemoryField />}>
+                <ScrollFade>
+                    <Reveal from="fade"><Eyebrow>Developers</Eyebrow></Reveal>
+                    <Headline as="h1">
+                        <Reveal as="span" delay={0.08}>Store. Recall.</Reveal>
+                        <Reveal as="span" delay={0.2} className="text-sheen">That’s the API.</Reveal>
+                    </Headline>
+                    <Reveal delay={0.34}>
+                        <Lede className="mx-auto mt-6">Python and TypeScript SDKs over a small REST API. Self-hosted, one config file, no LLM to provision.</Lede>
+                    </Reveal>
+                </ScrollFade>
             </Section>
 
             <Section tone="cloud">
@@ -120,7 +124,7 @@ export default function DevelopersPage() {
                             ))}
                         </div>
                     </div>
-                    <div className="max-w-[760px] mx-auto"><CodeBlock code={SAMPLES[lang].code} label={SAMPLES[lang].label} /></div>
+                    <div className="max-w-[760px] mx-auto"><TypeCode key={lang} code={SAMPLES[lang].code} label={SAMPLES[lang].label} /></div>
                     <p className="text-center mt-6 text-[14px] text-ink-2 max-w-[620px] mx-auto">
                         <strong className="text-ink">status</strong> is CONSISTENT when a memory answers, ABSTAINED when matching memories exist
                         but none answers the question, and NO_MATCH when nothing matches.
@@ -138,7 +142,7 @@ export default function DevelopersPage() {
                             index. Mark a memory <code>shared</code> to make it visible to all of that user’s agents, or keep it <code>private</code> to one.
                         </Lede>
                     </Reveal>
-                    <Reveal from="right" delay={0.12}><CodeBlock code={multiUser} label="Python · service key" /></Reveal>
+                    <Reveal from="right" delay={0.12}><TypeCode code={multiUser} label="Python · service key" /></Reveal>
                 </div>
             </Section>
 
@@ -170,12 +174,12 @@ export default function DevelopersPage() {
                     <Headline className="mb-10">Endpoints.</Headline>
                 </Reveal>
                 <div className="rounded-[28px] card-edge divide-y divide-line/60 overflow-hidden">
-                    {ENDPOINTS.map(([m, p, d]) => (
-                        <div key={p + m} className="grid md:grid-cols-[80px_220px_1fr] gap-1 md:gap-4 px-6 md:px-8 py-4 items-baseline">
+                    {ENDPOINTS.map(([m, p, d], i) => (
+                        <Reveal key={p + m} from={i % 2 === 0 ? "left" : "right"} delay={0.03}><div className="grid md:grid-cols-[80px_220px_1fr] gap-1 md:gap-4 px-6 md:px-8 py-4 items-baseline">
                             <span className="text-[12px] font-semibold text-accent">{m}</span>
                             <code className="text-[14px]">{p}</code>
                             <span className="text-ink-2 text-[15px]">{d}</span>
-                        </div>
+                        </div></Reveal>
                     ))}
                 </div>
                 <div className="mt-8 flex flex-wrap gap-6">
@@ -183,6 +187,8 @@ export default function DevelopersPage() {
                     <ButtonLink href="https://github.com/AyishikD/Recallix/blob/main/docs/quickstart.md" variant="link">Quickstart</ButtonLink>
                 </div>
             </Section>
+
+            <ClosingCTA />
 
             <Footer />
         </main>

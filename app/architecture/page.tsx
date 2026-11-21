@@ -2,7 +2,8 @@
 
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { ButtonLink, Eyebrow, Headline, Lede, Reveal, Section, Stat, Tile } from "@/components/site/ui";
+import { ButtonLink, CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section, Stat, Tile } from "@/components/site/ui";
+import { ClosingCTA, LayerStack, MemoryField, PinnedSteps } from "@/components/site/story";
 import { largestClustered, ms, pct, results } from "@/lib/results";
 
 /* Descriptions follow the code; numbers come from eval/results/summary.json. */
@@ -47,6 +48,13 @@ const STACK = [
     ["Next.js", "This site — static export, every number read from the evaluation output"],
 ];
 
+const STACK_STEPS = [
+    { title: "Memory logic", detail: "Python. Facts, topics, importance, ranking, truth and the answer check — rules and small fitted models, no LLM." },
+    { title: "Vector engine", detail: "C++17. One HNSW index per user, SIMD distance kernels, new vectors searchable immediately." },
+    { title: "Storage", detail: "SQLite in WAL mode — the system of record for every memory, embedding and fact." },
+    { title: "Restart-safe", detail: "The engine can restart at any time. On start-up the API rebuilds every index from SQLite." },
+];
+
 function FlowDiagram() {
     const box = "rounded-[18px] card-edge px-5 py-4 text-center";
     const arrow = <div className="text-ink-3 text-center text-[20px] leading-none py-1" aria-hidden="true">↓</div>;
@@ -71,15 +79,26 @@ export default function ArchitecturePage() {
     return (
         <main>
             <Nav />
-            <Section hero className="text-center">
-                <Reveal>
-                    <Eyebrow>Architecture</Eyebrow>
-                    <Headline as="h1">Three layers.<br />Each does one thing well.</Headline>
-                    <Lede className="mx-auto mt-6">
-                        Python decides what to remember and what to return. C++ finds nearest neighbours fast. SQLite keeps everything safe.
-                    </Lede>
-                </Reveal>
+            <Section hero className="text-center" backdrop={<MemoryField />}>
+                <ScrollFade>
+                    <Reveal from="fade"><Eyebrow>Architecture</Eyebrow></Reveal>
+                    <Headline as="h1">
+                        <Reveal as="span" delay={0.08}>Three layers.</Reveal>
+                        <Reveal as="span" delay={0.2} className="text-sheen">Each does one thing well.</Reveal>
+                    </Headline>
+                    <Reveal delay={0.34}>
+                        <Lede className="mx-auto mt-6">
+                            Python decides what to remember and what to return. C++ finds nearest neighbours fast. SQLite keeps everything safe.
+                        </Lede>
+                    </Reveal>
+                </ScrollFade>
             </Section>
+
+            <PinnedSteps eyebrow="The stack" title="Built in layers." tone="cloud" steps={STACK_STEPS}
+                visual={(active, p) => (
+                    <LayerStack active={Math.min(active, 2)} spread={p * 1.4}
+                        layers={[{ name: "Python", sub: "memory logic" }, { name: "C++17", sub: "vector engine" }, { name: "SQLite", sub: "system of record" }]} />
+                )} />
 
             <Section tone="cloud"><Reveal from="scale"><FlowDiagram /></Reveal></Section>
 
@@ -92,9 +111,9 @@ export default function ArchitecturePage() {
                             <Lede dark={i === 1} className="mt-5">{layer.summary}</Lede>
                             {i === 1 && largestClustered && (
                                 <div className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                                    <Stat dark value={ms(largestClustered.search_avg_ms, 2)} label="average search"
+                                    <Stat dark value={<CountUp value={ms(largestClustered.search_avg_ms, 2)} />} label="average search"
                                         sub={`${(largestClustered.n / 1e6).toFixed(0)}M vectors, one thread`} />
-                                    <Stat dark value={pct(largestClustered.recall_at_10, 1)} label="recall@10" sub="against exact search" />
+                                    <Stat dark value={<CountUp value={pct(largestClustered.recall_at_10, 1)} />} label="recall@10" sub="against exact search" />
                                 </div>
                             )}
                         </Reveal>
@@ -132,6 +151,8 @@ export default function ArchitecturePage() {
                     <ButtonLink href="/benchmark" variant="link">See the measurements</ButtonLink>
                 </div>
             </Section>
+
+            <ClosingCTA />
 
             <Footer note={<p>Results generated {results.generated_at} at commit {results.git_commit}.</p>} />
         </main>

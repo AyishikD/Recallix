@@ -3,7 +3,7 @@
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ButtonLink, CodeBlock, CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
-import { AgentsHub, MemoryField, MemoryStory } from "@/components/site/story";
+import { AgentsHub, ClosingCTA, MemoryField, MemoryStory } from "@/components/site/story";
 import { headline, headlineBenchmark, largestClustered, lift, ms, pct, results } from "@/lib/results";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
@@ -296,16 +296,7 @@ export default function HomePage() {
             </Section>
 
             {/* Closing call to action */}
-            <Section tone="night" className="text-center" backdrop={<MemoryField density={0.7} />}>
-                <Reveal from="scale">
-                    <Headline className="mx-auto max-w-[720px]">Give your agents a memory.</Headline>
-                    <Lede dark className="mx-auto mt-5">Open source. Self-hosted. A few lines of code.</Lede>
-                    <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
-                        <ButtonLink href="/sdk">Get started</ButtonLink>
-                        <ButtonLink href="https://github.com/AyishikD/Recallix" variant="link">View on GitHub</ButtonLink>
-                    </div>
-                </Reveal>
-            </Section>
+            <ClosingCTA />
 
             <Footer note={<p>Results generated {results.generated_at} at commit {results.git_commit}.</p>} />
         </main>

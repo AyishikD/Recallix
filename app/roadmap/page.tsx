@@ -2,7 +2,8 @@
 
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { ButtonLink, Eyebrow, Headline, Lede, Reveal, Section } from "@/components/site/ui";
+import { CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section } from "@/components/site/ui";
+import { ClosingCTA, MemoryField } from "@/components/site/story";
 
 type Status = "shipped" | "known gap" | "next" | "exploring";
 
@@ -64,12 +65,30 @@ export default function RoadmapPage() {
     return (
         <main>
             <Nav />
-            <Section hero className="text-center">
-                <Reveal>
-                    <Eyebrow>Roadmap</Eyebrow>
-                    <Headline as="h1">What’s done.<br />What isn’t.</Headline>
-                    <Lede className="mx-auto mt-6">The honest state of Recallix — including the parts that still fall short.</Lede>
-                </Reveal>
+            <Section hero className="text-center" backdrop={<MemoryField />}>
+                <ScrollFade>
+                    <Reveal from="fade"><Eyebrow>Roadmap</Eyebrow></Reveal>
+                    <Headline as="h1">
+                        <Reveal as="span" delay={0.08}>What’s done.</Reveal>
+                        <Reveal as="span" delay={0.2} className="text-sheen">What isn’t.</Reveal>
+                    </Headline>
+                    <Reveal delay={0.34}>
+                        <Lede className="mx-auto mt-6">The honest state of Recallix — including the parts that still fall short.</Lede>
+                    </Reveal>
+                </ScrollFade>
+            </Section>
+
+            <Section>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                    {GROUPS.map((g, i) => (
+                        <Reveal key={g.title} from={i < 2 ? "left" : "right"} delay={(i % 2) * 0.08}>
+                            <div className="rounded-[24px] bg-card p-6 h-full">
+                                <p className="type-stat"><CountUp value={String(g.items.length)} duration={1} /></p>
+                                <p className="mt-2 text-[15px] text-ink-2">{g.title.toLowerCase()}</p>
+                            </div>
+                        </Reveal>
+                    ))}
+                </div>
             </Section>
 
             {GROUPS.map((g, gi) => (
@@ -79,28 +98,22 @@ export default function RoadmapPage() {
                             <Headline>{g.title}.</Headline>
                             <Lede className="mt-4">{g.lede}</Lede>
                         </Reveal>
-                        <Reveal from="right" delay={0.1}><div className={`rounded-[28px] card-edge divide-y divide-line/60 overflow-hidden`}>
-                            {g.items.map(it => (
-                                <div key={it.name} className="px-6 md:px-8 py-5 flex gap-4 items-start">
+                        <div className={`rounded-[28px] card-edge divide-y divide-line/60 overflow-hidden`}>
+                            {g.items.map((it, ii) => (
+                                <Reveal key={it.name} from="right" delay={Math.min(ii, 6) * 0.05}><div className="px-6 md:px-8 py-5 flex gap-4 items-start">
                                     <div className="flex-1">
                                         <h3 className="text-[17px] font-semibold">{it.name}</h3>
                                         <p className="text-[15px] text-ink-2 mt-1">{it.detail}</p>
                                     </div>
                                     <span className={`shrink-0 rounded-full px-3 py-1 text-[12px] font-medium ${STATUS_STYLE[it.status]}`}>{it.status}</span>
-                                </div>
+                                </div></Reveal>
                             ))}
-                        </div></Reveal>
+                        </div>
                     </div>
                 </Section>
             ))}
 
-            <Section tone="night" className="text-center">
-                <Reveal>
-                    <Headline>Open source. Open about it.</Headline>
-                    <Lede dark className="mx-auto mt-5">Issues and pull requests are welcome on every item above.</Lede>
-                    <div className="mt-8"><ButtonLink href="https://github.com/AyishikD/Recallix">View on GitHub</ButtonLink></div>
-                </Reveal>
-            </Section>
+            <ClosingCTA />
 
             <Footer />
         </main>

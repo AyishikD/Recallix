@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { Eyebrow, Headline, Lede, Reveal, Section } from "@/components/site/ui";
+import { CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section } from "@/components/site/ui";
+import { AgentsHub, ClosingCTA, MemoryField, PinnedSteps } from "@/components/site/story";
 import { headline, ms, results } from "@/lib/results";
 
 /* Every description matches the code; every number comes from eval/results/summary.json. */
@@ -83,29 +84,60 @@ function StageList({ stages, timings }: { stages: Stage[]; timings?: Record<stri
     );
 }
 
+/** Right-hand panel of a pinned pipeline: the active stage's code, timing and position. */
+function stagePanel(stages: Stage[], timings?: Record<string, number>) {
+    return function Panel(active: number) {
+        const s = stages[active];
+        const t = timings && s.logStage ? timings[s.logStage] : undefined;
+        return (
+            <div className="rounded-[28px] bg-card p-6 md:p-8 min-h-[340px] md:min-h-[400px] flex flex-col">
+                <div className="flex items-center justify-between text-[13px] text-ink-2">
+                    <span className="tabular-nums">{String(active + 1).padStart(2, "0")} / {String(stages.length).padStart(2, "0")}</span>
+                    <span className="rounded-full bg-[#2c2c2e] px-3 py-1">{s.where}</span>
+                </div>
+                <div key={active} className="swap-in flex-1">
+                    <p className="mt-6 type-title">{s.title}</p>
+                    {t !== undefined && <p className="mt-1 text-[15px] text-ink-2"><CountUp value={ms(t, 2)} duration={0.6} /> on average</p>}
+                    <pre className="mt-6 text-[13px] leading-relaxed bg-black/50 rounded-[14px] p-4 whitespace-pre-wrap break-words">{s.code}</pre>
+                </div>
+                <div className="mt-6 flex gap-1.5" aria-hidden="true">
+                    {stages.map((_, i) => <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-500 ${i <= active ? "bg-ink" : "bg-[#2c2c2e]"}`} />)}
+                </div>
+            </div>
+        );
+    };
+}
+
 export default function HowItWorksPage() {
     const timings = headline?.retrieval?.store_stage_ms_mean;
     const ex = headline?.example;
     return (
         <main>
             <Nav />
-            <Section hero className="text-center">
-                <Reveal>
-                    <Eyebrow>How it works</Eyebrow>
-                    <Headline as="h1">No LLM.<br />Every step explained.</Headline>
-                    <Lede className="mx-auto mt-6">
-                        Storing and recalling are made of small, inspectable steps. Here is each one — what it does, and the code that does it.
-                    </Lede>
-                </Reveal>
+            <Section hero className="text-center" backdrop={<MemoryField />}>
+                <ScrollFade>
+                    <Reveal from="fade"><Eyebrow>How it works</Eyebrow></Reveal>
+                    <Headline as="h1">
+                        <Reveal as="span" delay={0.08}>No LLM.</Reveal>
+                        <Reveal as="span" delay={0.2} className="text-sheen">Every step explained.</Reveal>
+                    </Headline>
+                    <Reveal delay={0.34}>
+                        <Lede className="mx-auto mt-6">
+                            Storing and recalling are made of small, inspectable steps. Scroll through each one — what it does, and the code that does it.
+                        </Lede>
+                    </Reveal>
+                </ScrollFade>
             </Section>
+
+            <PinnedSteps eyebrow="Store" title="From message to memory." tone="cloud"
+                steps={STORE.map(s => ({ title: s.title, detail: s.detail }))} visual={stagePanel(STORE, timings)} />
 
             <Section tone="cloud">
                 <Reveal>
-                    <Eyebrow>Store</Eyebrow>
-                    <Headline className="mb-10">From message to memory.</Headline>
+                    <Eyebrow tone="muted">What came out</Eyebrow>
+                    <Headline className="mb-10">Four messages, stored.</Headline>
                 </Reveal>
-                <StageList stages={STORE} timings={timings} />
-                {timings && <p className="mt-4 text-[13px] text-ink-3">Times are averages measured over the evaluation run, including the embedding model.</p>}
+                {timings && <p className="-mt-6 mb-8 text-[13px] text-ink-3">Stage times above are averages measured over the evaluation run, including the embedding model.</p>}
                 {ex && (
                     <div className="mt-10 grid gap-3 md:grid-cols-2">
                         {ex.stores.map((s, i) => (
@@ -120,14 +152,12 @@ export default function HowItWorksPage() {
                 )}
             </Section>
 
+            <PinnedSteps eyebrow="Recall" title="From question to answer — or to “I don’t know.”"
+                steps={RECALL.map(s => ({ title: s.title, detail: s.detail }))} visual={stagePanel(RECALL)} />
+
             <Section>
-                <Reveal>
-                    <Eyebrow>Recall</Eyebrow>
-                    <Headline className="mb-10">From question to answer — or to “I don’t know.”</Headline>
-                </Reveal>
-                <StageList stages={RECALL} />
                 {ex && (
-                    <div className="mt-10 rounded-[28px] bg-cloud p-6 md:p-8">
+                    <Reveal from="scale"><div className="rounded-[28px] bg-card p-6 md:p-8">
                         <p className="text-[13px] text-ink-3">Real run · status {ex.recall.status}</p>
                         <p className="text-[21px] font-semibold mt-1 mb-5">“{ex.query}”</p>
                         {ex.recall.memories.map(m => (
@@ -138,19 +168,22 @@ export default function HowItWorksPage() {
                                 </p>
                             </div>
                         ))}
-                    </div>
+                    </div></Reveal>
                 )}
             </Section>
 
             <Section tone="night">
-                <Reveal>
-                    <Eyebrow>Agents</Eyebrow>
-                    <Headline>Private or shared. Enforced, not suggested.</Headline>
-                    <Lede dark className="mt-5">
-                        A private memory is visible only to the agent that wrote it; a shared one to every agent of the same user. The rule is
-                        applied in the database on every read — and every user has a separate vector index.
-                    </Lede>
-                </Reveal>
+                <div className="grid gap-12 md:grid-cols-[0.9fr_1.1fr] md:items-center">
+                    <Reveal from="left">
+                        <Eyebrow>Agents</Eyebrow>
+                        <Headline>Private or shared. Enforced, not suggested.</Headline>
+                        <Lede dark className="mt-5">
+                            A private memory is visible only to the agent that wrote it; a shared one to every agent of the same user. The rule is
+                            applied in the database on every read — and every user has a separate vector index.
+                        </Lede>
+                    </Reveal>
+                    <Reveal from="right" delay={0.1}><AgentsHub /></Reveal>
+                </div>
             </Section>
 
             <Section tone="cloud">
@@ -167,15 +200,17 @@ export default function HowItWorksPage() {
                     <Headline className="mb-10">Quiet work between conversations.</Headline>
                 </Reveal>
                 <div className="grid gap-5 md:grid-cols-2">
-                    {JOBS.map(j => (
-                        <div key={j.name} className="rounded-[28px] bg-cloud p-8">
+                    {JOBS.map((j, i) => (
+                        <Reveal key={j.name} from={i % 2 === 0 ? "left" : "right"} delay={Math.floor(i / 2) * 0.1}><div className="rounded-[28px] bg-card p-8 h-full">
                             <h3 className="type-title mb-2">{j.name}</h3>
                             <p className="text-ink-2">{j.desc}</p>
                             <p className="mt-4 text-[12px] text-ink-3"><code>{j.key}</code> in config.yaml</p>
-                        </div>
+                        </div></Reveal>
                     ))}
                 </div>
             </Section>
+
+            <ClosingCTA />
 
             <Footer note={<p>Results generated {results.generated_at} at commit {results.git_commit}.</p>} />
         </main>
