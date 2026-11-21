@@ -96,16 +96,16 @@ export default function DashboardPage() {
                                     <AreaChart data={history}>
                                         <defs>
                                             <linearGradient id="mem" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#2997ff" stopOpacity={0.18} />
-                                                <stop offset="100%" stopColor="#2997ff" stopOpacity={0} />
+                                                <stop offset="0%" stopColor="#FF6B5B" stopOpacity={0.18} />
+                                                <stop offset="100%" stopColor="#FF6B5B" stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
-                                        <XAxis dataKey="time" stroke="#6e6e73" fontSize={11} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#6e6e73" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
-                                        <Tooltip contentStyle={{ background: "#1d1d1f", borderRadius: 12, border: "1px solid #2c2c2e", color: "#f5f5f7" }} />
-                                        <Area type="monotone" dataKey="memories" name="Memories" stroke="#2997ff" strokeWidth={2} fill="url(#mem)" isAnimationActive={false} />
-                                        <Area type="monotone" dataKey="timeline" name="Timeline" stroke="#6e6e73" strokeWidth={1.5} fill="none" isAnimationActive={false} />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2B3D66" />
+                                        <XAxis dataKey="time" stroke="#8D96AB" fontSize={11} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#8D96AB" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                                        <Tooltip contentStyle={{ background: "#1C2D52", borderRadius: 12, border: "1px solid #2B3D66", color: "#F4EDE0" }} />
+                                        <Area type="monotone" dataKey="memories" name="Memories" stroke="#FF6B5B" strokeWidth={2} fill="url(#mem)" isAnimationActive={false} />
+                                        <Area type="monotone" dataKey="timeline" name="Timeline" stroke="#8D96AB" strokeWidth={1.5} fill="none" isAnimationActive={false} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             ) : (

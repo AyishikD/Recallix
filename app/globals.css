@@ -2,27 +2,37 @@
 @import "tw-animate-css";
 
 /* ------------------------------------------------------------------------
-   Recallix design tokens — Apple-style dark: true black, #1d1d1f surfaces,
-   one blue accent, system SF font, no gradients or glows.
+   Recallix design tokens — navy (60%) · cream (30%) · coral (10%, buttons).
+   Sections switch palette with .tone-cream / .tone-navy (see below).
    ------------------------------------------------------------------------ */
 @theme {
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Inter", system-ui, sans-serif;
   --font-mono: "SF Mono", ui-monospace, "Menlo", "Monaco", "Cascadia Mono", "Roboto Mono", monospace;
 
-  --color-ink: #f5f5f7;          /* primary text */
-  --color-ink-2: #a1a1a6;        /* secondary text */
-  --color-ink-3: #6e6e73;        /* tertiary / captions */
-  --color-paper: #000000;        /* page background */
-  --color-cloud: #101011;        /* alternate section background */
-  --color-card: #1d1d1f;         /* raised surfaces */
-  --color-line: #2c2c2e;         /* hairlines */
-  --color-accent: #2997ff;       /* links & primary buttons */
-  --color-accent-hover: #47a8ff;
-  --color-night: #000000;
-  --color-night-2: #1d1d1f;
-  --color-night-ink-2: #a1a1a6;
-  --color-good: #30d158;
-  --color-warn: #ff9f0a;
+  /* Brand: navy 60% · cream 30% · coral 10% (buttons) */
+  --color-navy: #14213D;
+  --color-cream: #F4EDE0;
+  --color-coral: #FF6B5B;
+
+  --color-ink: #F4EDE0;          /* primary text (cream on navy) */
+  --color-ink-2: #C3C7D1;        /* secondary text */
+  --color-ink-3: #8D96AB;        /* tertiary / captions */
+  --color-on-ink: #14213D;       /* text placed on an ink-coloured surface */
+  --color-paper: #14213D;        /* page background — navy */
+  --color-cloud: #F4EDE0;        /* alternate sections — cream */
+  --color-card: #1C2D52;         /* raised surfaces on navy */
+  --color-line: #2B3D66;         /* hairlines */
+  --color-accent: #FF6B5B;       /* links & highlights */
+  --color-accent-hover: #FF8577;
+  --color-cta: #FF6B5B;          /* button backgrounds — always coral */
+  --color-cta-hover: #FF8577;
+  --color-cta-ink: #14213D;      /* button text: navy on coral passes contrast; white does not */
+  --color-code: #0E182E;         /* code surfaces, dark in every section */
+  --color-night: #0E182E;        /* deepest navy sections */
+  --color-night-2: #1C2D52;
+  --color-night-ink-2: #C3C7D1;
+  --color-good: #4ADE9B;
+  --color-warn: #FFB454;
 
   --radius-tile: 28px;
 
@@ -63,7 +73,7 @@
   }
 
   ::selection {
-    background: rgba(41, 151, 255, 0.35);
+    background: rgba(255, 107, 91, 0.35);
   }
 
   code, pre {
@@ -76,7 +86,7 @@
     font-size: 0.84em;
     padding: 0.12em 0.4em;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.07);
+    background: color-mix(in srgb, var(--color-ink) 9%, transparent);
     color: var(--color-ink);
   }
 
@@ -132,7 +142,7 @@
 
   /* Translucent navigation bar */
   .nav-glass {
-    background: rgba(22, 22, 23, 0.8);
+    background: rgba(20, 33, 61, 0.95);
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
@@ -143,10 +153,38 @@
   /* Raised surface */
   .card-edge {
     background: var(--color-card);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
   }
 }
 
+
+/* Palette scopes. Utilities read these variables, so a whole section switches palette
+   by class: cream sections get navy text; dark "islands" inside them reset to navy. */
+.tone-cream {
+  --color-ink: #14213D;
+  --color-ink-2: #4A5674;
+  --color-ink-3: #7A8196;
+  --color-on-ink: #F4EDE0;
+  --color-card: #FFFCF6;
+  --color-line: #E1D6C2;
+  --color-accent: #C2412F;       /* deeper coral: readable as text on cream */
+  --color-accent-hover: #A93524;
+  --color-good: #1E7F4F;
+  --color-warn: #B25A00;
+}
+.tone-navy {
+  --color-ink: #F4EDE0;
+  --color-ink-2: #C3C7D1;
+  --color-ink-3: #8D96AB;
+  --color-on-ink: #14213D;
+  --color-card: #1C2D52;
+  --color-line: #2B3D66;
+  --color-accent: #FF6B5B;
+  --color-accent-hover: #FF8577;
+  --color-good: #4ADE9B;
+  --color-warn: #FFB454;
+  color: var(--color-ink);
+}
 
 /* Scroll reveal (components/site/motion.tsx). Elements are only hidden once JS
    has "armed" them, so content is never invisible without JavaScript. */

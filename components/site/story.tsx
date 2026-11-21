@@ -52,15 +52,15 @@ export function MemoryField({ density = 1 }: { density?: number }) {
                     const d2 = dx * dx + dy * dy;
                     if (d2 > maxD * maxD) continue;
                     const a = (1 - Math.sqrt(d2) / maxD) * 0.16 * Math.min(pts[i].n.z, pts[j].n.z);
-                    ctx.strokeStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+                    ctx.strokeStyle = `rgba(244,237,224,${a.toFixed(3)})`;
                     ctx.beginPath(); ctx.moveTo(pts[i].X, pts[i].Y); ctx.lineTo(pts[j].X, pts[j].Y); ctx.stroke();
                 }
             }
             for (const { X, Y, n } of pts) {
                 const pulse = 0.6 + 0.4 * Math.sin(t * 0.0011 + n.phase);
                 ctx.fillStyle = n.accent
-                    ? `rgba(41,151,255,${(0.55 + 0.45 * pulse).toFixed(3)})`
-                    : `rgba(255,255,255,${((0.18 + 0.5 * n.z) * pulse).toFixed(3)})`;
+                    ? `rgba(255,107,91,${(0.6 + 0.4 * pulse).toFixed(3)})`
+                    : `rgba(244,237,224,${((0.18 + 0.5 * n.z) * pulse).toFixed(3)})`;
                 ctx.beginPath(); ctx.arc(X, Y, (n.accent ? 1.6 : 0.9) + n.z * 1.4, 0, Math.PI * 2); ctx.fill();
             }
         };
@@ -172,14 +172,14 @@ export function MemoryStory({ query, status, memories }: { query: string; status
                                 return (
                                     <line key={i} x1={50} y1={50}
                                         x2={50 + (SLOTS[i].x - 50) * easeOut(recall)} y2={50 + (SLOTS[i].y - 50) * easeOut(recall)}
-                                        stroke={isTop && answer > 0 ? "#2997ff" : "#f5f5f7"} strokeOpacity={op}
+                                        stroke={isTop && answer > 0 ? "#FF6B5B" : "#F4EDE0"} strokeOpacity={op}
                                         strokeWidth={1 + 3 * m.relevance} vectorEffect="non-scaling-stroke" strokeLinecap="round" />
                                 );
                             })}
                         </svg>
 
                         {/* the question */}
-                        <div className="absolute left-1/2 top-1/2 z-10 max-w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink px-4 py-2 text-center text-[13px] md:text-[15px] font-medium text-black"
+                        <div className="absolute left-1/2 top-1/2 z-10 max-w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink px-4 py-2 text-center text-[13px] md:text-[15px] font-medium text-on-ink"
                             style={{ opacity: easeOut(recall), transform: `translate(-50%, -50%) scale(${0.8 + 0.2 * easeOut(recall)})` }}>
                             “{query}”
                         </div>
@@ -193,10 +193,10 @@ export function MemoryStory({ query, status, memories }: { query: string; status
                             const dim = answer > 0 && !isTop ? 1 - 0.7 * answer : 1;
                             return (
                                 <div key={m.content}
-                                    className={`absolute w-[42%] md:w-[38%] rounded-[16px] px-3 py-2.5 md:px-4 md:py-3 text-[12px] md:text-[14px] leading-snug transition-colors duration-500 ${isTop && answer > 0.5 ? "bg-ink text-black" : "bg-[#2c2c2e] text-ink"}`}
+                                    className={`absolute w-[42%] md:w-[38%] rounded-[16px] px-3 py-2.5 md:px-4 md:py-3 text-[12px] md:text-[14px] leading-snug transition-colors duration-500 ${isTop && answer > 0.5 ? "bg-ink text-on-ink" : "bg-[#24375F] text-ink"}`}
                                     style={{ left: `${x}%`, top: `${SLOTS[i].y}%`, opacity: a * dim, transform: `translate(-50%, -50%) scale(${scale})` }}>
                                     <p className="font-medium">{m.content}</p>
-                                    <p className={`mt-1 text-[11px] md:text-[12px] ${isTop && answer > 0.5 ? "text-[#0066cc]" : "text-ink-2"}`}>
+                                    <p className={`mt-1 text-[11px] md:text-[12px] ${isTop && answer > 0.5 ? "text-[#C2412F]" : "text-ink-2"}`}>
                                         <span style={{ opacity: easeOut(understand) }}>importance {m.importance.toFixed(1)} · {m.schemas[0] ?? "general"}</span>
                                         <span style={{ opacity: easeOut(recall) }}> · relevance {m.relevance.toFixed(2)}</span>
                                     </p>
@@ -233,21 +233,21 @@ export function AgentsHub() {
                 const path = `M${a.x},${a.y} L${cx},${cy}`;
                 return (
                     <g key={a.name}>
-                        <path d={path} stroke="#2c2c2e" strokeWidth="1.5" fill="none" />
-                        <circle r="3.5" fill="#2997ff">
+                        <path d={path} strokeWidth="1.5" fill="none" style={{ stroke: "var(--color-line)" }} />
+                        <circle r="3.5" fill="#FF6B5B">
                             <animateMotion dur="2.6s" repeatCount="indefinite" begin={`${i * 0.65}s`} path={path} />
                         </circle>
-                        <circle r="3" fill="#f5f5f7" opacity="0.8">
+                        <circle r="3" opacity="0.8" style={{ fill: "var(--color-ink)" }}>
                             <animateMotion dur="2.6s" repeatCount="indefinite" begin={`${1.3 + i * 0.65}s`} path={path} keyPoints="1;0" keyTimes="0;1" calcMode="linear" />
                         </circle>
-                        <rect x={a.x - 78} y={a.y - 22} width="156" height="44" rx="22" fill="#1d1d1f" stroke="#2c2c2e" />
-                        <text x={a.x} y={a.y + 5} textAnchor="middle" fill="#f5f5f7" fontSize="14" fontWeight="500">{a.name}</text>
+                        <rect x={a.x - 78} y={a.y - 22} width="156" height="44" rx="22" style={{ fill: "var(--color-card)", stroke: "var(--color-line)" }} />
+                        <text x={a.x} y={a.y + 5} textAnchor="middle" fontSize="14" fontWeight="500" style={{ fill: "var(--color-ink)" }}>{a.name}</text>
                     </g>
                 );
             })}
-            <rect x={cx - 96} y={cy - 40} width="192" height="80" rx="24" fill="#f5f5f7" />
-            <text x={cx} y={cy - 4} textAnchor="middle" fill="#000" fontSize="19" fontWeight="600">Recallix</text>
-            <text x={cx} y={cy + 18} textAnchor="middle" fill="#6e6e73" fontSize="12">one memory per user</text>
+            <rect x={cx - 96} y={cy - 40} width="192" height="80" rx="24" style={{ fill: "var(--color-ink)" }} />
+            <text x={cx} y={cy - 4} textAnchor="middle" fontSize="19" fontWeight="600" style={{ fill: "var(--color-on-ink)" }}>Recallix</text>
+            <text x={cx} y={cy + 18} textAnchor="middle" fontSize="12" style={{ fill: "var(--color-on-ink)", opacity: 0.65 }}>one memory per user</text>
         </svg>
     );
 }
@@ -264,7 +264,7 @@ export function PinnedSteps({ eyebrow, title, steps, visual, vhPerStep = 70, ton
     const n = steps.length;
     const active = Math.min(n - 1, Math.floor(p * n));
     return (
-        <section ref={ref} className={`relative ${tone === "cloud" ? "bg-cloud" : "bg-paper"} text-ink`} style={{ height: `${100 + n * vhPerStep}vh` }}>
+        <section ref={ref} className={`relative ${tone === "cloud" ? "tone-cream bg-cloud" : "bg-paper"} text-ink`} style={{ height: `${100 + n * vhPerStep}vh` }}>
             <div className="sticky top-0 flex h-screen items-center overflow-hidden">
                 <div className="mx-auto grid w-full max-w-[1080px] gap-8 px-5 md:grid-cols-[0.85fr_1.15fr] md:items-center">
                     <div>
@@ -306,10 +306,10 @@ export function LayerStack({ layers, active, spread }: { layers: { name: string;
                     const z = (layers.length - 1 - i) * gap - ((layers.length - 1) * gap) / 2;
                     return (
                         <div key={l.name}
-                            className={`absolute left-1/2 top-1/2 w-[260px] h-[260px] md:w-[300px] md:h-[300px] rounded-[34px] transition-[background-color,box-shadow,opacity] duration-500 ${on ? "bg-ink" : "bg-[#2a2a2c]"}`}
+                            className={`absolute left-1/2 top-1/2 w-[260px] h-[260px] md:w-[300px] md:h-[300px] rounded-[34px] transition-[background-color,box-shadow,opacity] duration-500 ${on ? "bg-ink" : "bg-line"}`}
                             style={{
                                 transform: `translate(-50%, -50%) translateZ(${z}px)`,
-                                boxShadow: on ? "0 0 0 1px rgba(255,255,255,0.9)" : "inset 0 0 0 1px rgba(255,255,255,0.08)",
+                                boxShadow: on ? "0 18px 40px -12px rgba(20,33,61,0.45)" : "inset 0 0 0 1px rgba(20,33,61,0.06)",
                             }} />
                     );
                 })}
@@ -351,7 +351,7 @@ export function TypeCode({ code, label }: { code: string; label?: string }) {
     }, [lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
     const visible = shown === null ? lines.length : shown;
     return (
-        <div className="rounded-[20px] bg-card text-white overflow-hidden">
+        <div className="tone-navy rounded-[20px] bg-code overflow-hidden">
             {label && <div className="px-5 py-3 border-b border-white/10 type-caption text-night-ink-2">{label}</div>}
             <pre ref={ref} className="p-5 text-[13px] leading-relaxed whitespace-pre-wrap break-words">
                 <code>
@@ -369,13 +369,13 @@ export function TypeCode({ code, label }: { code: string; label?: string }) {
 /** The closing call to action shared by every page. */
 export function ClosingCTA() {
     return (
-        <section className="relative overflow-hidden bg-night text-white">
+        <section className="relative overflow-hidden bg-night text-ink">
             <MemoryField density={0.7} />
             <div className="relative mx-auto max-w-[1080px] px-5 py-24 md:py-32 text-center">
                 <h2 className="type-headline mx-auto max-w-[720px]">Give your agents a memory.</h2>
                 <p className="type-lede mx-auto mt-5 max-w-[620px] text-night-ink-2">Open source. Self-hosted. A few lines of code.</p>
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
-                    <Link href="/sdk" className="inline-flex h-10 items-center rounded-full px-5 text-[15px] bg-accent text-white hover:bg-accent-hover transition-colors">Get started</Link>
+                    <Link href="/sdk" className="inline-flex h-10 items-center rounded-full px-5 text-[15px] font-medium bg-cta text-cta-ink hover:bg-cta-hover transition-colors">Get started</Link>
                     <a href="https://github.com/AyishikD/Recallix" className="text-[17px] text-accent hover:underline">View on GitHub <span aria-hidden="true">›</span></a>
                 </div>
             </div>

@@ -42,7 +42,7 @@ export function Nav() {
                         </li>
                     ))}
                 </ul>
-                <Link href="/sdk" className="hidden md:inline-flex h-7 items-center rounded-full bg-accent px-3 text-[12px] font-medium text-white hover:bg-accent-hover transition-colors">
+                <Link href="/sdk" className="hidden md:inline-flex h-7 items-center rounded-full bg-cta px-3 text-[12px] font-semibold text-cta-ink hover:bg-cta-hover transition-colors">
                     Get started
                 </Link>
                 <button className="md:hidden p-2 -mr-2 text-ink" aria-label="Menu" aria-expanded={open} onClick={() => setOpen(!open)}>

@@ -111,12 +111,12 @@ export default function BenchmarkPage() {
                     <ScrollZoom className="mt-8"><div className="h-72 rounded-[20px] bg-night-2 p-5">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chart} barGap={6}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2c2c2e" />
-                                <XAxis dataKey="name" stroke="#a1a1a6" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#a1a1a6" fontSize={12} unit="%" domain={[0, 100]} tickLine={false} axisLine={false} />
-                                <Tooltip contentStyle={{ background: "#1d1d1f", border: "1px solid #2c2c2e", borderRadius: 12, color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                                <Bar dataKey="Recallix" fill="#2997ff" radius={[6, 6, 0, 0]} isAnimationActive={false} />
-                                <Bar dataKey="hnswlib" fill="#48484a" radius={[6, 6, 0, 0]} isAnimationActive={false} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2B3D66" />
+                                <XAxis dataKey="name" stroke="#C3C7D1" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#C3C7D1" fontSize={12} unit="%" domain={[0, 100]} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ background: "#1C2D52", border: "1px solid #2B3D66", borderRadius: 12, color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                                <Bar dataKey="Recallix" fill="#FF6B5B" radius={[6, 6, 0, 0]} isAnimationActive={false} />
+                                <Bar dataKey="hnswlib" fill="#8D96AB" radius={[6, 6, 0, 0]} isAnimationActive={false} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div></ScrollZoom>

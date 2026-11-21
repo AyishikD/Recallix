@@ -8,8 +8,8 @@ export { CountUp, Reveal, ScrollFade, ScrollWords, ScrollZoom } from "./motion";
 type Tone = "paper" | "cloud" | "night";
 const toneClass: Record<Tone, string> = {
     paper: "bg-paper text-ink",
-    cloud: "bg-cloud text-ink",
-    night: "bg-night text-white",
+    cloud: "tone-cream bg-cloud text-ink",
+    night: "bg-night text-ink",
 };
 
 export function Section({ tone = "paper", children, className = "", id, hero = false, backdrop }:
@@ -41,8 +41,8 @@ export function ButtonLink({ href, children, variant = "primary" }: { href: stri
         return <Link href={href} className="text-[17px] text-accent hover:underline whitespace-nowrap">{children} <span aria-hidden="true">›</span></Link>;
     }
     const cls = variant === "primary"
-        ? "bg-accent text-white hover:bg-accent-hover"
-        : "border border-accent text-accent hover:bg-accent hover:text-white";
+        ? "bg-cta text-cta-ink font-medium hover:bg-cta-hover"
+        : "border border-accent text-accent hover:bg-cta hover:text-cta-ink hover:border-cta";
     return (
         <Link href={href} className={`inline-flex h-10 items-center rounded-full px-5 text-[15px] font-normal transition-colors ${cls}`}>
             {children}
@@ -53,7 +53,7 @@ export function ButtonLink({ href, children, variant = "primary" }: { href: stri
 /** Large rounded card used for stats and feature summaries. */
 export function Tile({ children, className = "", dark = false }: { children: React.ReactNode; className?: string; dark?: boolean }) {
     return (
-        <div className={`rounded-[28px] p-8 md:p-10 card-edge ${dark ? "text-white" : "text-ink"} ${className}`}>
+        <div className={`rounded-[28px] p-8 md:p-10 card-edge text-ink ${dark ? "tone-navy" : ""} ${className}`}>
             {children}
         </div>
     );
@@ -63,7 +63,7 @@ export function Stat({ value, label, sub, dark = false }: { value: React.ReactNo
     return (
         <div>
             <div className="type-stat whitespace-nowrap">{value}</div>
-            <div className={`mt-3 text-[17px] font-semibold ${dark ? "text-white" : "text-ink"}`}>{label}</div>
+            <div className={`mt-3 text-[17px] font-semibold text-ink`}>{label}</div>
             {sub && <div className={`mt-1 text-[14px] leading-snug ${dark ? "text-night-ink-2" : "text-ink-2"}`}>{sub}</div>}
         </div>
     );
@@ -72,7 +72,7 @@ export function Stat({ value, label, sub, dark = false }: { value: React.ReactNo
 export function CodeBlock({ code, label }: { code: string; label?: string }) {
     const [copied, setCopied] = useState(false);
     return (
-        <div className="rounded-[20px] bg-card text-white overflow-hidden">
+        <div className="tone-navy rounded-[20px] bg-code overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
                 <span className="type-caption text-night-ink-2">{label}</span>
                 <button className="type-caption text-night-ink-2 hover:text-white"

@@ -118,7 +118,7 @@ export default function DevelopersPage() {
                         <div className="inline-flex rounded-full card-edge p-1">
                             {Object.entries(SAMPLES).map(([k, s]) => (
                                 <button key={k} onClick={() => setLang(k as keyof typeof SAMPLES)}
-                                    className={`px-5 h-9 rounded-full text-[14px] transition-colors ${lang === k ? "bg-accent text-white" : "text-ink-2 hover:text-ink"}`}>
+                                    className={`px-5 h-9 rounded-full text-[14px] transition-colors ${lang === k ? "bg-cta text-cta-ink font-medium" : "text-ink-2 hover:text-ink"}`}>
                                     {s.label}
                                 </button>
                             ))}
@@ -157,7 +157,7 @@ export default function DevelopersPage() {
                             <div className="rounded-[28px] card-edge p-7 h-full">
                                 <p className="text-[13px] text-ink-3 mb-1">Step {i + 1}</p>
                                 <h3 className="type-title mb-4">{s.t}</h3>
-                                <pre className="text-[12.5px] bg-cloud border border-line rounded-[14px] p-4 whitespace-pre-wrap break-words">{s.c}</pre>
+                                <pre className="tone-navy text-[12.5px] bg-code rounded-[14px] p-4 whitespace-pre-wrap break-words">{s.c}</pre>
                             </div>
                         </Reveal>
                     ))}

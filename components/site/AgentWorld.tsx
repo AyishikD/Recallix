@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
  * swap memories, and visit the Recallix hub. Pure canvas, no assets or libraries.
  * Pauses off-screen / in background tabs; a single still frame under reduced motion. */
 
-const PALETTE = ["#0a84ff", "#30d158", "#ff9f0a", "#ff375f", "#ffd60a", "#64d2ff", "#ff6482"];
+const PALETTE = ["#FF6B5B", "#F4EDE0", "#FFB454", "#5EC8B8", "#8FB3FF", "#FF9A8B", "#F2C14E"];
 
 interface Agent {
     x: number; vx: number; color: string; phase: number;
@@ -147,20 +147,20 @@ export function AgentWorld({ height = 260 }: { height?: number }) {
             for (const ex of [-5.5, 5.5]) {
                 const cx = bx + ex + a.face * 1.5, cy = by + 11;
                 if (blinking) {
-                    ctx.strokeStyle = "#1d1d1f"; ctx.lineWidth = 1.8;
+                    ctx.strokeStyle = "#14213D"; ctx.lineWidth = 1.8;
                     ctx.beginPath(); ctx.moveTo(cx - 3, cy); ctx.lineTo(cx + 3, cy); ctx.stroke();
                 } else {
                     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(cx, cy, 4.3, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = "#1d1d1f"; ctx.beginPath(); ctx.arc(cx + lx, cy + ly, 2.1, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = "#14213D"; ctx.beginPath(); ctx.arc(cx + lx, cy + ly, 2.1, 0, Math.PI * 2); ctx.fill();
                 }
             }
             // smile
-            ctx.strokeStyle = "rgba(29,29,31,0.75)"; ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "rgba(20,33,61,0.75)"; ctx.lineWidth = 1.5;
             ctx.beginPath(); ctx.arc(bx + a.face * 1.5, by + 17, 3.2, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
             // typing bubble while chatting
             if (a.state === "chat" && a.until - now > 300) {
                 const tx = bx + a.face * 14, ty = by - 22;
-                ctx.fillStyle = "#f5f5f7";
+                ctx.fillStyle = "#F4EDE0";
                 roundRect(tx - 15, ty - 9, 30, 18, 9); ctx.fill();
                 ctx.beginPath(); ctx.moveTo(tx - a.face * 6, ty + 8); ctx.lineTo(tx - a.face * 12, ty + 14); ctx.lineTo(tx - a.face * 1, ty + 8); ctx.fill();
                 for (let k = 0; k < 3; k++) {
@@ -176,22 +176,22 @@ export function AgentWorld({ height = 260 }: { height?: number }) {
             ctx.clearRect(0, 0, W, H);
             // sky
             const sky = ctx.createLinearGradient(0, 0, 0, H);
-            sky.addColorStop(0, "#000000"); sky.addColorStop(0.35, "#060b16"); sky.addColorStop(1, "#0b1830");
+            sky.addColorStop(0, "#0E182E"); sky.addColorStop(0.4, "#111D38"); sky.addColorStop(1, "#1A2B52");
             ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
             for (const s of stars) {
                 ctx.fillStyle = `rgba(255,255,255,${(0.25 + 0.55 * (0.5 + 0.5 * Math.sin(now * 0.0016 + s.p))) * (s.y * 1.6)})`;
                 ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ctx.fill();
             }
             // hills
-            ctx.fillStyle = "#13233f";
+            ctx.fillStyle = "#1C2D57";
             ctx.beginPath(); ctx.moveTo(0, H);
             for (let x = 0; x <= W; x += 8) ctx.lineTo(x, farHill(x));
             ctx.lineTo(W, H); ctx.fill();
-            ctx.fillStyle = "#1a3156";
+            ctx.fillStyle = "#24396B";
             ctx.beginPath(); ctx.moveTo(0, H);
             for (let x = 0; x <= W; x += 6) ctx.lineTo(x, ground(x));
             ctx.lineTo(W, H); ctx.fill();
-            ctx.strokeStyle = "rgba(100,210,255,0.25)"; ctx.lineWidth = 1.2;
+            ctx.strokeStyle = "rgba(255,107,91,0.35)"; ctx.lineWidth = 1.2;
             ctx.beginPath();
             ctx.moveTo(0, ground(0));
             for (let x = 6; x <= W; x += 6) ctx.lineTo(x, ground(x));
@@ -223,22 +223,22 @@ export function AgentWorld({ height = 260 }: { height?: number }) {
             const hx = hubX(), hy = hubY();
             for (const p of pulses) {
                 const k = (now - p) / 1400;
-                ctx.strokeStyle = `rgba(100,210,255,${0.6 * (1 - k)})`; ctx.lineWidth = 2;
+                ctx.strokeStyle = `rgba(255,107,91,${0.7 * (1 - k)})`; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.arc(hx, hy, 18 + k * 46, 0, Math.PI * 2); ctx.stroke();
             }
             const halo = ctx.createRadialGradient(hx, hy, 4, hx, hy, 46);
-            halo.addColorStop(0, "rgba(100,210,255,0.45)"); halo.addColorStop(1, "rgba(100,210,255,0)");
+            halo.addColorStop(0, "rgba(255,107,91,0.42)"); halo.addColorStop(1, "rgba(255,107,91,0)");
             ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(hx, hy, 46, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#1a3156"; ctx.beginPath(); ctx.moveTo(hx - 10, hy + 14); ctx.lineTo(hx + 10, hy + 14); ctx.lineTo(hx + 6, ground(hx)); ctx.lineTo(hx - 6, ground(hx)); ctx.fill();
+            ctx.fillStyle = "#24396B"; ctx.beginPath(); ctx.moveTo(hx - 10, hy + 14); ctx.lineTo(hx + 10, hy + 14); ctx.lineTo(hx + 6, ground(hx)); ctx.lineTo(hx - 6, ground(hx)); ctx.fill();
             const core = ctx.createRadialGradient(hx - 5, hy - 6, 2, hx, hy, 18);
-            core.addColorStop(0, "#ffffff"); core.addColorStop(1, "#64d2ff");
+            core.addColorStop(0, "#FFF7EC"); core.addColorStop(1, "#FF6B5B");
             ctx.fillStyle = core; ctx.beginPath(); ctx.arc(hx, hy, 16 + Math.sin(now * 0.003) * 1.2, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#0b1830";
+            ctx.fillStyle = "#14213D";
             ctx.beginPath(); ctx.arc(hx, hy, 6.5, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#64d2ff";
+            ctx.fillStyle = "#F4EDE0";
             ctx.beginPath(); ctx.arc(hx, hy, 3, 0, Math.PI * 2); ctx.fill();
             ctx.font = "600 12px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
-            ctx.textAlign = "center"; ctx.fillStyle = "rgba(245,245,247,0.85)";
+            ctx.textAlign = "center"; ctx.fillStyle = "rgba(244,237,224,0.9)";
             ctx.fillText("Recallix", hx, hy - 28);
 
             // flying memory cards
@@ -248,7 +248,7 @@ export function AgentWorld({ height = 260 }: { height?: number }) {
                 const x = f.x0 + (f.x1 - f.x0) * e;
                 const y = f.y0 + (f.y1 - f.y0) * e - Math.sin(Math.PI * e) * (f.toHub ? 46 : 34);
                 ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(k * Math.PI * 2) * 0.25);
-                ctx.fillStyle = "#f5f5f7"; roundRect(-8, -6, 16, 12, 3); ctx.fill();
+                ctx.fillStyle = "#F4EDE0"; roundRect(-8, -6, 16, 12, 3); ctx.fill();
                 ctx.fillStyle = f.color; ctx.fillRect(-5, -2.5, 10, 1.8); ctx.fillRect(-5, 1, 6, 1.8);
                 ctx.restore();
             }

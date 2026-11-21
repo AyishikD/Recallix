@@ -4,7 +4,7 @@ import { AgentWorld } from "./AgentWorld";
 
 export function Footer({ note }: { note?: React.ReactNode }) {
     return (
-        <footer className="bg-cloud">
+        <footer className="bg-night">
             <AgentWorld />
             <div className="mx-auto max-w-[1024px] px-5 py-10 type-caption text-ink-2">
                 {note && <div className="pb-5 mb-5 border-b border-line space-y-2">{note}</div>}

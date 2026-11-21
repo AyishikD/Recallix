@@ -25,7 +25,7 @@ function HeroTerminal() {
     const ex = headline?.example;
     const top = ex?.recall?.memories?.[0];
     return (
-        <div className="mx-auto max-w-[820px] text-left rounded-[18px] bg-card overflow-hidden">
+        <div className="tone-navy mx-auto max-w-[820px] text-left rounded-[18px] bg-code overflow-hidden">
             <div className="flex items-center gap-2 px-4 h-10 border-b border-line">
                 <span className="h-3 w-3 rounded-full bg-[#ff5f57]" /><span className="h-3 w-3 rounded-full bg-[#febc2e]" /><span className="h-3 w-3 rounded-full bg-[#28c840]" />
                 <span className="ml-3 font-mono text-[12px] text-ink-3">recallix — python</span>
@@ -58,8 +58,8 @@ function FactTimeline() {
         <div className="grid gap-4 md:grid-cols-3">
             {steps.map((s, i) => (
                 <Reveal key={s.when} from={(["left", "up", "right"] as const)[i]} delay={i * 0.12}>
-                    <div className={`rounded-[22px] p-6 h-full ${s.state === "current" ? "bg-ink text-black" : "bg-card text-white"}`}>
-                        <div className={`type-caption mb-3 ${s.state === "current" ? "text-[#0066cc]" : "text-night-ink-2"}`}>
+                    <div className={`rounded-[22px] p-6 h-full ${s.state === "current" ? "bg-ink text-on-ink" : "bg-card text-ink"}`}>
+                        <div className={`type-caption mb-3 ${s.state === "current" ? "text-[#C2412F]" : "text-night-ink-2"}`}>
                             {s.when} · {s.state === "current" ? "kept" : s.state === "negation" ? "invalidates Dec 12 only" : "superseded"}
                         </div>
                         <p className={`text-[19px] leading-snug font-medium ${s.state === "superseded" ? "line-through decoration-1 opacity-60" : ""}`}>{s.text}</p>
@@ -84,7 +84,7 @@ function ExplainBars() {
                 {entries.map(([k, v]) => (
                     <div key={k} className="grid grid-cols-[120px_1fr_44px] items-center gap-3 text-[13px]">
                         <span className="text-ink-2">{k.replace(/_/g, " ")}</span>
-                        <div className="h-1.5 rounded-full bg-cloud overflow-hidden">
+                        <div className="h-1.5 rounded-full bg-line overflow-hidden">
                             <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(1, v) * 100}%` }} />
                         </div>
                         <span className="text-right tabular-nums text-ink-2">{v.toFixed(2)}</span>

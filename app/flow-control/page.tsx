@@ -90,18 +90,18 @@ function stagePanel(stages: Stage[], timings?: Record<string, number>) {
         const s = stages[active];
         const t = timings && s.logStage ? timings[s.logStage] : undefined;
         return (
-            <div className="rounded-[28px] bg-card p-6 md:p-8 min-h-[340px] md:min-h-[400px] flex flex-col">
+            <div className="tone-navy rounded-[28px] bg-paper p-6 md:p-8 min-h-[340px] md:min-h-[400px] flex flex-col shadow-[0_30px_60px_-30px_rgba(20,33,61,0.6)]">
                 <div className="flex items-center justify-between text-[13px] text-ink-2">
                     <span className="tabular-nums">{String(active + 1).padStart(2, "0")} / {String(stages.length).padStart(2, "0")}</span>
-                    <span className="rounded-full bg-[#2c2c2e] px-3 py-1">{s.where}</span>
+                    <span className="rounded-full bg-white/10 px-3 py-1">{s.where}</span>
                 </div>
                 <div key={active} className="swap-in flex-1">
                     <p className="mt-6 type-title">{s.title}</p>
                     {t !== undefined && <p className="mt-1 text-[15px] text-ink-2"><CountUp value={ms(t, 2)} duration={0.6} /> on average</p>}
-                    <pre className="mt-6 text-[13px] leading-relaxed bg-black/50 rounded-[14px] p-4 whitespace-pre-wrap break-words">{s.code}</pre>
+                    <pre className="mt-6 text-[13px] leading-relaxed bg-code rounded-[14px] p-4 whitespace-pre-wrap break-words">{s.code}</pre>
                 </div>
                 <div className="mt-6 flex gap-1.5" aria-hidden="true">
-                    {stages.map((_, i) => <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-500 ${i <= active ? "bg-ink" : "bg-[#2c2c2e]"}`} />)}
+                    {stages.map((_, i) => <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-500 ${i <= active ? "bg-cta" : "bg-white/15"}`} />)}
                 </div>
             </div>
         );
