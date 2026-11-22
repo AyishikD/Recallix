@@ -133,3 +133,19 @@ Each result records every system's configuration and a fingerprint of the datase
 it needs `mem0ai` and an LLM key) — do not publish its numbers until it has been run and
 reviewed. Vendors are invited to submit or correct their own adapters.
 
+
+## Implicit facts (experimental, off)
+
+`recall.implicit` proposes what a memory implies using **ATOMIC 2020** commonsense
+(Hwang et al., AAAI 2021, CC BY 4.0 — https://github.com/allenai/comet-atomic-2020; not
+redistributed: build the index locally with `python -m backend.tools.build_inference_rules
+--atomic <folder>`) and verifies each statement with an NLI model
+(`MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli`, MIT).
+
+Measured on `eval/data/implicit` (119 sentences written by the Recallix author; every verified
+inference labelled in `labels.jsonl` by the same author — single annotator, not yet reviewed): precision **51%** at question-time and **71%** at
+store-time settings — below the 90% required to ship it on. Re-measure any change with
+`python eval/implicit_precision.py` (it lists new, unlabelled inferences to label first).
+
+Next step (decided): during the Phase 6 teacher-model session, have the teacher label which
+ATOMIC effects are strictly implied, keep only those, and re-measure; switch on only at >= 90%.

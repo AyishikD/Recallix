@@ -1,0 +1,121 @@
+# Implicit-fact evaluation sentences (dev). Written by the Recallix author; inferences produced from
+# these are labelled correct/incorrect in labels.jsonl and spot-checked by a second person.
+I just got back from my sister's wedding in Goa.
+My sister runs a wedding planning business.
+I graduated from college last May.
+I finally passed my driving test today!
+My dog had puppies last week.
+I just signed the lease on my new apartment in Berlin.
+I got promoted to senior engineer yesterday.
+I quit my job at the bank on Friday.
+My grandmother passed away last month.
+We just had a baby girl!
+I broke my leg skiing in January.
+I ran my first marathon on Sunday.
+I'm flying to Tokyo tomorrow morning.
+I adopted a cat from the shelter.
+My brother got engaged to his girlfriend.
+I failed my chemistry exam.
+I didn't pass the driving test.
+I might move to Berlin next year.
+I'm thinking about quitting my job.
+My laptop was stolen at the airport.
+I bought a new car last week.
+I sold my old bike.
+I started learning Spanish.
+I finished reading War and Peace.
+I got my first tattoo.
+My parents celebrated their 30th anniversary.
+I lost my wallet on the train.
+I was diagnosed with diabetes.
+I had my wisdom teeth removed.
+My son started kindergarten today.
+I moved back in with my parents.
+I got divorced last year.
+I won the chess tournament.
+I lost the election for class president.
+My flight to London was cancelled.
+I missed the bus this morning.
+I burned the dinner again.
+I painted the living room blue.
+I planted tomatoes in the garden.
+I joined a gym in January.
+I gave up smoking six months ago.
+I became a vegetarian.
+My best friend moved to Canada.
+I got a scholarship to study in Germany.
+I was accepted to medical school.
+I got rejected from Stanford.
+I opened my own bakery.
+My startup raised a seed round.
+I got laid off last week.
+I retired from teaching after 35 years.
+I bought a house in the suburbs.
+I'm renting a flat in Mumbai.
+My car broke down on the highway.
+I got a speeding ticket.
+I was late for the meeting.
+I forgot my mom's birthday.
+I threw a surprise party for my wife.
+My husband and I went to Paris for our honeymoon.
+I proposed to my girlfriend at the beach.
+She said yes!
+I had a job interview at Google.
+I got the job at Google.
+I didn't get the job.
+I'm pregnant with our second child.
+My daughter learned to ride a bike.
+My cat died last night.
+I'm allergic to cats, so we can't get one.
+I cut my hair short.
+I dyed my hair purple.
+I lost ten kilos this year.
+I sprained my ankle playing football.
+I'm recovering from surgery.
+I volunteered at the food bank.
+I donated blood today.
+I hiked to the top of Kilimanjaro.
+I learned to swim at forty.
+I got my PhD in physics.
+I submitted my thesis.
+I defended my dissertation last week.
+I'm writing a novel.
+My book got published!
+I bought tickets for the Coldplay concert.
+I went to the Coldplay concert.
+I watched the football final with friends.
+Our team won the league.
+I'm saving up for a house.
+I paid off my student loans.
+I took out a mortgage.
+I'm learning to play the guitar.
+I gave a talk at a conference.
+I was elected mayor.
+I passed the bar exam.
+I became a citizen last year.
+I applied for a visa.
+My visa was approved.
+My visa got rejected.
+The weather is nice today.
+I like tea more than coffee.
+I'm tired.
+What a long week.
+My favourite colour is green.
+I watched a movie last night.
+I had pizza for lunch.
+My phone battery is dying.
+I need to buy milk.
+I'm going to the dentist on Tuesday.
+I went to the dentist on Tuesday.
+My sister is a doctor.
+My brother works at a hospital.
+My friend Sam lives in Pune.
+My boss is on vacation.
+My neighbour's dog keeps barking.
+I'm babysitting my nephew this weekend.
+My mom is in the hospital.
+My dad had a heart attack.
+I visited my grandparents in the village.
+I celebrated Diwali with my family.
+I fasted during Ramadan.
+I'm getting married in June.

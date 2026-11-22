@@ -150,6 +150,22 @@ recall:
   # few extractable facts. Off by default; may help fact-heavy deployments (verify with memtest).
   question_keys:
     enabled: false
+  # Implicit facts: ATOMIC 2020 commonsense proposes what a memory implies; an NLI model verifies
+  # it (backend/brain/features/implicit.py; build the index with backend/tools/build_inference_rules).
+  # OFF: measured precision of verified inferences on eval/data/implicit (119 sentences, 71
+  # inferences, labelled) was 51% at question-time and 71% at store-time settings, below the 90%
+  # bar for shipping on. The NLI verifier accepts likely-but-not-entailed consequences.
+  implicit:
+    enabled: false
+    rules_dir: inference_rules
+    rule_embedder: sentence-transformers/all-MiniLM-L6-v2
+    nli_model: MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli
+    max_patterns: 3
+    pattern_similarity: 0.55
+    store_pattern_similarity: 0.7
+    store_min_entailment: 0.95
+    question_min_entailment: 0.9
+    max_restatement_similarity: 0.8
   # Fact half-lives: every fact in a recall receipt carries the probability it is still true,
   # from how often this user's facts of the same kind were replaced (exponential survival model,
   # Gamma prior: prior_events replacements per prior_days; see backend/brain/memory/freshness.py).

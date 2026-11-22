@@ -25,6 +25,7 @@ from ..features.query import (analyze_query, capitalised_entities, norm_id, enti
 from ..memory_ranking.ranker import Ranker, RecallLog, candidate_features, memory_slots, memory_speaker
 from ..memory_ranking.reinforcement_learning import MemoryRL
 from ..features.answer_check import AnswerChecker
+from ..features.implicit import ImplicitInference, rules_config as implicit_config
 from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 
@@ -277,6 +278,11 @@ class RecallEngine:
                                                                and not m.get("_answer_ok")]}
             status = "CONSISTENT" if answered else "ABSTAINED"
             if status == "ABSTAINED":
+                inferred = self._answer_by_inference(checker, query, resolved[:3], t)
+                if inferred is not None:
+                    status, answer_check["inferred_from"] = "CONSISTENT", inferred["id"]
+                    final = [inferred] + [m for m in resolved[:top_k] if m["id"] != inferred["id"]][: top_k - 1]
+            if status == "ABSTAINED":
                 final = []
             elif (settings.get("recall.answer_check", {}) or {}).get("rerank", False):
                 # memories in which the reader found an answer first (stable: keeps relevance order within)
@@ -332,6 +338,33 @@ class RecallEngine:
         if return_candidates:
             result["_candidates"] = all_scored
         return result
+
+    @staticmethod
+    def _answer_by_inference(checker, query, memories, threshold):
+        """
+        Implicit facts (recall.implicit): when no memory answers directly, the top memories are
+        expanded into verified implications (stored at write time, or inferred now) and the
+        reader looks for the answer in those. Returns the memory whose implication answered, or None.
+        """
+        inference = ImplicitInference.from_config()
+        if inference is None:
+            return None
+        cfg = implicit_config()
+        for m in memories:
+            meta = m.get("metadata")
+            meta = json.loads(meta) if isinstance(meta, str) else (meta or {})
+            implied = meta.get("implied") or inference.infer(
+                m.get("content", ""), memory_speaker(m), min_entailment=cfg["question_min_entailment"],
+                min_similarity=cfg["pattern_similarity"])
+            if not implied:
+                continue
+            checks = checker.check(query, [i["statement"] for i in implied])
+            best = max(range(len(checks)), key=lambda k: checks[k]["margin"])
+            if checks[best]["margin"] >= threshold:
+                m["answer"], m["answer_margin"], m["_answer_ok"] = checks[best]["answer"], round(checks[best]["margin"], 3), True
+                m["inferred"] = {**implied[best], "source": inference.source}
+                return m
+        return None
 
     @staticmethod
     def _subject_contrast(checker, query, candidates):
@@ -415,6 +448,7 @@ class RecallEngine:
                 "memory_type": m.get("memory_type"), "speaker": memory_speaker(m) or None, "facts": facts,
                 "matched_question": m.get("matched_question"),
                 "confirmed_for": m.get("confirmed_for"),
+                "inferred": m.get("inferred"),
                 "answer": m.get("answer") or None, "answer_margin": m.get("answer_margin")}
 
     def _recall_receipt(self, status, resolved, final, threshold, answer_check):
@@ -424,7 +458,13 @@ class RecallEngine:
         elif answer_check is not None:
             t, b = answer_check["threshold"], answer_check["best_margin"]
             rejected = answer_check.get("rejected_as_about_someone_else") or []
-            if status == "ABSTAINED" and rejected:
+            src = next((m for m in final if m.get("inferred")), None) if answer_check.get("inferred_from") else None
+            if src is not None:
+                inf = src["inferred"]
+                reason = (f"answer inferred from memory {src['id']}: \"{src.get('content', '')[:80]}\" implies "
+                          f"\"{inf['statement']}\" (commonsense pattern \"{inf['pattern']}\" -> {inf['relation']}; "
+                          f"entailment {inf['entailment']})")
+            elif status == "ABSTAINED" and rejected:
                 reason = (f"memories {rejected} answer a question like this, but about someone other than "
                           f"{answer_check.get('subject')}; nothing answers it about {answer_check.get('subject')}")
             elif status == "ABSTAINED":

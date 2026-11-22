@@ -18,6 +18,7 @@ from ..world_model.planning_engine import PlanningEngine
 from ..memory_ranking.importance_ranker import ImportanceRanker, content_terms
 from ..features.facts import extract_triads, question_keys, resolve_definite, to_slots
 from ..features.schemas import SchemaClassifier
+from ..features.implicit import ImplicitInference, rules_config as implicit_config
 
 MEMORY_TYPES = ("private", "shared")
 
@@ -89,6 +90,16 @@ class MemoryManager:
             lambda rel: self.episodic.latest_entity_for_relation(user_id, rel, agent_id, ts))
         log("python", "Fact Extraction", f"Slots: {[m['slot_id'] for m in metadata_slots]}", s)
 
+        implied = []
+        inference = ImplicitInference.from_config()
+        if inference is not None:
+            s = time.time()
+            cfg = implicit_config()
+            implied = inference.infer(message, (client_metadata or {}).get("speaker"),
+                                      min_entailment=cfg["store_min_entailment"],
+                                      min_similarity=cfg["store_pattern_similarity"])
+            log("python", "Implicit Facts", f"{len(implied)} verified implications", s)
+
         s = time.time()
         schema_tags = self.schema_classifier.classify(message, vector)
         log("python", "Schema Classification", f"Schemas: {schema_tags}", s)
@@ -111,6 +122,7 @@ class MemoryManager:
             "embedding_model": self.semantic.model_name,
             # kept so fit_importance.py can learn weights from real recall usage
             "metadata": {"schema_tags": schema_tags, "slots": metadata_slots,
+                         **({"implied": implied} if implied else {}),
                          "importance_features": {k: round(v, 4) for k, v in features.items()},
                          **({"client": client_metadata} if client_metadata else {})},
         }

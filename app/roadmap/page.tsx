@@ -55,7 +55,7 @@ const GROUPS: { title: string; lede: string; items: { name: string; detail: stri
         title: "Next",
         lede: "Planned work, in rough order.",
         items: [
-            { name: "Implicit facts", detail: "Infer what a statement implies (a sister’s wedding means she is married) with commonsense rules checked by an entailment model.", status: "next" },
+            { name: "Implicit facts", detail: "Built and switched off: commonsense rules checked by an entailment model reached 71% precision, short of the 90% needed. Next: a curated rule set.", status: "next" },
             { name: "A trained extractor", detail: "Distil an LLM’s understanding of phrasing into a small, deterministic model that ships as a file.", status: "next" },
             { name: "Faster imports", detail: "Batched storing and a persistent embedding cache for large histories.", status: "next" },
             { name: "Parallel index build", detail: "Multi-threaded HNSW insertion for faster rebuilds.", status: "next" },
