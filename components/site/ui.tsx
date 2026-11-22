@@ -72,7 +72,7 @@ export function Stat({ value, label, sub, dark = false }: { value: React.ReactNo
 export function CodeBlock({ code, label }: { code: string; label?: string }) {
     const [copied, setCopied] = useState(false);
     return (
-        <div className="tone-navy rounded-[20px] bg-code overflow-hidden">
+        <div className="tone-navy rounded-[20px] bg-code overflow-hidden border border-white/10">
             <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
                 <span className="type-caption text-night-ink-2">{label}</span>
                 <button className="type-caption text-night-ink-2 hover:text-white"

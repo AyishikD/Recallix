@@ -351,7 +351,7 @@ export function TypeCode({ code, label }: { code: string; label?: string }) {
     }, [lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
     const visible = shown === null ? lines.length : shown;
     return (
-        <div className="tone-navy rounded-[20px] bg-code overflow-hidden">
+        <div className="tone-navy rounded-[20px] bg-code overflow-hidden border border-white/10">
             {label && <div className="px-5 py-3 border-b border-white/10 type-caption text-night-ink-2">{label}</div>}
             <pre ref={ref} className="p-5 text-[13px] leading-relaxed whitespace-pre-wrap break-words">
                 <code>

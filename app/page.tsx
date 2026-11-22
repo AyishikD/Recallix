@@ -3,7 +3,7 @@
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ButtonLink, CodeBlock, CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
-import { AgentsHub, ClosingCTA, MemoryField, MemoryStory } from "@/components/site/story";
+import { AgentsHub, ClosingCTA, MemoryField, MemoryStory, TypeCode } from "@/components/site/story";
 import { headline, headlineBenchmark, largestClustered, lift, ms, pct, results, signedPct } from "@/lib/results";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
@@ -25,7 +25,7 @@ function HeroTerminal() {
     const ex = headline?.example;
     const top = ex?.recall?.memories?.[0];
     return (
-        <div className="tone-navy mx-auto max-w-[820px] text-left rounded-[18px] bg-code overflow-hidden">
+        <div className="tone-navy mx-auto max-w-[820px] text-left rounded-[18px] bg-code overflow-hidden border border-white/10">
             <div className="flex items-center gap-2 px-4 h-10 border-b border-line">
                 <span className="h-3 w-3 rounded-full bg-[#ff5f57]" /><span className="h-3 w-3 rounded-full bg-[#febc2e]" /><span className="h-3 w-3 rounded-full bg-[#28c840]" />
                 <span className="ml-3 font-mono text-[12px] text-ink-3">recallix — python</span>
@@ -47,6 +47,28 @@ function HeroTerminal() {
         </div>
     );
 }
+
+const memoryTest = `# tests/memory/example.yaml — runs in CI, same result every time
+- name: changed facts stay current
+  store:
+    - "Project Alpha deadline is December 12."
+    - "The deadline was moved to December 18."
+  expect:
+    - recall: "When is the Project Alpha deadline?"
+      top_contains: "December 18"
+
+$ python -m backend.tools.memtest tests/memory/*.yaml`;
+
+const mcpConfig = `"mcpServers": {
+  "recallix": {
+    "command": "python",
+    "args": ["-m", "memoryos.mcp_server"],
+    "env": {
+      "RECALLIX_API_KEY": "rx_...",
+      "RECALLIX_AGENT_ID": "claude-desktop"
+    }
+  }
+}`;
 
 function FactTimeline() {
     const steps = [
@@ -262,6 +284,62 @@ export default function HomePage() {
                             <p className="text-ink-2">{f.d}</p>
                         </Reveal>
                     ))}
+                </div>
+            </Section>
+
+            {/* Memory you can test */}
+            <Section tone="night">
+                <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                    <Reveal from="left">
+                        <Eyebrow>Verifiable</Eyebrow>
+                        <Headline>Memory you can test.</Headline>
+                        <Lede dark className="mt-5">
+                            No LLM writes Recallix’s memory, so the same messages always produce the same memory. That makes it
+                            something you can test in CI, replay after an upgrade, and audit line by line.
+                        </Lede>
+                    </Reveal>
+                    <Reveal from="right" delay={0.1}><TypeCode code={memoryTest} label="Memory test" /></Reveal>
+                </div>
+                <div className="mt-14 grid gap-5 md:grid-cols-3">
+                    {[
+                        { t: "Receipts", d: "Every answer says why: which memory, which rule extracted the fact, the exact quote, and how likely it is to still be true." },
+                        { t: "Replay and diff", d: "Rebuild memory from the original messages and see exactly what a new rule or model would change — before you ship it." },
+                        { t: "Calibrated refusals", d: "Calibrate the decline decision on your own questions and get a certificate that bounds how often it wrongly refuses." },
+                    ].map((f, i) => (
+                        <Reveal key={f.t} from={(["left", "up", "right"] as const)[i]} delay={i * 0.1}>
+                            <Tile dark className="h-full">
+                                <h3 className="type-title mb-3">{f.t}</h3>
+                                <p className="text-night-ink-2">{f.d}</p>
+                            </Tile>
+                        </Reveal>
+                    ))}
+                </div>
+            </Section>
+
+            {/* Yours, everywhere */}
+            <Section>
+                <div className="grid gap-12 md:grid-cols-2 md:items-center">
+                    <Reveal from="left">
+                        <Eyebrow>Portable</Eyebrow>
+                        <Headline>Yours, everywhere.</Headline>
+                        <Lede className="mt-5">
+                            Memory belongs to you, not to one model or one vendor. The same memory follows you across assistants,
+                            and leaves with you whenever you want.
+                        </Lede>
+                        <ul className="mt-8 space-y-4">
+                            {[
+                                ["Every MCP client", "Claude Desktop, Cursor and any other Model Context Protocol client — one config entry."],
+                                ["Open export", "All your memories in an open, documented format, from the API or the SDK."],
+                                ["Bring what you have", "Import from a Recallix export, a Mem0 export, or a plain list of memories."],
+                            ].map(([t, d]) => (
+                                <li key={t} className="flex gap-3">
+                                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+                                    <span><strong className="font-semibold">{t}.</strong> <span className="text-ink-2">{d}</span></span>
+                                </li>
+                            ))}
+                        </ul>
+                    </Reveal>
+                    <Reveal from="right" delay={0.1}><CodeBlock code={mcpConfig} label="MCP client configuration" /></Reveal>
                 </div>
             </Section>
 

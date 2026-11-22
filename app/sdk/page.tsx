@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { ButtonLink, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section } from "@/components/site/ui";
+import { ButtonLink, CodeBlock, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section } from "@/components/site/ui";
 import { ClosingCTA, MemoryField, TypeCode } from "@/components/site/story";
 
 /* Code samples mirror sdk/python/memoryos, sdk/typescript and docs/quickstart.md. */
@@ -68,6 +68,49 @@ app.recall(
     user_id="customer-42",
     agent_id="booking",
 )`;
+
+const BEYOND = [
+    {
+        title: "Plug into any MCP client",
+        text: "Claude Desktop, Cursor and other Model Context Protocol clients get recall, store, confirm, forget and export tools — backed by the same memory as your app.",
+        label: "MCP configuration",
+        code: `"mcpServers": {
+  "recallix": {
+    "command": "python",
+    "args": ["-m", "memoryos.mcp_server"],
+    "env": {"RECALLIX_API_KEY": "rx_...",
+            "RECALLIX_AGENT_ID": "cursor"}
+  }
+}`,
+    },
+    {
+        title: "Move your memory",
+        text: "Export everything in an open format, or bring memories with you from a Mem0 export or a plain list. Imports keep their original timestamps.",
+        label: "Python",
+        code: `# export everything in the open "recallix-memory" format
+data = mem.export()
+other.import_memories(data)
+
+mem.import_memories(mem0_export, format="mem0")
+mem.import_memories("I live in Pune.\nI'm vegetarian.",
+                    format="text")`,
+    },
+    {
+        title: "Test what it remembers",
+        text: "Deterministic memory means deterministic tests: assert what your agent must remember, and must not invent, on every pull request.",
+        label: "tests/memory/support.yaml",
+        code: `- name: remembers allergies, not other people's
+  store:
+    - "I'm allergic to peanuts."
+  expect:
+    - recall: "What am I allergic to?"
+      top_contains: peanuts
+    - fact: user::allergy
+      contains: peanuts
+
+$ python -m backend.tools.memtest tests/memory/*.yaml`,
+    },
+];
 
 const SETUP = [
     { t: "Install", c: `python -m venv .venv && source .venv/bin/activate
@@ -143,6 +186,25 @@ export default function DevelopersPage() {
                         </Lede>
                     </Reveal>
                     <Reveal from="right" delay={0.12}><TypeCode code={multiUser} label="Python · service key" /></Reveal>
+                </div>
+            </Section>
+
+            <Section tone="night">
+                <Reveal>
+                    <Eyebrow>Beyond the API</Eyebrow>
+                    <Headline className="mb-12">Portable. Testable. Yours.</Headline>
+                </Reveal>
+                <div className="space-y-14 md:space-y-20">
+                    {BEYOND.map((b, i) => (
+                        <div key={b.title} className="grid gap-6 md:grid-cols-[0.8fr_1.2fr] md:gap-12 md:items-center">
+                            <Reveal from="left">
+                                <p className="text-[13px] text-night-ink-2 mb-2 tabular-nums">{String(i + 1).padStart(2, "0")}</p>
+                                <h3 className="type-title mb-3">{b.title}</h3>
+                                <p className="text-night-ink-2">{b.text}</p>
+                            </Reveal>
+                            <Reveal from="right" delay={0.08}><CodeBlock code={b.code} label={b.label} /></Reveal>
+                        </div>
+                    ))}
                 </div>
             </Section>
 
