@@ -75,7 +75,7 @@ python -m backend.tools.keys revoke rx_AbCd
 ## 5. Use
 
 ```bash
-pip install "git+https://github.com/AyishikD/Recallix#subdirectory=sdk/python"   # PyPI: pip install recallix (once published)
+pip install recallix                                       # Python SDK + recallix-mcp
 ```
 
 ```python
@@ -100,8 +100,7 @@ The "does it answer?" decision is made by a small local reading-comprehension mo
 (`recall.answer_check` in config.yaml; first use downloads the model, ~500 MB).
 Without it, Recallix falls back to a learned relevance threshold.
 
-TypeScript: `npm install recallix` once published; until then build it from the repo
-(`cd sdk/typescript && npm install && npm run build`, then `npm install /path/to/sdk/typescript`).
+TypeScript (Node 18+): `npm install recallix`, then `import { Memory } from "recallix"`.
 
 MCP (Claude Desktop, Cursor, ...): the Python package installs a `recallix-mcp` command; see
 [Your memory, anywhere](#8-your-memory-anywhere).

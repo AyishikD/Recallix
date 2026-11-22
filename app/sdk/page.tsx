@@ -168,8 +168,8 @@ const SETUP = [
 docker compose up -d                 # vector engine + API on localhost:8000` },
     { t: "Get your keys", c: `docker compose logs recallix | grep -A1 "admin API key"   # printed once
 docker compose exec recallix python -m backend.tools.keys create --user alice` },
-    { t: "Install the SDK", c: `pip install "git+https://github.com/AyishikD/Recallix#subdirectory=sdk/python"
-# soon: pip install recallix  /  npm install recallix` },
+    { t: "Install the SDK", c: `pip install recallix                 # Python 3.9+, includes recallix-mcp
+npm install recallix                 # TypeScript / Node 18+` },
     { t: "Without Docker", c: `pip install -r requirements-local.txt
 cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release && cmake --build backend/infra_cpp/build -j
 python -m backend.tools.setup_env && set -a; source .env; set +a

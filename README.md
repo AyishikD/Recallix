@@ -93,7 +93,8 @@ git clone https://github.com/AyishikD/Recallix && cd Recallix
 docker compose up -d                                       # engine + API on localhost:8000
 docker compose logs recallix | grep -A1 "admin API key"    # printed once: save it
 docker compose exec recallix python -m backend.tools.keys create --user alice
-pip install "git+https://github.com/AyishikD/Recallix#subdirectory=sdk/python"   # PyPI: pip install recallix (once published)
+pip install recallix                                       # Python SDK + recallix-mcp
+npm install recallix                                       # TypeScript / Node 18+
 ```
 
 ```python
