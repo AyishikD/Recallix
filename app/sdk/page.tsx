@@ -6,13 +6,13 @@ import { Footer } from "@/components/site/Footer";
 import { ButtonLink, CodeBlock, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section } from "@/components/site/ui";
 import { ClosingCTA, MemoryField, TypeCode } from "@/components/site/story";
 
-/* Code samples mirror sdk/python/memoryos, sdk/typescript and docs/quickstart.md. */
+/* Code samples mirror sdk/python/recallix, sdk/typescript and docs/quickstart.md. */
 
 const SAMPLES: Record<string, { label: string; code: string }> = {
     python: {
         label: "Python",
         code: `import os
-from memoryos import Memory
+from recallix import Memory
 
 mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
 
@@ -28,7 +28,7 @@ mem.feedback(out["recall_id"], [out["memories"][0]["id"]])`,
     },
     typescript: {
         label: "TypeScript",
-        code: `import { Memory } from "memoryos-sdk";
+        code: `import { Memory } from "recallix";
 
 const mem = new Memory({ apiKey: process.env.RECALLIX_API_KEY! });
 
@@ -76,8 +76,7 @@ const BEYOND = [
         label: "MCP configuration",
         code: `"mcpServers": {
   "recallix": {
-    "command": "python",
-    "args": ["-m", "memoryos.mcp_server"],
+    "command": "recallix-mcp",
     "env": {"RECALLIX_API_KEY": "rx_...",
             "RECALLIX_AGENT_ID": "cursor"}
   }
@@ -165,17 +164,16 @@ $ python -m backend.tools.audit verify`,
 ];
 
 const SETUP = [
-    { t: "Install", c: `python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-pip install -r requirements-local.txt   # optional: offline embeddings + answer check
-cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
-cmake --build backend/infra_cpp/build -j` },
-    { t: "Configure", c: `python -m backend.tools.setup_env      # writes .env, prints an admin key once` },
-    { t: "Run", c: `set -a; source .env; set +a
-./backend/infra_cpp/build/memory_service &   # vector engine
-python server.py                             # API on :8000` },
-    { t: "Create a key", c: `python -m backend.tools.keys create --user alice
-python -m backend.tools.keys create --user my-app --role service` },
+    { t: "Run it (Docker)", c: `git clone https://github.com/AyishikD/Recallix && cd Recallix
+docker compose up -d                 # vector engine + API on localhost:8000` },
+    { t: "Get your keys", c: `docker compose logs recallix | grep -A1 "admin API key"   # printed once
+docker compose exec recallix python -m backend.tools.keys create --user alice` },
+    { t: "Install the SDK", c: `pip install "git+https://github.com/AyishikD/Recallix#subdirectory=sdk/python"
+# soon: pip install recallix  /  npm install recallix` },
+    { t: "Without Docker", c: `pip install -r requirements-local.txt
+cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release && cmake --build backend/infra_cpp/build -j
+python -m backend.tools.setup_env && set -a; source .env; set +a
+./backend/infra_cpp/build/memory_service & python server.py` },
 ];
 
 const ENDPOINTS = [

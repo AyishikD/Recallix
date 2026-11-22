@@ -9,6 +9,7 @@ Environment variables:
   RECALLIX_STORAGE_ROOT   storage directory (overrides storage.root)
   RECALLIX_ENGINE_URL     vector engine base URL (overrides engine.url)
   RECALLIX_INTERNAL_KEY   shared secret for the vector engine (required)
+  RECALLIX_EMBEDDING_PROVIDER  overrides models.embedding_provider
   CORS_ALLOWED_ORIGINS    comma-separated origins (overrides api.cors_allowed_origins)
 """
 import os

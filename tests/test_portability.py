@@ -98,7 +98,7 @@ def _session(server, messages):
 
 def test_mcp_handshake_tools_and_calls():
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from memoryos.mcp_server import RecallixMCP
+    from recallix.mcp_server import RecallixMCP
     mem = FakeMemory()
     replies = _session(RecallixMCP(mem, agent_id="claude-desktop"), [
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "capabilities": {}}},
@@ -121,7 +121,7 @@ def test_mcp_handshake_tools_and_calls():
 
 def test_mcp_unknown_protocol_version_gets_latest_supported():
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from memoryos.mcp_server import RecallixMCP, SUPPORTED_VERSIONS
+    from recallix.mcp_server import RecallixMCP, SUPPORTED_VERSIONS
     r = RecallixMCP(FakeMemory()).handle({"jsonrpc": "2.0", "id": 1, "method": "initialize",
                                           "params": {"protocolVersion": "1999-01-01"}})
     assert r["result"]["protocolVersion"] == SUPPORTED_VERSIONS[0]

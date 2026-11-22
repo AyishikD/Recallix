@@ -2,7 +2,7 @@
 Recallix as an MCP server: give Claude Desktop, Cursor, or any Model Context Protocol
 client a memory that you own and that works with every model.
 
-    RECALLIX_API_KEY=rx_... python -m memoryos.mcp_server
+    RECALLIX_API_KEY=rx_... python -m recallix.mcp_server
 
 Environment:
     RECALLIX_API_KEY    your Recallix API key (required)
@@ -12,7 +12,7 @@ Environment:
 Claude Desktop / Cursor configuration (mcpServers):
 
     "recallix": {
-      "command": "python", "args": ["-m", "memoryos.mcp_server"],
+      "command": "python", "args": ["-m", "recallix.mcp_server"],
       "env": {"RECALLIX_API_KEY": "rx_...", "RECALLIX_AGENT_ID": "claude-desktop"}
     }
 

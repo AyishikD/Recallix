@@ -19,8 +19,8 @@ def _mcp_call(server, name, arguments):
 
 def test_memory_is_shared_across_models_and_clients(live_server, api_keys):  # noqa: F811
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from memoryos import Memory
-    from memoryos.mcp_server import RecallixMCP
+    from recallix import Memory
+    from recallix.mcp_server import RecallixMCP
     key = api_keys["alice"]["X-API-Key"]
 
     # "Claude Desktop" stores through MCP (shared: every agent of this user may see it) ...

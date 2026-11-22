@@ -1,17 +1,39 @@
 # Quickstart
 
-## 1. Install
+## Fastest: Docker (one command)
+
+```bash
+git clone https://github.com/AyishikD/Recallix && cd Recallix
+docker compose up -d
+docker compose logs recallix | grep -A1 "admin API key"     # printed once, on first start: save it
+docker compose exec recallix python -m backend.tools.keys create --user alice   # a key for your app
+```
+
+The API is now on `http://localhost:8000` (bound to localhost only). One container runs the
+vector engine and the API; all data, keys and downloaded models live in the `recallix-data`
+volume, so restarts and upgrades keep everything. The first start downloads the embedding and
+answer-check models (~600 MB) before it accepts requests; later starts take seconds. Nothing
+leaves your machine after that: no LLM, no API calls.
+
+Upgrade: `git pull && docker compose up -d --build`. To serve other machines, put a TLS
+reverse proxy (Caddy, nginx) in front of port 8000 and set `CORS_ALLOWED_ORIGINS` in
+`docker-compose.yml` for browser clients.
+
+Then skip to [5. Use](#5-use).
+
+## Without Docker
+
+### 1. Install
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt            # API + memory pipeline
-pip install -r requirements-local.txt      # optional: offline embeddings (embedding_provider: local)
-
+pip install -r requirements-local.txt      # API + memory pipeline + local embeddings and answer check
+                                           # (requirements.txt alone: no torch; set another embedding provider)
 cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
 cmake --build backend/infra_cpp/build -j
 ```
 
-## 2. Configure
+### 2. Configure
 
 ```bash
 python -m backend.tools.setup_env
@@ -20,10 +42,9 @@ python -m backend.tools.setup_env
 This writes a random `RECALLIX_INTERNAL_KEY` (the API ↔ engine secret) to `.env`,
 creates the storage directory, and prints an **admin API key once**.
 
-Choose the embedding model in `config.yaml` → `models.embedding_provider`:
-`ollama` (default, `ollama pull mxbai-embed-large`), `local`
-(sentence-transformers in-process, no server; default model `BAAI/bge-small-en-v1.5`, the one
-the shipped ranking, answer-check and trust fits were made with), or an OpenAI-compatible API.
+Choose the embedding model in `config.yaml` → `models.embedding_provider`: `local` (default:
+sentence-transformers in-process, no server, model `BAAI/bge-small-en-v1.5`, the one the shipped
+ranking, answer-check and trust fits were made with), `ollama`, or an OpenAI-compatible API.
 No LLM is needed by Recallix itself.
 
 The shipped fits belong to that model. With another embedding model, recall still works, but
@@ -31,7 +52,7 @@ refit on your own data for best results (`eval/README.md`), and after changing t
 existing deployment run `python -m backend.tools.reindex --backfill` so stored memories are
 embedded again.
 
-## 3. Run
+### 3. Run
 
 ```bash
 set -a; source .env; set +a
@@ -42,7 +63,7 @@ python server.py                               # API on 127.0.0.1:8000
 On startup the API rebuilds the engine's in-memory indexes from SQLite, so the
 engine can be restarted at any time.
 
-## 4. Create keys
+### 4. Create keys
 
 ```bash
 python -m backend.tools.keys create --user alice                 # acts only as alice
@@ -54,12 +75,12 @@ python -m backend.tools.keys revoke rx_AbCd
 ## 5. Use
 
 ```bash
-pip install -e sdk/python
+pip install "git+https://github.com/AyishikD/Recallix#subdirectory=sdk/python"   # PyPI: pip install recallix (once published)
 ```
 
 ```python
 import os
-from memoryos import Memory
+from recallix import Memory
 
 mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
 mem.store("My name is Priya and I live in Pune.")
@@ -79,7 +100,11 @@ The "does it answer?" decision is made by a small local reading-comprehension mo
 (`recall.answer_check` in config.yaml; first use downloads the model, ~500 MB).
 Without it, Recallix falls back to a learned relevance threshold.
 
-TypeScript: `sdk/typescript` (`npm install ./sdk/typescript && npm run build` inside it).
+TypeScript: `npm install recallix` once published; until then build it from the repo
+(`cd sdk/typescript && npm install && npm run build`, then `npm install /path/to/sdk/typescript`).
+
+MCP (Claude Desktop, Cursor, ...): the Python package installs a `recallix-mcp` command; see
+[Your memory, anywhere](#8-your-memory-anywhere).
 
 ## 6. Maintenance
 
@@ -141,18 +166,19 @@ python -m backend.tools.portable import --user alice --file mem0.json --format m
 or over the API: `GET /memory/export`, `POST /memory/import`, and in the SDKs
 `mem.export()` / `mem.import_memories(data, format="mem0")`.
 
-**MCP server**: give Claude Desktop, Cursor or any MCP client the same memory:
+**MCP server**: give Claude Desktop, Cursor or any MCP client the same memory. The Python
+package installs a `recallix-mcp` command (or use `python -m recallix.mcp_server`):
 
 ```json
 "mcpServers": {
   "recallix": {
-    "command": "python", "args": ["-m", "memoryos.mcp_server"],
+    "command": "recallix-mcp",
     "env": {"RECALLIX_API_KEY": "rx_...", "RECALLIX_AGENT_ID": "claude-desktop"}
   }
 }
 ```
 
-Tools: `recall_memory`, `store_memory`, `confirm_answer`, `forget_memory`, `export_memories`.
+Tools: `recall_memory`, `store_memory`, `confirm_answer`, `relevant_memories`, `forget_memory`, `export_memories`.
 Memories stored as `shared` are visible to every client and agent of the same user.
 
 ## 9. Find problems before your users do

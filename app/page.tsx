@@ -9,7 +9,7 @@ import { headline, headlineBenchmark, largestClustered, lift, ms, pct, results, 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
 const quickstart = `import os
-from memoryos import Memory
+from recallix import Memory
 
 mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
 
@@ -33,7 +33,7 @@ function HeroTerminal() {
             <pre className="p-5 md:p-6 text-[13px] leading-[1.7] overflow-x-auto">
                 <code>
                     <span className="text-ink-3">import</span> os{"\n"}
-                    <span className="text-ink-3">from</span> memoryos <span className="text-ink-3">import</span> Memory{"\n"}
+                    <span className="text-ink-3">from</span> recallix <span className="text-ink-3">import</span> Memory{"\n"}
                     mem = Memory(api_key=os.environ[<span className="text-good">&quot;RECALLIX_API_KEY&quot;</span>]){"\n\n"}
                     {ex?.stores?.slice(0, 3).map(s => (
                         <span key={s.content}>mem.store(<span className="text-good">&quot;{s.content}&quot;</span>){"\n"}</span>
@@ -61,8 +61,7 @@ $ python -m backend.tools.memtest tests/memory/*.yaml`;
 
 const mcpConfig = `"mcpServers": {
   "recallix": {
-    "command": "python",
-    "args": ["-m", "memoryos.mcp_server"],
+    "command": "recallix-mcp",
     "env": {
       "RECALLIX_API_KEY": "rx_...",
       "RECALLIX_AGENT_ID": "claude-desktop"

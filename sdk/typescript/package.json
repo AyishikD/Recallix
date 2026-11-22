@@ -1,13 +1,20 @@
 {
-    "name": "memoryos-sdk",
-    "version": "1.0.0",
+    "name": "recallix",
+    "version": "0.2.0",
+    "description": "TypeScript client for Recallix, an LLM-free memory layer for AI agents",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "files": ["dist", "README.md"],
     "scripts": {
-        "build": "tsc"
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
     },
+    "keywords": ["memory", "ai-agents", "llm", "mcp", "rag"],
+    "license": "Apache-2.0",
+    "repository": {"type": "git", "url": "https://github.com/AyishikD/Recallix", "directory": "sdk/typescript"},
+    "engines": {"node": ">=18"},
     "dependencies": {},
     "devDependencies": {
-        "typescript": "^4.5.0"
+        "typescript": "^5.4.0"
     }
 }

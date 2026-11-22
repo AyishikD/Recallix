@@ -86,8 +86,27 @@ Diagrams: [`docs/architecture_high_level.puml`](docs/architecture_high_level.pum
 
 ## Getting started
 
+**Docker (recommended):**
+
 ```bash
-pip install -r requirements.txt                 # + requirements-local.txt for offline embeddings
+git clone https://github.com/AyishikD/Recallix && cd Recallix
+docker compose up -d                                       # engine + API on localhost:8000
+docker compose logs recallix | grep -A1 "admin API key"    # printed once: save it
+docker compose exec recallix python -m backend.tools.keys create --user alice
+pip install "git+https://github.com/AyishikD/Recallix#subdirectory=sdk/python"   # PyPI: pip install recallix (once published)
+```
+
+```python
+from recallix import Memory
+mem = Memory(api_key="rx_...")
+mem.store("I moved to Pune last month.")
+print(mem.recall("Where do I live?")["memories"][0]["content"])
+```
+
+**From source:**
+
+```bash
+pip install -r requirements-local.txt           # API + local embeddings and answer check
 cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
 cmake --build backend/infra_cpp/build -j
 

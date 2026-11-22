@@ -23,9 +23,11 @@ models:
   # (e.g. scratch/multi_agent_benchmark.py).
   # Which provider to use: "ollama", "openai", "anthropic", "groq", "nvidia", or "custom"
   provider: "nvidia"
-  # Embeddings: "ollama", "local" (in-process sentence-transformers, fully offline),
-  # or any OpenAI-compatible provider below.
-  embedding_provider: "ollama"
+  # Embeddings: "local" (in-process sentence-transformers, fully offline; needs requirements-local.txt),
+  # "ollama", or any OpenAI-compatible provider below. The shipped ranking, answer-check and trust
+  # fits were made with the local default model; with another model, refit (eval/README.md).
+  # Env RECALLIX_EMBEDDING_PROVIDER overrides.
+  embedding_provider: "local"
 
   # --- Local (in-process, offline) ---
   local:
@@ -164,6 +166,10 @@ recall:
   # message(s) before it plus itself, so "saw doc miller" can be found by a question about the
   # shoulder injury mentioned just before. One extra embedding per short message; the memory's own
   # text and vector are unchanged (memory/manager.py _context_before).
+  # Measured on dev data (bge-small): every message with the 2 before it -> LoCoMo dev recall@10
+  # 0.648 -> 0.665, answerable wrongly declined 7.0% -> 6.6%, Gemini batches hit@1 0.84 -> 0.83,
+  # their traps declined 28/30 -> 30/30. Short messages only / 1 before: no change. Off by default
+  # (one extra embedding per stored message); to try it: enabled: true, max_words: 100000, previous: 2.
   neighbour_context:
     enabled: false
     max_words: 12

@@ -28,7 +28,7 @@ def live_server(engine):
 
 def test_python_sdk_roundtrip(live_server, api_keys):
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from memoryos import Memory, RecallixError
+    from recallix import Memory, RecallixError
     mem = Memory(api_key=api_keys["alice"]["X-API-Key"], base_url=live_server)
 
     stored = mem.store("The Orion launch date is March 4.", agent_id="planner", memory_type="shared")
