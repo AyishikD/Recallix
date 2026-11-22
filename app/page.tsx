@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { ButtonLink, CodeBlock, CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
 import { AgentsHub, ClosingCTA, MemoryField, MemoryStory, TypeCode } from "@/components/site/story";
 import { headline, headlineBenchmark, largestClustered, lift, ms, pct, results, signedPct } from "@/lib/results";
+import { DemoVideo } from "@/components/site/DemoVideo";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
@@ -155,6 +156,23 @@ export default function HomePage() {
                 </Reveal>
                 </ScrollFade>
                 <ScrollZoom className="mt-16 md:mt-20"><Reveal from="scale" delay={0.6}><HeroTerminal /></Reveal></ScrollZoom>
+            </Section>
+
+            {/* The product film: one real session, narrated */}
+            <Section tone="cloud" id="watch">
+                <Reveal>
+                    <Eyebrow tone="muted">Watch</Eyebrow>
+                    <Headline className="max-w-[760px]">A week of messy texting, in 50 seconds.</Headline>
+                    <Lede className="mt-5 max-w-[640px]">
+                        Five real messages, three real questions and one it can’t answer. Every answer, score and
+                        millisecond in the film comes from an actual run.
+                    </Lede>
+                </Reveal>
+                <Reveal from="scale" delay={0.1}>
+                    <DemoVideo className="mt-10" src="/videos/recallix-demo.mp4" poster="/videos/recallix-demo-poster.jpg"
+                        label="Recallix demo: casual messages stored over a week, three questions answered from them, and one question declined because nothing answers it" />
+                    <p className="mt-4 text-[12px] text-ink-3">Narration: Gemini text-to-speech (voice Sulafat). Sound: “Swoosh.wav” by Brsjak (<a className="underline" href="https://freesound.org/people/Brsjak/sounds/482880">freesound</a>), CC BY 4.0.</p>
+                </Reveal>
             </Section>
 
             {/* Statement — words light up as you scroll */}

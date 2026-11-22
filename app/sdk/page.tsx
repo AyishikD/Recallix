@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ButtonLink, CodeBlock, Eyebrow, Headline, Lede, Reveal, ScrollFade, Section } from "@/components/site/ui";
+import { DemoVideo } from "@/components/site/DemoVideo";
 import { ClosingCTA, MemoryField, TypeCode } from "@/components/site/story";
 
 /* Code samples mirror sdk/python/recallix, sdk/typescript and docs/quickstart.md. */
@@ -203,6 +204,14 @@ export default function DevelopersPage() {
                         <Lede className="mx-auto mt-6">Python and TypeScript SDKs over a small REST API. Self-hosted, one config file, no LLM to provision.</Lede>
                     </Reveal>
                 </ScrollFade>
+            </Section>
+
+            <Section>
+                <Reveal from="scale">
+                    <DemoVideo autoPlay src="/videos/recallix-api.mp4" poster="/videos/recallix-api-poster.jpg"
+                        label="The Python SDK storing five messages, recalling an answer with its receipt and latency, then returning ABSTAINED for a question nothing answers" />
+                    <p className="text-center mt-5 text-[14px] text-ink-2">A real session through the published <code>recallix</code> package. Responses shown as returned; “…” marks omitted fields. Sound: “Swoosh.wav” by Brsjak (<a className="underline" href="https://freesound.org/people/Brsjak/sounds/482880">freesound</a>), CC BY 4.0.</p>
+                </Reveal>
             </Section>
 
             <Section tone="cloud">

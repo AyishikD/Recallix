@@ -3,6 +3,10 @@
 Persistent memory for AI agents: store what a user tells any of their agents, recall it
 later by meaning, keep facts up to date, and say "I don't know" instead of guessing.
 
+[![Watch the 50-second demo: a week of messy texting, three answers, and one honest decline](public/videos/recallix-demo-poster.jpg)](https://recallix.vercel.app/videos/recallix-demo.mp4)
+
+*50-second demo, narrated (click to play). Every message, answer and timing in it comes from a real run.*
+
 * **No LLM in the memory pipeline.** Fact extraction, schema tagging, importance, ranking,
   reflections and predictions are rules, embeddings and small fitted models. Recallix needs
   only an embedding model (Ollama, in-process sentence-transformers, or an API).
