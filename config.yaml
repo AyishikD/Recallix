@@ -109,6 +109,13 @@ hnsw:
 # Memory tiers
 # ============================================================================
 memory:
+  # Relative dates resolved at store time against the memory's timestamp: "yesterday" said on 8 May 2023 is
+  # kept as "yesterday [7 May 2023]" for the answer check and in recall results (content_resolved). Rules only;
+  # vague words ("lately", "recently") are left alone (features/dates.py). LoCoMo dev (real session dates):
+  # the answer check's answer matches the gold on time questions 13/156 -> 54/156; time-question recall@10
+  # 0.769 -> 0.782; declines unchanged (eval/results/date_resolution/).
+  resolve_dates:
+    enabled: true
   long_term_min_importance: 8.0   # importance (1-10) at which a memory is promoted to long-term
   decay_unit_hours: 24            # time unit of the Ebbinghaus stability for long-term facts
   sensory_ttl_seconds: 60

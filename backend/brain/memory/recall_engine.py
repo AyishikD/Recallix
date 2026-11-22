@@ -29,6 +29,7 @@ from ..features.implicit import ImplicitInference, rules_config as implicit_conf
 from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
+from ..features import dates as date_resolution
 from .updates import CONTEXT_KEY, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
@@ -327,6 +328,9 @@ class RecallEngine:
                     out["metadata"] = json.loads(out["metadata"])
                 except ValueError:
                     pass
+            resolved_text = self._with_dates(out)
+            if resolved_text != out.get("content"):
+                out["content_resolved"] = resolved_text  # memory.resolve_dates: "yesterday [7 May 2023]"
             out["receipt"] = self._memory_receipt(out)
             memories.append(out)
         fresh = settings.get("recall.freshness", {}) or {}
@@ -470,7 +474,7 @@ class RecallEngine:
         """
         # the reader sees first-person statements resolved to their recorded speaker, and without
         # clauses about other people the question does not ask about (recall.answer_check.other_people)
-        contexts = [without_other_people(resolve_first_person(m.get("content", ""), memory_speaker(m)), query)
+        contexts = [without_other_people(resolve_first_person(RecallEngine._with_dates(m), memory_speaker(m)), query)
                     for m in memories]
         early_exit = threshold > -1e8
         read, best, answered, i = [], float("-inf"), False, 0
@@ -493,6 +497,18 @@ class RecallEngine:
             if early_exit and answered:
                 break
         return read, best, answered
+
+    @staticmethod
+    def _with_dates(m):
+        """The memory's text with its resolved relative dates inline (memory.resolve_dates), else its text."""
+        meta = m.get("metadata")
+        if isinstance(meta, str):
+            try:
+                meta = json.loads(meta)
+            except ValueError:
+                meta = {}
+        found = (meta or {}).get("dates") if isinstance(meta, dict) else None
+        return date_resolution.annotate(m.get("content", ""), found) if found else m.get("content", "")
 
     @staticmethod
     def _memory_receipt(m):

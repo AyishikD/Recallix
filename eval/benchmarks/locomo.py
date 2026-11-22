@@ -53,7 +53,8 @@ def split_samples(data, split):
 
 
 def turns_of(sample):
-    """[(dia_id, text, speaker)] in conversation order, text = '[date] Speaker: utterance [+ image caption]'."""
+    """[(dia_id, text, speaker)] in conversation order, text = '[date] Speaker: utterance [+ image caption]'.
+    turn_times(sample) gives each turn's real time."""
     conv = sample["conversation"]
     sessions = sorted((int(k.split("_")[1]), k) for k in conv
                       if re.fullmatch(r"session_\d+", k) and isinstance(conv[k], list))
@@ -68,13 +69,38 @@ def turns_of(sample):
     return out
 
 
+def session_time(date_text):
+    """'1:56 pm on 8 May, 2023' -> a UTC timestamp (None if it does not parse)."""
+    import calendar
+    from datetime import datetime
+    for fmt in ("%I:%M %p on %d %B, %Y", "%I:%M %p on %d %b, %Y"):
+        try:
+            return calendar.timegm(datetime.strptime(date_text.strip(), fmt).timetuple())
+        except ValueError:
+            continue
+    return None
+
+
+def turn_times(sample):
+    """Each turn's time: its session's date and time, plus one second per turn so order within a session is kept."""
+    conv = sample["conversation"]
+    sessions = sorted((int(k.split("_")[1]), k) for k in conv
+                      if re.fullmatch(r"session_\d+", k) and isinstance(conv[k], list))
+    out = []
+    for _, key in sessions:
+        base = session_time(conv.get(f"{key}_date_time", ""))
+        for i, _turn in enumerate(conv[key]):
+            out.append(None if base is None else base + i)
+    return out
+
+
 def ingest(mm, sample):
     """Stores every turn (with its labelled speaker as metadata). Returns {memory_id: [dia_id, ...]}."""
     user = f"locomo_{sample['sample_id']}"
     mem_to_dia = defaultdict(list)
     with contextlib.redirect_stdout(io.StringIO()):
-        for dia_id, text, speaker in turns_of(sample):
-            res = mm.store(user, text, client_metadata={"speaker": speaker})
+        for (dia_id, text, speaker), ts in zip(turns_of(sample), turn_times(sample)):
+            res = mm.store(user, text, client_metadata={"speaker": speaker}, timestamp=ts)
             mem_to_dia[res["memory_id"]].append(dia_id)
     return user, mem_to_dia
 

@@ -19,6 +19,7 @@ from ..memory_ranking.importance_ranker import ImportanceRanker, content_terms
 from ..features.facts import extract_triads, question_keys, resolve_definite, to_slots, with_learned
 from ..features.learned_facts import LearnedExtractor
 from .updates import CONTEXT_KEY
+from ..features import dates as date_resolution
 from ..features.schemas import SchemaClassifier
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 
@@ -95,6 +96,10 @@ class MemoryManager:
             lambda rel: self.episodic.latest_entity_for_relation(user_id, rel, agent_id, ts))
         log("python", "Fact Extraction", f"Slots: {[m['slot_id'] for m in metadata_slots]}", s)
 
+        resolved_dates = date_resolution.resolve(message, ts) if date_resolution.enabled() else []
+        if resolved_dates:
+            log("python", "Date Resolution", ", ".join(f"{d['text']} = {d['value']}" for d in resolved_dates), time.time())
+
         conflicts = self._conflicts(user_id, agent_id, metadata_slots, ts)
         if conflicts:
             log("python", "Conflict Check", f"{len(conflicts)} fact(s) differ from what was said before", time.time())
@@ -132,6 +137,7 @@ class MemoryManager:
             # kept so fit_importance.py can learn weights from real recall usage
             "metadata": {"schema_tags": schema_tags, "slots": metadata_slots,
                          **({"implied": implied} if implied else {}),
+                         **({"dates": resolved_dates} if resolved_dates else {}),
                          "importance_features": {k: round(v, 4) for k, v in features.items()},
                          **({"client": client_metadata} if client_metadata else {})},
         }

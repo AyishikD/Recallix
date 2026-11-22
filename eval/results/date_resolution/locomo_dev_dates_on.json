@@ -1,0 +1,12 @@
+{
+ "recall@10": 0.649,
+ "recall@10_by_cat": {
+  "1": 0.3621,
+  "2": 0.7821,
+  "3": 0.2917,
+  "4": 0.7344
+ },
+ "adversarial_declined": 0.2363,
+ "answerable_wrongly_declined": 0.0682,
+ "temporal_reader_answer_matches_gold": "54/156"
+}
