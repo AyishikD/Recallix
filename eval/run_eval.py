@@ -43,9 +43,15 @@ DATA = REPO / "eval" / "data"
 import numpy as np  # noqa: E402
 
 
+SCENARIO_PREFIX = None  # --scenarios: only scenarios whose name starts with this (e.g. one fresh batch)
+
+
 def load(split, name):
     with open(DATA / split / f"{name}.jsonl") as f:
-        return [json.loads(line) for line in f if line.strip()]
+        rows = [json.loads(line) for line in f if line.strip()]
+    if SCENARIO_PREFIX and name == "retrieval":
+        rows = [r for r in rows if str(r.get("name", "")).startswith(SCENARIO_PREFIX)]
+    return rows
 
 
 def hash_embedder(dim=384):
@@ -537,18 +543,21 @@ def fit_importance(embedder):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--split", default="dev", choices=["dev", "test"])
+    ap.add_argument("--split", default="dev", choices=["dev", "test", "fresh"])
     ap.add_argument("--embedder", default="hash")
     ap.add_argument("--engine-url", default=None)
     ap.add_argument("--only", default="facts,schemas,importance,retrieval")
     ap.add_argument("--verbose", "-v", action="store_true")
     ap.add_argument("--json", default=None, help="write results to this file")
+    ap.add_argument("--scenarios", default=None, help="retrieval: only scenarios whose name starts with this prefix")
     ap.add_argument("--fit-ranker", action="store_true")
     ap.add_argument("--fit-importance", action="store_true")
     ap.add_argument("--fit-answer-check", default=None, metavar="MODELS",
                     help="comma-separated QA models to compare on dev data (use with --locomo)")
     ap.add_argument("--locomo", default=None, help="with --fit-ranker: also fit on LoCoMo dev conversations (path to locomo10.json)")
     args = ap.parse_args()
+    global SCENARIO_PREFIX
+    SCENARIO_PREFIX = args.scenarios
 
     env = Env(args.embedder, args.engine_url)
     if args.fit_importance:

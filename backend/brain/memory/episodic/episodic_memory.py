@@ -114,6 +114,16 @@ class EpisodicMemory:
     # ------------------------------------------------------------------
     # Writes
     # ------------------------------------------------------------------
+    def has_speaker(self, user_id, name):
+        """True if any of this user's memories was recorded as said by `name` (metadata.client.speaker)."""
+        conn = self._connect()
+        try:
+            return conn.execute(
+                "SELECT 1 FROM episodic_events WHERE user_id = ? AND lower(json_extract(metadata, '$.client.speaker')) = ? "
+                "LIMIT 1", (user_id, str(name).lower())).fetchone() is not None
+        finally:
+            conn.close()
+
     def latest_fact_values(self, user_id, slot_ids, agent_id, before):
         """
         {slot_id: (value, memory_id, timestamp)} — the most recent earlier value of each fact

@@ -21,6 +21,7 @@ model, else the model's native boundary (margin 0).
 """
 import json
 import os
+import re
 import threading
 
 import numpy as np
@@ -39,6 +40,30 @@ def _cfg():
     return {"enabled": enabled, "model": c.get("model"),
             "max_length": int(c.get("max_length", 384)), "stride": int(c.get("stride", 128)),
             "max_answer_tokens": int(c.get("max_answer_tokens", 30)), "threshold": c.get("threshold")}
+
+
+def restore_case(text):
+    """
+    Texting-style memories ("moving to an apartment in bansko bulgaria instead") are read as if
+    written normally: sentence starts and a standalone "i" are capitalised and a final full
+    stop is added. Only text with no capital letter at all is touched, so ordinary prose (and
+    every LoCoMo turn) is read exactly as before. Letter case is the only in-place change, so
+    answer offsets still index the original text. The SQuAD readers are cased models trained
+    on edited prose; measured on fresh, independently written texting data (eval/data/fresh,
+    development batches 1-2): right memory recognised as answering 44/50 -> 49/50, trap questions
+    wrongly answered 1/20 -> 2/20; unseen batch 3: one more question answered, traps wrongly answered
+    0/10 -> 2/10. Off by default (recall.answer_check.restore_case) because a wrong answer costs more
+    than a refusal.
+    """
+    if not text or text != text.lower() or not re.search(r"[a-z]", text):
+        return text
+    out = re.sub(r"\bi\b", "I", text)
+    out = re.sub(r"(^\s*|[.!?]\s+)([a-z])", lambda m: m.group(1) + m.group(2).upper(), out)
+    return out if re.search(r"[.!?]\s*$", out) else out + "."
+
+
+def _restore_case_enabled():
+    return bool((settings.get("recall.answer_check", {}) or {}).get("restore_case", False))
 
 
 class AnswerChecker:
@@ -101,6 +126,9 @@ class AnswerChecker:
         if not contexts:
             return []
         import torch
+        originals = contexts
+        if _restore_case_enabled():
+            contexts = [restore_case(c) for c in contexts]
         enc = self.tokenizer([question] * len(contexts), contexts, truncation="only_second",
                              max_length=self.max_length, stride=self.stride, return_overflowing_tokens=True,
                              return_offsets_mapping=True, padding=True, return_tensors="pt")
@@ -127,5 +155,5 @@ class AnswerChecker:
             k = sample_map[w]
             if margin > results[k]["margin"]:
                 a, b = offsets[w][idx[i]][0], offsets[w][idx[j]][1]
-                results[k] = {"margin": margin, "answer": contexts[k][a:b]}
+                results[k] = {"margin": margin, "answer": originals[k][a:b]}  # same offsets: case-only rewrite
         return results

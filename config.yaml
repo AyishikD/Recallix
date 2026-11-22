@@ -135,6 +135,11 @@ recall:
     max_answer_tokens: 30
     threshold: null
     rerank: true       # serve memories in which an answer was found first (dev: LoCoMo hit@1 0.29 -> 0.37)
+    # Read all-lowercase (texting-style) memories with sentence case restored; text with any capital
+    # is read unchanged (features/answer_check.py restore_case). OFF by default (owner's decision:
+    # wrong answers cost more than refusals). Gemini batches 1-2 (development): right memory recognised
+    # 44/50 -> 49/50. Unseen batch 3: +1 answered, but traps wrongly answered 0/10 -> 2/10.
+    restore_case: false
     # "Who said what": when a question names one of the speakers, a memory counts as answering
     # only if the reader finds the answer more strongly for that person than for every other
     # speaker (contrast > min_contrast). LoCoMo dev (999 questions): adversarial questions
@@ -169,6 +174,21 @@ recall:
   # Decline questions about a named person ("Where does Morgan work?") whom no memory mentions
   # and who never spoke, instead of returning the user's own facts (found by the memory fuzzer).
   unknown_person_check:
+    enabled: true
+  # Updates beat originals, without needing an extracted fact: a later memory that announces a
+  # change ("rescheduled to", "instead", "update:", "moving X from A to B") about the same thing
+  # as a higher-ranked earlier one is ranked just above it (backend/brain/memory/updates.py).
+  # Measured with user_perspective below (MiniLM embedder): dev hit@1 0.86 -> 0.93; Gemini batch 1
+  # (development data, guards tuned on it) 0.76 -> 0.88; LoCoMo dev unchanged (few change cues);
+  # legacy retention 7/8 unchanged. Unseen Gemini batch 2: hit@1 0.80 with or without (no gain;
+  # one more trap declined). Quantity ("dropped retainer to 4000") and purchase ("returned ... and
+  # bought") cues added on batch 2 (development); LoCoMo dev unchanged. To be confirmed on batch 3.
+  updates:
+    enabled: true
+  # Questions about the user in the third person ("Which hospital does she work at?", "the
+  # user's job") are searched as first person ("do I work", "my job") unless they name someone
+  # else first. The answer check still reads the question as asked.
+  user_perspective:
     enabled: true
   # Fact half-lives: every fact in a recall receipt carries the probability it is still true,
   # from how often this user's facts of the same kind were replaced (exponential survival model,

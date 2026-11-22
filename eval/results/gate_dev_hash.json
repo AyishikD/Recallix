@@ -14,24 +14,25 @@
     "accuracy": 0.8055555555555556
   },
   "retrieval": {
-    "hit@1": 0.8214285714285714,
+    "hit@1": 0.8928571428571429,
     "hit@3": 0.9285714285714286,
-    "stale_top": 2,
+    "stale_top": 0,
     "false_abstain_rate": 0.07142857142857142,
     "abstain_accuracy": 0.625,
     "embed_calls_per_query": 1.0,
-    "recall_ms_p50": 2.7,
-    "recall_ms_p95": 3.225,
-    "store_ms_p50": 2.8,
+    "recall_ms_p50": 4.1,
+    "recall_ms_p95": 4.525,
+    "store_ms_p50": 3.2,
     "store_stage_ms_mean": {
-      "Sensory & Working Memory": 0.544,
+      "Sensory & Working Memory": 0.478,
       "Embedding": 0.0,
-      "Fact Extraction": 0.044,
-      "Schema Classification": 0.151,
-      "Importance Scoring": 0.412,
-      "Episodic Storage": 1.261,
+      "Fact Extraction": 0.08,
+      "Schema Classification": 0.149,
+      "Importance Scoring": 0.427,
+      "Episodic Storage": 1.327,
       "Vector Engine": 0.0,
-      "Long-Term Promotion": 0.472
+      "Long-Term Promotion": 0.483,
+      "Conflict Check": 0.0
     }
   },
   "legacy": {

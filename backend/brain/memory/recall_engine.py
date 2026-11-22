@@ -29,6 +29,7 @@ from ..features.implicit import ImplicitInference, rules_config as implicit_conf
 from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
+from .updates import promote_updates, user_perspective
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok")
@@ -217,13 +218,16 @@ class RecallEngine:
         from .truth_engine import TruthEngine
         t0 = time.time()
 
+        asked = query
+        query = user_perspective(query, self._NOT_PEOPLE, lambda name: self.episodic.has_speaker(user_id, name))
+        # "does she work" -> "do I work" (recall.user_perspective)
         effective_query, alias_sources = self._resolve_aliases(user_id, query, agent_id)
-        aliases = [effective_query] if effective_query != query else []
+        aliases = [effective_query] if effective_query != asked else []
         analysis = analyze_query(effective_query)
         q_vec = self.semantic.embed(effective_query)
 
         candidates = self._generate_candidates(user_id, effective_query, agent_id, q_vec)
-        ranked = self._score(candidates, analysis, agent_id, alias_sources)
+        ranked = promote_updates(self._score(candidates, analysis, agent_id, alias_sources), effective_query)  # recall.updates
         all_scored = list(ranked)
 
         truth = TruthEngine()
@@ -264,7 +268,7 @@ class RecallEngine:
         # memories when it is available; otherwise the relevance threshold decides.
         answer_check = None
         checker = AnswerChecker.from_config()
-        outsider = self._unknown_person(query, all_scored)
+        outsider = self._unknown_person(asked, all_scored)
         if outsider:
             status, final = "ABSTAINED", []
         elif not resolved:
@@ -272,8 +276,8 @@ class RecallEngine:
         elif checker is not None:
             final = resolved[:top_k]
             t = checker.threshold()
-            accept, subject = self._subject_contrast(checker, query, all_scored)
-            read, best, answered = self._read_until_answer(checker, query, final, t, accept)
+            accept, subject = self._subject_contrast(checker, asked, all_scored)
+            read, best, answered = self._read_until_answer(checker, asked, final, t, accept)  # the reader keeps the question as asked
             cert = checker.certificate() if hasattr(checker, "certificate") else None  # custom checkers may omit it
             answer_check = {"model": checker.model_name, "threshold": t, "best_margin": round(best, 3),
                             "read": len(read), "guarantee": cert["statement"] if cert else None,
@@ -282,7 +286,7 @@ class RecallEngine:
                                                                and not m.get("_answer_ok")]}
             status = "CONSISTENT" if answered else "ABSTAINED"
             if status == "ABSTAINED":
-                inferred = self._answer_by_inference(checker, query, resolved[:3], t)
+                inferred = self._answer_by_inference(checker, asked, resolved[:3], t)
                 if inferred is not None:
                     status, answer_check["inferred_from"] = "CONSISTENT", inferred["id"]
                     final = [inferred] + [m for m in resolved[:top_k] if m["id"] != inferred["id"]][: top_k - 1]
@@ -298,7 +302,7 @@ class RecallEngine:
 
         recall_id = uuid.uuid4().hex
         self.recall_log.log(recall_id, user_id, all_scored)
-        self.recall_log.log_query(recall_id, user_id, agent_id, query)
+        self.recall_log.log_query(recall_id, user_id, agent_id, asked)
         if answer_check is not None:
             self.recall_log.log_answer_check(recall_id, user_id, answer_check["model"], answer_check["best_margin"],
                                              [m["id"] for m in read])
@@ -332,6 +336,9 @@ class RecallEngine:
             "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check, outsider),
             "debug": {
                 "aliases": aliases,
+                "read_as": query if query != asked else None,
+                "promoted_updates": [{"memory": m["id"], "update_of": m["update_of"], "shared": m.get("update_shared_words")}
+                                     for m in all_scored[:5] if m.get("update_of") is not None],
                 "query_entities": analysis["strong_entities"],
                 "candidates": len(all_scored),
                 "threshold": round(threshold, 4),

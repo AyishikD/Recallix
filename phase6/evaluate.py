@@ -8,6 +8,10 @@ Recallix author (single annotator). A predicted fact matches a gold fact when th
 agrees and the values match after normalisation (exact) or overlap (relaxed: one contains
 the other). Reports precision / recall / F1 per system, value-only scores (relation ignored)
 — fairer to the rules, whose relation names differ — and entity accuracy.
+
+Every system is scored twice: on the messages as written, and on texting-style versions of
+the same messages (phase6/texting.py: lowercase, no final stop, dropped "i", fillers; the
+gold spans move with the text). The second view is how many real users write.
 """
 import json
 import sys
@@ -85,6 +89,20 @@ def main():
     gold = {mid: labels[mid] for mid in held if mid in labels}
     texts = {mid: pool[mid]["text"] for mid in gold}
     print(f"held-out: {len(gold)} messages, {sum(len(v) for v in gold.values())} gold facts")
+    report = {"as_written": evaluate_view(texts, gold)}
+    from texting import texting_variant
+    t_texts, t_gold = {}, {}
+    for mid in gold:
+        v = texting_variant(texts[mid], gold[mid], seed=f"eval:{mid}")
+        if v is not None:
+            t_texts[mid], t_gold[mid] = v
+    print(f"\ntexting style: {len(t_gold)} of {len(gold)} messages rewritten")
+    report["texting_style"] = evaluate_view(t_texts, t_gold)
+    (DATA / "eval_report.json").write_text(json.dumps(report, indent=1))
+    return 0
+
+
+def evaluate_view(texts, gold):
     systems = {"rules": rules(texts)}
     for variant in ("all", "no-sa"):
         if (DATA / "models" / variant).exists():
@@ -106,8 +124,7 @@ def main():
         report[name] = {"strict": strict, "relaxed": relaxed, "value_only": value_only, "entity_accuracy": round(ent, 3)}
         print(f"{name:24s} {strict['precision']:.2f}/{strict['recall']:.2f}/{strict['f1']:.2f}".ljust(48)
               + f"{relaxed['f1']:>11.2f} {value_only['f1']:>14.2f} {ent:>11.2f}")
-    (DATA / "eval_report.json").write_text(json.dumps(report, indent=1))
-    return 0
+    return report
 
 
 if __name__ == "__main__":

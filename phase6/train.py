@@ -3,9 +3,12 @@ Train the student: a token tagger that marks fact values and their relation.
 
     python phase6/train.py --variant all        # every source
     python phase6/train.py --variant no-sa      # without CC BY-SA data (Schema-Guided Dialogue)
+    python phase6/train.py --augment none       # without texting-style copies (default: texting)
 
 Model: microsoft/deberta-v3-small (MIT). Tags: BIO per relation (B-location, I-location, ...).
-Held-out messages (splits.json) are never trained on. Output: DATA/models/<variant>/ with
+Every training message also gets a texting-style copy (lowercase, no final stop, dropped "i",
+fillers; phase6/texting.py) with its labels moved along, because real users text like that and
+the rules extracted almost nothing from such messages. Held-out messages (splits.json) are never trained on. Output: DATA/models/<variant>/ with
 the model, tokenizer, label map and a manifest of exactly what it was trained on.
 Deterministic training (fixed seed); inference is deterministic on CPU (argmax).
 """
@@ -24,15 +27,22 @@ LABELS = ["O"] + [f"{p}-{r}" for r in RELATIONS for p in ("B", "I")]
 MAX_LEN = 96
 
 
-def examples(variant):
+def examples(variant, augment="texting"):
+    from texting import texting_variant
     pool = {r["id"]: r for r in read_jsonl(DATA / "pool.jsonl")}
     held = set(json.loads((DATA / "splits.json").read_text())["held_out"])
-    out = []
+    out, added = [], 0
     for mid, facts in labels().items():
         msg = pool.get(mid)
         if msg is None or mid in held or (variant == "no-sa" and msg["source"] == "sgd"):
             continue
         out.append((msg["text"], facts))
+        if augment == "texting":
+            v = texting_variant(msg["text"], facts, seed=f"train:{mid}")
+            if v is not None:
+                out.append(v)
+                added += 1
+    print(f"texting-style copies added: {added}", flush=True)
     return out
 
 
@@ -66,11 +76,12 @@ def main(argv=None):
     ap.add_argument("--epochs", type=int, default=4)
     ap.add_argument("--batch", type=int, default=16)
     ap.add_argument("--lr", type=float, default=5e-5)
+    ap.add_argument("--augment", choices=["texting", "none"], default="texting")
     args = ap.parse_args(argv)
 
     random.seed(0)
     torch.manual_seed(0)
-    data = examples(args.variant)
+    data = examples(args.variant, args.augment)
     tok = AutoTokenizer.from_pretrained(BASE)
     enc = [encode(tok, t, f) for t, f in data]
     device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -111,7 +122,7 @@ def main(argv=None):
     sources = sorted({r["source"] for r in read_jsonl(DATA / "pool.jsonl")} - ({"sgd"} if args.variant == "no-sa" else set()))
     (out / "manifest.json").write_text(json.dumps({
         "base": BASE, "base_licence": "MIT", "variant": args.variant, "training_messages": len(enc),
-        "sources": sources, "labels": LABELS, "epochs": args.epochs, "lr": args.lr, "seed": 0,
+        "sources": sources, "labels": LABELS, "augment": args.augment, "epochs": args.epochs, "lr": args.lr, "seed": 0,
         "teacher": "see phase6/common.py (open-weight model, Apache 2.0)"}, indent=1))
     print("saved", out)
     return 0
