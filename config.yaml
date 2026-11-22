@@ -135,6 +135,33 @@ recall:
     max_answer_tokens: 30
     threshold: null
     rerank: true       # serve memories in which an answer was found first (dev: LoCoMo hit@1 0.29 -> 0.37)
+    # "Who said what": when a question names one of the speakers, a memory counts as answering
+    # only if the reader finds the answer more strongly for that person than for every other
+    # speaker (contrast > min_contrast). LoCoMo dev (999 questions): adversarial questions
+    # declined 23.2% -> 28.3%, answerable wrongly declined 7.48% -> 7.61%, recall@10 unchanged.
+    subject_contrast:
+      enabled: true
+      min_contrast: 0.0      # principled default: support the asked person more than anyone else
+      max_alternatives: 3    # other speakers to compare against (one reader pass each)
+  # Questions as keys: at store time each extracted fact yields the questions it answers
+  # ("Where do I live?"), embedded and kept with the memory; at recall a memory's meaning score
+  # is the better of question-vs-memory and question-vs-its-questions. Measured: no effect on
+  # our dev set (hit@1 0.86 -> 0.86) or LoCoMo dev (recall@10 0.621 -> 0.622) — those contain
+  # few extractable facts. Off by default; may help fact-heavy deployments (verify with memtest).
+  question_keys:
+    enabled: false
+  # Fact half-lives: every fact in a recall receipt carries the probability it is still true,
+  # from how often this user's facts of the same kind were replaced (exponential survival model,
+  # Gamma prior: prior_events replacements per prior_days; see backend/brain/memory/freshness.py).
+  freshness:
+    enabled: true
+    prior_events: 1.0
+    prior_days: 365.0
+  # Recall-time distillation: when feedback confirms a memory answered a question, similar later
+  # questions (embedding cosine >= min_similarity) always consider that memory. Ranking unchanged.
+  distillation:
+    enabled: true
+    min_similarity: 0.9
   # Runtime override of the learned relevance threshold (null = the fitted ranker model's threshold).
   abstain_threshold: null
 

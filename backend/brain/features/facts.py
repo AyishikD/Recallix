@@ -25,8 +25,16 @@ attribute noun or Y looks like a concrete value (capitalised word, digit,
 currency, email, quoted). "my cat is sleeping" therefore yields nothing,
 while "my cat is named Pixel" and "my budget is $500" do.
 """
+import hashlib
+import os
 import re
 import time
+
+# Identifies the exact rule set that extracted a fact: a hash of this file, so any
+# change to a pattern changes the version. Stored on every slot (provenance) and
+# compared by replay to explain why re-processing history changed a fact.
+with open(os.path.abspath(__file__), "rb") as _f:
+    EXTRACTOR_VERSION = "rules-" + hashlib.sha256(_f.read()).hexdigest()[:12]
 
 _TRANSITION = r"(?:changed|moved|updated|switched|shifted|set|pushed|postponed|delayed|bumped)"
 _VERB = (  # longer, state-transition forms first so "was moved to X" yields the value X
@@ -158,15 +166,27 @@ def _looks_like_fact(rel, val):
     return bool(_CONCRETE.search(val)) and not _NOT_A_VALUE.match(val)
 
 
+def _sentences(message):
+    """(sentence, offset of its first character in `message`) — offsets make provenance spans exact."""
+    pos = 0
+    for raw in re.split(r"(?<=[.!?;])\s+|\n+", message):
+        start = message.find(raw, pos) if raw else pos
+        pos = start + len(raw)
+        lead = len(raw) - len(raw.lstrip())
+        yield raw.strip().rstrip(".!?;"), start + lead
+
+
 def extract_triads(message):
-    """Return a list of {"entity", "relation", "value"} dicts (raw, un-normalised)."""
+    """
+    Return a list of {"entity", "relation", "value", "rule", "span"} dicts (raw, un-normalised).
+    `rule` names the pattern that fired; `span` is [start, end) of the value in `message`.
+    """
     from backend.brain.features.query import capitalised_spans
     triads = []
     seen = set()
     last_entity = None  # most recent named entity in this message (for subject-less follow-ups)
 
-    for sentence in re.split(r"(?<=[.!?;])\s+|\n+", message):
-        sentence = sentence.strip().rstrip(".!?;")
+    for sentence, offset in _sentences(message):
         if not sentence:
             continue
         named_here = capitalised_spans(sentence, skip_sentence_initial_words=True)
@@ -176,7 +196,7 @@ def extract_triads(message):
             s, e = m.start("val"), m.end("val")
             return any(s < ce and cs < e for cs, ce in claimed)
 
-        def add(m, ent, rel, val, guard=True):
+        def add(m, ent, rel, val, guard=True, rule=""):
             if not ent or not rel or not val or ent.lower() in _STOP_ENTITIES:
                 return
             if guard and not _looks_like_fact(rel, val):
@@ -185,8 +205,14 @@ def extract_triads(message):
             if key in seen:
                 return
             seen.add(key)
-            claimed.append((m.start("val"), m.end("val")))
-            triads.append({"entity": ent, "relation": rel, "value": val})
+            # Claim (and cite) only the text kept as the value: the raw match can run on
+            # ("Priya and I live in Pune"), and claiming all of it would hide the next fact.
+            raw = m.group("val")
+            i = raw.find(val)
+            start, end = (m.start("val") + i, m.start("val") + i + len(val)) if i >= 0 else (m.start("val"), m.end("val"))
+            claimed.append((start, end))
+            triads.append({"entity": ent, "relation": rel, "value": val, "rule": rule,
+                           "span": [offset + start, offset + end]})
 
         for kind, pattern, fixed_entity in _PATTERNS:
             for m in pattern.finditer(sentence):
@@ -194,40 +220,44 @@ def extract_triads(message):
                     continue
                 val = _clean_value(m.group("val"))
                 if kind == "alias":
-                    add(m, m.group("ent").strip(), "alias_of", val, guard=False)
+                    add(m, m.group("ent").strip(), "alias_of", val, guard=False, rule=kind)
                 elif kind == "event":
                     ent = m.group("ent").strip()
                     if ent.lower() in _EVENT_STOP or ent.split()[-1].lower() in _EVENT_STOP:
                         continue
-                    add(m, ent, "when", val, guard=False)
+                    add(m, ent, "when", val, guard=False, rule=kind)
                 elif kind in ("named", "inverse"):
-                    add(m, fixed_entity, m.group("rel"), val, guard=False)
+                    add(m, fixed_entity, m.group("rel"), val, guard=False, rule=kind)
                 else:
                     ent = fixed_entity or m.group("ent").strip()
                     if kind == "entity_np" and m.start("ent") == 0 and " " not in ent and not re.search(r"\d", ent):
                         continue  # a lone capitalised first word is not evidence of a name
-                    add(m, ent, m.group("rel"), val, guard=(kind in ("my", "possessive", "of", "entity_np", "code_colon")))
+                    add(m, ent, m.group("rel"), val, guard=(kind in ("my", "possessive", "of", "entity_np", "code_colon")), rule=kind)
         for pattern, rel in _FIRST_PERSON:
             m = pattern.search(sentence)
             if m and not overlaps(m):
-                add(m, "user", rel, _clean_value(m.group("val")), guard=False)
+                add(m, "user", rel, _clean_value(m.group("val")), guard=False, rule="first_person")
         for pattern, rel in _THIRD_PERSON:
             m = pattern.search(sentence)
             if m and not overlaps(m):
-                add(m, m.group("ent").strip(), rel, _clean_value(m.group("val")), guard=False)
+                add(m, m.group("ent").strip(), rel, _clean_value(m.group("val")), guard=False, rule="third_person")
         if last_entity and not claimed:  # no fact of its own: "<Relation> is now <Value>" about the last subject
             m = _CARRY.match(sentence)
             if m:
-                add(m, last_entity, m.group("rel"), _clean_value(m.group("val")), guard=True)
+                add(m, last_entity, m.group("rel"), _clean_value(m.group("val")), guard=True, rule="carry")
         if named_here and not _CARRY.match(sentence):
             last_entity = "".join(named_here[0])  # a sentence's first named entity is usually its subject
     return triads
 
 
-def to_slots(triads):
-    """Normalise triads into the metadata slot format consumed by the TruthEngine."""
+def to_slots(triads, timestamp=None):
+    """
+    Normalise triads into the metadata slot format consumed by the TruthEngine.
+    `version` derives from the memory's timestamp (not the wall clock), so replaying a
+    message with its original timestamp reproduces the slot exactly.
+    """
     slots = []
-    version = int(time.time() * 1000)
+    version = int((time.time() if timestamp is None else timestamp) * 1000)
     for t in triads:
         e_raw, r_raw, v = t.get("entity", ""), t.get("relation", ""), t.get("value", "")
         if not e_raw or not r_raw:
@@ -243,5 +273,75 @@ def to_slots(triads):
             "value": v,
             "version": version,
             "truth_status": "active",
+            "source": {"rule": t.get("rule", ""), "span": t.get("span"), "extractor": EXTRACTOR_VERSION},
         })
     return slots
+
+
+def resolve_definite(slots, lookup):
+    """
+    Coreference across messages for definite descriptions: in "The deadline was moved to
+    December 18", "the deadline" refers to a deadline mentioned earlier ("Project Alpha
+    deadline is December 12"). The event pattern alone would file the new value under an
+    entity called "deadline"; this rewrites it to the earlier fact's entity so the
+    TruthEngine sees one fact that changed.
+
+    `lookup(relation)` returns the entity of this user's most recent earlier fact with that
+    relation (visible to the agent), or None. Only event-pattern slots whose subject is a
+    bare noun ("the deadline", "the launch") are candidates; resolution is recorded in the
+    slot's provenance. Deterministic: depends only on earlier stored memories.
+    """
+    out = []
+    for s in slots:
+        src = s.get("source") or {}
+        if src.get("rule") == "event" and s.get("relation") == "when" and s.get("entity"):
+            noun = s["entity"]
+            target = lookup(noun)
+            if target and target != noun:
+                s = {**s, "slot_id": f"{target}::{noun}", "entity": target, "relation": noun,
+                     "source": {**src, "coreference": {"phrase": f"the {noun}", "resolved_to": target}}}
+        out.append(s)
+    return out
+
+
+# Questions a fact answers, phrased the way people ask them. Used as extra retrieval keys
+# (recall.question_keys): a question is far closer to another question in embedding space
+# than to the statement that answers it. Templates only: deterministic, no model.
+_QUESTION_TEMPLATES = {
+    "location": ("Where does {s} live?", "Where is {s} based?"),
+    "name": ("What is {p} name?", "What is {s} called?"),
+    "age": ("How old is {s}?",),
+    "birthday": ("When is {p} birthday?",),
+    "allergy": ("What is {s} allergic to?",),
+    "job": ("What does {s} do for work?", "What is {p} job?"),
+    "employer": ("Where does {s} work?",),
+    "email": ("What is {p} email address?",),
+    "phone": ("What is {p} phone number?",),
+    "deadline": ("When is {p} deadline?", "When is {s} due?"),
+    "when": ("When is {s}?", "When does {s} happen?"),
+    "launch": ("When does {s} launch?",),
+    "alias_of": ("What else is {s} called?",),
+}
+
+
+def question_keys(slot, display_entity=None):
+    """
+    The questions a slot answers. Facts about the user are phrased the way the user would ask
+    them (user::location -> "Where do I live?"); facts about a named entity use its name
+    (atlas::launch -> "When does atlas launch?").
+    """
+    rel, ent = slot.get("relation", ""), slot.get("entity", "")
+    if not rel or not ent:
+        return []
+    if ent == "user":
+        first = {"location": ("Where do I live?",), "name": ("What is my name?",), "age": ("How old am I?",),
+                 "birthday": ("When is my birthday?",), "allergy": ("What am I allergic to?",),
+                 "job": ("What do I do for work?",), "employer": ("Where do I work?",),
+                 "email": ("What is my email address?",), "phone": ("What is my phone number?",)}
+        if rel in first:
+            return list(first[rel])
+        return [f"What is my {rel.replace('_', ' ')}?"]
+    subject = display_entity or ent
+    templates = _QUESTION_TEMPLATES.get(rel, ("What is {p} " + rel.replace("_", " ") + "?",))
+    return [t.format(s=subject, p=f"{subject}'s") for t in templates]
+

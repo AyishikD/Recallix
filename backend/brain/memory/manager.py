@@ -16,7 +16,7 @@ from ..world_model.timeline_engine import TimelineEngine
 from ..world_model.prediction_engine import PredictionEngine
 from ..world_model.planning_engine import PlanningEngine
 from ..memory_ranking.importance_ranker import ImportanceRanker, content_terms
-from ..features.facts import extract_triads, to_slots
+from ..features.facts import extract_triads, question_keys, resolve_definite, to_slots
 from ..features.schemas import SchemaClassifier
 
 MEMORY_TYPES = ("private", "shared")
@@ -45,12 +45,18 @@ class MemoryManager:
     # ------------------------------------------------------------------
     # Store
     # ------------------------------------------------------------------
-    def store(self, user_id, message, agent_id="default_agent", memory_type="private", client_metadata=None, **_ignored):
+    def store(self, user_id, message, agent_id="default_agent", memory_type="private", client_metadata=None,
+              timestamp=None, **_ignored):
         """
         Deterministic store pipeline (no LLM). Extra keyword arguments from
         older clients (skip_llm, sync_index) are accepted and ignored: writes
         are searchable immediately because the engine scans pending vectors.
+
+        `timestamp` (seconds) records when the message was originally said; it defaults
+        to now. Replay passes the original value so re-processing history reproduces
+        every derived field (slot versions, truth order) exactly.
         """
+        ts = time.time() if timestamp is None else float(timestamp)
         if memory_type not in MEMORY_TYPES:
             raise ValueError(f"memory_type must be one of {MEMORY_TYPES}")
         logs = []
@@ -78,7 +84,9 @@ class MemoryManager:
         log("embedding", "Embedding", "OK" if vector is not None else "Unavailable (lexical only)", s)
 
         s = time.time()
-        metadata_slots = to_slots(extract_triads(message))
+        metadata_slots = resolve_definite(
+            to_slots(extract_triads(message), timestamp=ts),
+            lambda rel: self.episodic.latest_entity_for_relation(user_id, rel, agent_id, ts))
         log("python", "Fact Extraction", f"Slots: {[m['slot_id'] for m in metadata_slots]}", s)
 
         s = time.time()
@@ -97,7 +105,7 @@ class MemoryManager:
             "agent_id": agent_id,
             "memory_type": memory_type,
             "content": message,
-            "timestamp": time.time(),
+            "timestamp": ts,
             "importance": importance,
             "embedding": vector,
             "embedding_model": self.semantic.model_name,
@@ -118,6 +126,13 @@ class MemoryManager:
         event["id"] = memory_id
         self.timeline.append_event(user_id, message, memory_id=memory_id, timestamp=event["timestamp"])
         log("python", "Episodic Storage", f"Stored in SQLite id={memory_id}", s)
+
+        if metadata_slots and (settings.get("recall.question_keys", {}) or {}).get("enabled", False):
+            s = time.time()
+            questions = list(dict.fromkeys(q for slot in metadata_slots for q in question_keys(slot)))
+            self.episodic.add_question_keys(memory_id, user_id, [(q, self.semantic.embed(q)) for q in questions],
+                                            self.semantic.model_name)
+            log("python", "Question Keys", f"{len(questions)} questions this memory answers", s)
 
         s = time.time()
         indexed = self.semantic.index(user_id, memory_id, vector)

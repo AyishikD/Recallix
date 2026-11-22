@@ -1,0 +1,29 @@
+# Memory tests: what the agent must remember — and must not invent.
+# Run: python -m backend.tools.memtest tests/memory/*.yaml --embedder hash --answer-check off
+# (Deterministic: same result on every run. See backend/tools/memtest.py for the format.)
+
+- name: personal facts are extracted and recalled
+  store:
+    - "My name is Priya and I live in Pune."
+    - "I'm allergic to peanuts and prefer dark chocolate."
+    - "The weather is nice today."
+  expect:
+    - fact: user::name
+      equals: Priya
+    - fact: user::location
+      contains: Pune
+    - recall: "Where do I live?"
+      top_contains: Pune
+    - recall: "What am I allergic to?"
+      top_contains: peanuts
+
+- name: changed facts stay current (the example shown on the website)
+  store:
+    - "Project Alpha deadline is December 12."
+    - "The deadline was moved to December 18."
+    - "The deadline is not December 12 anymore."
+  expect:
+    - fact: projectalpha::deadline
+      contains: "December 18"
+    - recall: "When is the Project Alpha deadline?"
+      top_contains: "December 18"

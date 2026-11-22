@@ -113,3 +113,23 @@ RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --split dev --embedder hash \
 * Named entities are lowercased with non-alphanumerics removed (`Project Kestrel` → `projectkestrel`);
   lowercase multi-word subjects use underscores (`board meeting` → `board_meeting`).
 * Scheduled events use `<event>::when`; aliases use `<alias>::alias_of` = the canonical name.
+
+## Open harness: compare any memory system
+
+`eval/harness.py` runs any memory system through the same benchmark with the same
+scoring as the scripts above (verified: identical numbers to `benchmarks/locomo.py`).
+A system is a four-method adapter (`eval/adapters/base.py`); built in are `recallix`
+(what it serves, after its decline decision), `recallix-ranked`, `vector-search` and
+`bm25`.
+
+```bash
+python eval/harness.py --dataset locomo --data locomo10.json --split dev \
+    --systems recallix,recallix-ranked,vector-search,bm25 \
+    --embedder st:sentence-transformers/all-MiniLM-L6-v2 --json results.json
+```
+
+Each result records every system's configuration and a fingerprint of the dataset file.
+`eval/adapters/mem0_adapter.py` is **unverified** (written from public docs, not yet run:
+it needs `mem0ai` and an LLM key) — do not publish its numbers until it has been run and
+reviewed. Vendors are invited to submit or correct their own adapters.
+

@@ -312,6 +312,29 @@ VectorEngine::search(const std::vector<float> &query, int k, int ef_search) cons
   return out;
 }
 
+std::vector<std::pair<std::string, float>>
+VectorEngine::searchExact(const std::vector<float> &query, int k) const {
+  if ((int)query.size() != dim_ || k <= 0)
+    return {};
+  std::vector<float> q = normalized(query);
+
+  std::shared_lock<FairSharedMutex> lock(mu_);
+  std::vector<Candidate> hits;
+  hits.reserve(ids_.size());
+  for (int n = 0; n < (int)ids_.size(); ++n)
+    if (!deleted_[n])
+      hits.push_back({distance(q.data(), vec(n)), n});
+
+  // (distance, node) pairs: equal distances order by node = insertion order.
+  std::size_t take = std::min<std::size_t>((std::size_t)k, hits.size());
+  std::partial_sort(hits.begin(), hits.begin() + take, hits.end());
+  std::vector<std::pair<std::string, float>> out;
+  out.reserve(take);
+  for (std::size_t i = 0; i < take; ++i)
+    out.push_back({ids_[hits[i].second], 1.0f - hits[i].first});
+  return out;
+}
+
 void VectorEngine::setEfSearch(int ef) {
   std::unique_lock<FairSharedMutex> lock(mu_);
   efSearch_ = std::max(1, ef);

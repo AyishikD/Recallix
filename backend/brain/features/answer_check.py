@@ -14,9 +14,10 @@ means the memory contains an answer. Recall abstains when no served memory has
 one. No LLM: the model is an encoder (tens of millions of parameters) on CPU.
 
 Configuration (config.yaml recall.answer_check): enabled, model, max_length,
-stride, max_answer_tokens, threshold. threshold=null uses the value recorded
-in answer_check.default.json (chosen on dev data) for that model, else the
-model's native boundary (margin 0).
+stride, max_answer_tokens, threshold. threshold=null uses, in order: this
+deployment's certified threshold (backend/tools/calibrate.py, see calibration.py),
+the value recorded in answer_check.default.json (chosen on dev data) for that
+model, else the model's native boundary (margin 0).
 """
 import json
 import os
@@ -69,10 +70,23 @@ class AnswerChecker:
                     cls._instances[key] = None
             return cls._instances[key]
 
+    def certificate(self):
+        """This deployment's wrong-refusal certificate for this model (calibration.py), or None."""
+        from .calibration import load
+        return load(self.model_name)
+
     def threshold(self):
+        """
+        Resolution order: config override > this deployment's certified threshold >
+        the dev-fitted default for this model > the model's native boundary (0).
+        A certificate without enough data means "never decline": -inf.
+        """
         override = _cfg()["threshold"]
         if override is not None:
             return float(override)
+        cert = self.certificate()
+        if cert is not None:
+            return float(cert["threshold"]) if cert.get("certified") else float("-inf")
         try:
             with open(DEFAULT_PATH) as f:
                 fitted = json.load(f)

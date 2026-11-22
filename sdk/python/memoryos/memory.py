@@ -35,6 +35,16 @@ class Memory:
         return self.client.request("POST", "/memory/feedback", data={
             "recall_id": recall_id, "relevant_memory_ids": relevant_memory_ids, "user_id": user_id})
 
+    def export(self, user_id: Optional[str] = None) -> Dict[str, Any]:
+        """All memories in the open "recallix-memory" format (portable to another Recallix)."""
+        return self.client.request("GET", "/memory/export", params=_params(user_id=user_id))
+
+    def import_memories(self, data: Any, format: str = "recallix", agent_id: str = "default_agent",
+                        memory_type: str = "private", user_id: Optional[str] = None) -> Dict[str, Any]:
+        """Import a Recallix export, a Mem0 export (format="mem0") or text, one memory per line (format="text")."""
+        return self.client.request("POST", "/memory/import", data={
+            "format": format, "data": data, "agent_id": agent_id, "memory_type": memory_type, "user_id": user_id})
+
     def delete(self, memory_id: int, user_id: Optional[str] = None) -> Dict[str, Any]:
         return self.client.request("DELETE", f"/memory/{memory_id}", params={"user_id": user_id} if user_id else None)
 

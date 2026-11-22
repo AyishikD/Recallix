@@ -47,3 +47,5 @@ jobs:
         env:
           RECALLIX_ENGINE_BIN: backend/infra_cpp/build/memory_service
         run: python -m pytest tests -q
+      - name: Memory tests (deterministic expectations about what is remembered)
+        run: python -m backend.tools.memtest tests/memory/*.yaml --embedder hash --answer-check off

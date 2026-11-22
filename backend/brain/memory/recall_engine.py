@@ -25,9 +25,11 @@ from ..features.query import (analyze_query, capitalised_entities, norm_id, enti
 from ..memory_ranking.ranker import Ranker, RecallLog, candidate_features, memory_slots, memory_speaker
 from ..memory_ranking.reinforcement_learning import MemoryRL
 from ..features.answer_check import AnswerChecker
+from ..features.facts import EXTRACTOR_VERSION
+from . import freshness
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
-                  "symbolic_match", "pool")
+                  "symbolic_match", "pool", "_answer_ok")
 
 
 class RecallEngine:
@@ -109,9 +111,69 @@ class RecallEngine:
             elif mid in fetched:
                 fetched[mid]["semantic_score"] = score
                 candidates[mid] = fetched[mid]
+        self._add_confirmed_candidates(user_id, agent_id, q_vec, candidates)
         out = list(candidates.values())
         self._attach_semantic_scores(q_vec, out)
+        self._attach_question_keys(q_vec, out)
         return out
+
+    def _add_confirmed_candidates(self, user_id, agent_id, q_vec, candidates):
+        """
+        Recall-time distillation (recall.distillation): memories that feedback confirmed as the
+        answer to a similar earlier question (cosine >= min_similarity) always join the candidate
+        pool. Ranking is unchanged; this only stops a confirmed answer from being missed. The
+        memory is re-read under this agent's visibility, so deleted or private memories never leak.
+        """
+        cfg = settings.get("recall.distillation", {}) or {}
+        if q_vec is None or not cfg.get("enabled", True):
+            return
+        floor = float(cfg.get("min_similarity", 0.9))
+        hits = {}
+        for query, vec, mid in self.recall_log.confirmed(user_id, self.semantic.model_name):
+            sim = self.semantic.cosine(q_vec, vec)
+            if sim is not None and sim >= floor and sim > hits.get(mid, (-1.0, ""))[0]:
+                hits[mid] = (sim, query)
+        if not hits:
+            return
+        fetched = self.episodic.get_many(user_id, [m for m in hits if m not in candidates], agent_id=agent_id)
+        for mid, (sim, query) in hits.items():
+            c = candidates.get(mid) or fetched.get(mid)
+            if c is not None:
+                c["confirmed_for"] = query
+                candidates[mid] = c
+
+    def confirm(self, recall_id, user_id, relevant_ids):
+        """
+        Feedback: labels the recall's candidates (ranker training data) and distills the
+        confirmed (question -> memory) pairs for future recalls. Returns labelled candidates.
+        """
+        n = self.recall_log.feedback(recall_id, user_id, relevant_ids)
+        row = self.recall_log.query_of(recall_id, user_id)
+        if n and row and relevant_ids:
+            query, agent_id = row
+            vec = self.semantic.embed(query)
+            if vec is not None:
+                self.recall_log.add_confirmed(user_id, agent_id, query, vec, self.semantic.model_name,
+                                              relevant_ids, recall_id)
+        return n
+
+    def _attach_question_keys(self, q_vec, candidates):
+        """
+        recall.question_keys: a memory's meaning score becomes the better of question-vs-memory
+        and question-vs-the-questions-it-answers (stored at write time from its facts).
+        """
+        if q_vec is None or not (settings.get("recall.question_keys", {}) or {}).get("enabled", False):
+            return
+        keys = self.episodic.get_question_keys([c["id"] for c in candidates], self.semantic.model_name)
+        for c in candidates:
+            best = None
+            for text, vec in keys.get(c["id"], []):
+                sim = self.semantic.cosine(q_vec, vec)
+                if sim is not None and (best is None or sim > best[0]):
+                    best = (sim, text)
+            if best and best[0] > (c.get("semantic_score") or 0.0):
+                c["semantic_score"] = best[0]
+                c["matched_question"] = best[1]
 
     def _attach_semantic_scores(self, q_vec, candidates):
         """q · v from stored embeddings for lexical-only candidates; legacy rows are embedded once and saved."""
@@ -204,18 +266,21 @@ class RecallEngine:
             status, final = "NO_MATCH", []
         elif checker is not None:
             final = resolved[:top_k]
-            # the reader sees first-person statements resolved to their recorded speaker
-            checks = checker.check(query, [resolve_first_person(m.get("content", ""), memory_speaker(m)) for m in final])
-            for m, c in zip(final, checks):
-                m["answer"], m["answer_margin"] = c["answer"], round(c["margin"], 3)
-            best = max(c["margin"] for c in checks)
-            answer_check = {"model": checker.model_name, "threshold": checker.threshold(), "best_margin": round(best, 3)}
-            status = "CONSISTENT" if best >= answer_check["threshold"] else "ABSTAINED"
+            t = checker.threshold()
+            accept, subject = self._subject_contrast(checker, query, all_scored)
+            read, best, answered = self._read_until_answer(checker, query, final, t, accept)
+            cert = checker.certificate() if hasattr(checker, "certificate") else None  # custom checkers may omit it
+            answer_check = {"model": checker.model_name, "threshold": t, "best_margin": round(best, 3),
+                            "read": len(read), "guarantee": cert["statement"] if cert else None,
+                            "subject": subject,
+                            "rejected_as_about_someone_else": [m["id"] for m in read if m.get("subject_contrast") is not None
+                                                               and not m.get("_answer_ok")]}
+            status = "CONSISTENT" if answered else "ABSTAINED"
             if status == "ABSTAINED":
                 final = []
             elif (settings.get("recall.answer_check", {}) or {}).get("rerank", False):
                 # memories in which the reader found an answer first (stable: keeps relevance order within)
-                final = sorted(final, key=lambda m: m["answer_margin"] < answer_check["threshold"])
+                final = sorted(final, key=lambda m: not m.get("_answer_ok"))
         elif resolved[0]["relevance"] < threshold:
             status, final = "ABSTAINED", []
         else:
@@ -223,6 +288,10 @@ class RecallEngine:
 
         recall_id = uuid.uuid4().hex
         self.recall_log.log(recall_id, user_id, all_scored)
+        self.recall_log.log_query(recall_id, user_id, agent_id, query)
+        if answer_check is not None:
+            self.recall_log.log_answer_check(recall_id, user_id, answer_check["model"], answer_check["best_margin"],
+                                             [m["id"] for m in read])
         self._reinforce(final)
 
         memories = []
@@ -235,13 +304,20 @@ class RecallEngine:
                     out["metadata"] = json.loads(out["metadata"])
                 except ValueError:
                     pass
+            out["receipt"] = self._memory_receipt(out)
             memories.append(out)
+        fresh = settings.get("recall.freshness", {}) or {}
+        if fresh.get("enabled", True):
+            freshness.annotate([f for m in memories for f in m["receipt"]["facts"]], self.episodic.db_path,
+                               user_id, agent_id, time.time(), float(fresh.get("prior_events", 1.0)),
+                               float(fresh.get("prior_days", 365.0)))
 
         result = {
             "recall_id": recall_id,
             "intent": self.classify_query(analysis),
             "status": status,
             "memories": memories,
+            "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check),
             "debug": {
                 "aliases": aliases,
                 "query_entities": analysis["strong_entities"],
@@ -256,6 +332,118 @@ class RecallEngine:
         if return_candidates:
             result["_candidates"] = all_scored
         return result
+
+    @staticmethod
+    def _subject_contrast(checker, query, candidates):
+        """
+        "Who said what" check (config recall.answer_check.subject_contrast). If the question
+        names exactly one of the people speaking in this user's memories, a memory only counts
+        as answering it when the reader finds the answer *more strongly for that person* than
+        when the same question is asked about each other speaker:
+
+            contrast = margin(question) - max over other speakers s' of margin(question[subject -> s'])
+
+        A memory that "answers" just as well for someone else is not evidence about the asked
+        person. Accept when contrast > min_contrast (default 0: support the asked person more
+        than anyone else; no fitting). Returns (accept(memory, context) or None, subject).
+        """
+        cfg = ((settings.get("recall.answer_check", {}) or {}).get("subject_contrast") or {})
+        if not cfg.get("enabled", False):
+            return None, None
+        speakers = []
+        for m in candidates[:200]:
+            sp = memory_speaker(m)
+            if sp and sp not in speakers:
+                speakers.append(sp)
+        named = [sp for sp in speakers if re.search(rf"\b{re.escape(sp)}\b", query, re.I)]
+        if len(named) != 1 or len(speakers) < 2:
+            return None, None
+        subject = named[0]
+        others = [sp for sp in speakers if sp != subject][: int(cfg.get("max_alternatives", 3))]
+        swapped = [re.sub(rf"\b{re.escape(subject)}\b", alt, query, flags=re.I) for alt in others]
+        min_contrast = float(cfg.get("min_contrast", 0.0))
+
+        def accept(memory, context):
+            alt = max(checker.check(q, [context])[0]["margin"] for q in swapped)
+            memory["subject_contrast"] = round(memory["answer_margin"] - alt, 3)
+            return memory["subject_contrast"] > min_contrast
+        return accept, subject
+
+    @staticmethod
+    def _read_until_answer(checker, query, memories, threshold, accept=None):
+        """
+        Reads memories in rank order — 1, then 2 at a time — and stops at the first batch in
+        which one contains an answer (margin >= threshold). The decision ("does any served
+        memory answer?") is identical to reading all of them, but an answered recall usually
+        needs one read instead of top_k. Declines still read everything. With a non-finite or
+        calibration-mode threshold (<= -1e8) everything is read, so margins stay complete.
+        `accept(memory, context)`, if given, must also hold for a memory to count as answering
+        (the subject-contrast check). Returns (memories read, best margin, answered).
+        """
+        # the reader sees first-person statements resolved to their recorded speaker
+        contexts = [resolve_first_person(m.get("content", ""), memory_speaker(m)) for m in memories]
+        early_exit = threshold > -1e8
+        read, best, answered, i = [], float("-inf"), False, 0
+        while i < len(memories):
+            size = (1 if i == 0 else 2) if early_exit else len(memories) - i
+            batch, ctxs = memories[i:i + size], contexts[i:i + size]
+            for m, c in zip(batch, checker.check(query, ctxs)):
+                m["answer"], m["answer_margin"] = c["answer"], round(c["margin"], 3)
+                best = max(best, c["margin"])
+            for m, ctx in zip(batch, ctxs):
+                if m["answer_margin"] >= threshold and (accept is None or accept(m, ctx)):
+                    m["_answer_ok"] = True
+                    answered = True
+            read.extend(batch)
+            i += size
+            if early_exit and answered:
+                break
+        return read, best, answered
+
+    @staticmethod
+    def _memory_receipt(m):
+        """Where a returned memory came from: who said it, when, and which rule extracted each fact."""
+        meta = m.get("metadata") if isinstance(m.get("metadata"), dict) else {}
+        content = m.get("content", "")
+        facts = []
+        for slot in meta.get("slots", []) or []:
+            src = slot.get("source") or {}
+            span = src.get("span")
+            facts.append({"fact": slot.get("slot_id"), "value": slot.get("value"), "rule": src.get("rule") or None,
+                          "quote": content[span[0]:span[1]] if span else None, "extractor": src.get("extractor")})
+        return {"memory_id": m.get("id"), "stored_at": m.get("timestamp"), "agent_id": m.get("agent_id"),
+                "memory_type": m.get("memory_type"), "speaker": memory_speaker(m) or None, "facts": facts,
+                "matched_question": m.get("matched_question"),
+                "confirmed_for": m.get("confirmed_for"),
+                "answer": m.get("answer") or None, "answer_margin": m.get("answer_margin")}
+
+    def _recall_receipt(self, status, resolved, final, threshold, answer_check):
+        """Why this recall answered or declined, and which models and rules were involved."""
+        if status == "NO_MATCH":
+            reason = "no stored memory matched the question"
+        elif answer_check is not None:
+            t, b = answer_check["threshold"], answer_check["best_margin"]
+            rejected = answer_check.get("rejected_as_about_someone_else") or []
+            if status == "ABSTAINED" and rejected:
+                reason = (f"memories {rejected} answer a question like this, but about someone other than "
+                          f"{answer_check.get('subject')}; nothing answers it about {answer_check.get('subject')}")
+            elif status == "ABSTAINED":
+                reason = f"none of the top memories contains an answer (best answer margin {b} < threshold {t:.3f})"
+            else:
+                top = next((m for m in final if m.get("_answer_ok")), final[0] if final else None)
+                reason = (f"answer found in memory {top['id']}: \"{top.get('answer')}\" (margin {top.get('answer_margin')} "
+                          f">= threshold {t:.3f})") if top else "answer found"
+        elif status == "ABSTAINED":
+            reason = f"best relevance {resolved[0]['relevance']:.3f} is below the threshold {threshold:.3f}"
+        else:
+            reason = f"best relevance {resolved[0]['relevance']:.3f} >= threshold {threshold:.3f}"
+        return {
+            "decision": status,
+            "reason": reason,
+            "guarantee": (answer_check or {}).get("guarantee"),
+            "versions": {"ranker": Ranker.model().get("source", ""), "embedding": self.semantic.model_name,
+                         "extractor": EXTRACTOR_VERSION, "answer_check": (answer_check or {}).get("model")},
+        }
 
     def _reinforce(self, memories):
         if not memories:

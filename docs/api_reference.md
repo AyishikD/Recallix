@@ -15,7 +15,9 @@ that does so gets 403. `/internal/*` needs an `admin` key.
 | Method | Path | Body / query | Notes |
 |---|---|---|---|
 | POST | `/memory/store` | `content`, `agent_id?`, `memory_type? ("private"\|"shared")`, `metadata?`, `user_id?` | Returns `memory_id`, `importance`, `schemas`, `status` (`stored` / `skipped_duplicate`). 429 above `api.writes_per_second_per_user`. |
-| POST | `/memory/recall` | `query`, `limit? (1-100)`, `agent_id?`, `user_id?` | Returns `recall_id`, `status` (`CONSISTENT` / `ABSTAINED` / `NO_MATCH`), `memories[]` each with `relevance`, an `explain` feature breakdown and, when the answer check is enabled, `answer` (the extracted span) and `answer_margin`. `debug.answer_check` shows the reader's decision. |
+| POST | `/memory/recall` | `query`, `limit? (1-100)`, `agent_id?`, `user_id?` | Returns `recall_id`, `status` (`CONSISTENT` / `ABSTAINED` / `NO_MATCH`), `memories[]` each with `relevance`, an `explain` feature breakdown and, when the answer check is enabled, `answer` (the extracted span) and `answer_margin`. `debug.answer_check` shows the reader's decision. `receipt` explains the decision (`decision`, `reason`, `guarantee`, `versions`); each memory's `receipt` gives its provenance (`stored_at`, `speaker`, `agent_id`, and per fact the extraction `rule` and exact `quote`). |
+| GET | `/memory/export` | `user_id?` | All of the user's memories in the open `recallix-memory` format (original messages + derived facts, topics, importance). |
+| POST | `/memory/import` | `format` (`recallix` / `mem0` / `text`), `data`, `agent_id?`, `memory_type?`, `user_id?` | Imports up to 5000 memories through the normal store pipeline with their original timestamps; duplicates are skipped. Returns `stored`, `skipped_duplicates`. |
 | POST | `/memory/feedback` | `recall_id`, `relevant_memory_ids[]`, `user_id?` | Labels that recall's candidates for ranker training. |
 | DELETE | `/memory/{id}` | `?user_id=` | Removes the memory, its vector, long-term copy and timeline entry. 404 if not this user's. |
 | GET | `/memory/timeline` | `?limit=&user_id=` | Stored memories in time order. |

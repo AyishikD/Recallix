@@ -103,12 +103,24 @@ class SemanticMemory:
                 continue
         return out
 
-    def nearest_similarity(self, user_id, vector, top_k=5):
-        """Highest cosine similarity to this user's indexed memories, or None if none/unavailable."""
+    def nearest_similarity(self, user_id, vector):
+        """
+        Highest cosine similarity to this user's stored memories, or None if none/unavailable.
+
+        Uses the engine's *exact* scan rather than the HNSW graph: the approximate graph
+        depends on background-indexing timing and a random level seed, so the novelty
+        feature (and therefore importance) would not be reproducible. Exact keeps the
+        store pipeline deterministic, which replay and memory tests rely on.
+        """
         if vector is None:
             return None
-        hits = self.search(user_id, "", top_k=top_k, vector=vector)
-        return max((s for _, s in hits), default=None)
+        try:
+            res = engine_post("/search", {"namespace": user_id, "query": vector.tolist(), "top_k": 1, "exact": True})
+        except EngineError as e:
+            print(f"[SemanticMemory] nearest-similarity unavailable: {e}")
+            return None
+        scores = [float(r["score"]) for r in res.get("results", []) if "score" in r]
+        return max(scores, default=None)
 
     def remove(self, user_id, memory_id):
         try:

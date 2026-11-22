@@ -91,6 +91,13 @@ public:
   std::vector<std::pair<std::string, float>>
   search(const std::vector<float> &query, int k, int ef_search = -1) const;
 
+  // Exact k nearest live vectors by a full scan (no graph). Deterministic: the
+  // result depends only on the stored vectors, never on graph shape, background
+  // indexing progress or the level RNG; ties break by insertion order. Used where
+  // reproducibility matters more than speed (e.g. the novelty feature at store time).
+  std::vector<std::pair<std::string, float>>
+  searchExact(const std::vector<float> &query, int k) const;
+
   // Links up to max_items pending vectors into the graph. Returns how many.
   std::size_t indexPending(std::size_t max_items);
 

@@ -205,6 +205,29 @@ class RecallLog:
             )
         ''')
         conn.execute("CREATE INDEX IF NOT EXISTS idx_recall_user ON recall_candidates(user_id, recall_id)")
+        # Answer-check margin of each recall and the memories it was computed on: feedback that
+        # marks one of those memories relevant turns the margin into calibration data for the
+        # wrong-refusal guarantee (backend/tools/calibrate.py).
+        # Recall-time distillation: the question of each recall, and confirmed (question -> memory)
+        # pairs written when feedback marks a memory as the answer (RecallEngine.confirm).
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS recall_queries (
+                recall_id TEXT PRIMARY KEY, user_id TEXT, agent_id TEXT, query TEXT, timestamp REAL
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS confirmed_answers (
+                user_id TEXT, agent_id TEXT, query TEXT, embedding BLOB, embedding_model TEXT,
+                memory_id INTEGER, recall_id TEXT, timestamp REAL,
+                PRIMARY KEY (user_id, query, memory_id)
+            )
+        ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS recall_answer_check (
+                recall_id TEXT PRIMARY KEY, user_id TEXT, model TEXT, best_margin REAL,
+                checked_ids TEXT, timestamp REAL
+            )
+        ''')
         conn.commit()
         conn.close()
 
@@ -216,6 +239,64 @@ class RecallLog:
                 [(recall_id, user_id, c["id"], rank, json.dumps(c.get("features", {})), time.time())
                  for rank, c in enumerate(ranked[:top_n]) if c.get("features")])
         conn.close()
+
+    def log_answer_check(self, recall_id, user_id, model, best_margin, checked_ids):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            conn.execute("INSERT OR REPLACE INTO recall_answer_check VALUES (?, ?, ?, ?, ?, ?)",
+                         (recall_id, user_id, model, float(best_margin), json.dumps([int(i) for i in checked_ids]),
+                          time.time()))
+        conn.close()
+
+    def log_query(self, recall_id, user_id, agent_id, query):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            conn.execute("INSERT OR REPLACE INTO recall_queries VALUES (?, ?, ?, ?, ?)",
+                         (recall_id, user_id, agent_id, query, time.time()))
+        conn.close()
+
+    def query_of(self, recall_id, user_id):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        row = conn.execute("SELECT query, agent_id FROM recall_queries WHERE recall_id = ? AND user_id = ?",
+                           (recall_id, user_id)).fetchone()
+        conn.close()
+        return row
+
+    def add_confirmed(self, user_id, agent_id, query, vector, model, memory_ids, recall_id):
+        import numpy as np
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            conn.executemany("INSERT OR REPLACE INTO confirmed_answers VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                             [(user_id, agent_id, query, np.asarray(vector, dtype=np.float32).tobytes(), model,
+                               int(mid), recall_id, time.time()) for mid in memory_ids])
+        conn.close()
+
+    def confirmed(self, user_id, model):
+        """[(query, vector, memory_id)] confirmed for this user with embedding `model`."""
+        import numpy as np
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        rows = conn.execute("SELECT query, embedding, memory_id FROM confirmed_answers WHERE user_id = ? "
+                            "AND embedding_model = ?", (user_id, model)).fetchall()
+        conn.close()
+        return [(q, np.frombuffer(b, dtype=np.float32), mid) for q, b, mid in rows]
+
+    def answerable_margins(self, model):
+        """
+        Margins of recalls where feedback marked one of the checked memories relevant: the
+        question was answerable and its evidence was in front of the reader. Calibration data.
+        """
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        rows = conn.execute(
+            "SELECT a.best_margin, a.checked_ids, a.recall_id FROM recall_answer_check a WHERE a.model = ?", (model,)).fetchall()
+        out = []
+        for margin, checked, rid in rows:
+            ids = set(json.loads(checked or "[]"))
+            hit = conn.execute("SELECT 1 FROM recall_candidates WHERE recall_id = ? AND label = 1 AND memory_id IN (%s) LIMIT 1"
+                               % ",".join("?" * len(ids)), (rid, *ids)).fetchone() if ids else None
+            if hit:
+                out.append(margin)
+        conn.close()
+        return out
 
     def feedback(self, recall_id, user_id, relevant_ids):
         """Marks the listed memories relevant (1) and the other logged candidates not relevant (0)."""
@@ -240,10 +321,16 @@ class RecallLog:
         conn = sqlite3.connect(self.db_path, timeout=30)
         with conn:
             conn.execute("DELETE FROM recall_candidates WHERE user_id = ?", (user_id,))
+            conn.execute("DELETE FROM recall_answer_check WHERE user_id = ?", (user_id,))
+            conn.execute("DELETE FROM recall_queries WHERE user_id = ?", (user_id,))
+            conn.execute("DELETE FROM confirmed_answers WHERE user_id = ?", (user_id,))
         conn.close()
 
     def clear_all(self):
         conn = sqlite3.connect(self.db_path, timeout=30)
         with conn:
             conn.execute("DELETE FROM recall_candidates")
+            conn.execute("DELETE FROM recall_answer_check")
+            conn.execute("DELETE FROM recall_queries")
+            conn.execute("DELETE FROM confirmed_answers")
         conn.close()

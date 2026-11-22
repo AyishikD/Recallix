@@ -49,6 +49,19 @@ export class Memory {
         });
     }
 
+    /** All memories in the open "recallix-memory" format. */
+    export(userId?: string) {
+        return this.client.request("GET", `/memory/export${q({ user_id: userId })}`);
+    }
+
+    /** Import a Recallix export, a Mem0 export (format "mem0") or text, one memory per line (format "text"). */
+    importMemories(data: unknown, opts: { format?: "recallix" | "mem0" | "text"; agentId?: string; memoryType?: MemoryType; userId?: string } = {}) {
+        return this.client.request("POST", "/memory/import", {
+            format: opts.format ?? "recallix", data, agent_id: opts.agentId ?? "default_agent",
+            memory_type: opts.memoryType ?? "private", user_id: opts.userId,
+        });
+    }
+
     delete(memoryId: number, userId?: string) {
         return this.client.request("DELETE", `/memory/${memoryId}${q({ user_id: userId })}`);
     }

@@ -83,3 +83,69 @@ python -m backend.tools.reindex --backfill   # after changing the embedding mode
 python -m backend.brain.memory_ranking.fit_importance --from-db --dry-run
 python -m backend.brain.memory_ranking.fit_ranker --from-db --dry-run
 ```
+
+## 7. Trust tools
+
+Recallix stores and recalls without an LLM, so the same messages always produce the same
+memory. These tools build on that.
+
+```bash
+# Memory tests: assert what your agent remembers (and must not invent) — run them in CI.
+python -m backend.tools.memtest tests/memory/*.yaml --embedder hash --answer-check off
+
+# Replay and diff: rebuild memory from the original messages and see what would change
+# (after editing rules, changing the embedding model, or just to prove determinism).
+python -m backend.tools.replay snapshot --out now.json
+python -m backend.tools.replay replay   --out new.json
+python -m backend.tools.replay diff now.json new.json      # exit 1 if they differ
+
+# Calibrate the answer check for this deployment, with a guarantee:
+# "wrongly declines at most alpha of answerable questions, with probability >= 1 - delta".
+python -m backend.tools.calibrate --from-file sample.json --alpha 0.05 --delta 0.05
+python -m backend.tools.calibrate --from-db                 # from your users' feedback
+```
+
+A memory-test spec looks like this (see `tests/memory/example.yaml`):
+
+```yaml
+- name: changed facts stay current
+  store:
+    - "Project Alpha deadline is December 12."
+    - "The deadline was moved to December 18."
+  expect:
+    - recall: "When is the Project Alpha deadline?"
+      top_contains: "December 18"
+    - fact: projectalpha::deadline
+      contains: "December 18"
+```
+
+Every recall also returns a `receipt`: why it answered or declined, the versions of the
+ranker, embedding model, extraction rules and answer check involved, the calibration
+guarantee in force, and for each memory where its facts came from (rule and exact quote).
+
+## 8. Your memory, anywhere
+
+**Export / import** in an open format (also from Mem0 exports or plain text):
+
+```bash
+python -m backend.tools.portable export --user alice --out alice.json
+python -m backend.tools.portable import --user alice --file mem0.json --format mem0
+```
+
+or over the API: `GET /memory/export`, `POST /memory/import`, and in the SDKs
+`mem.export()` / `mem.import_memories(data, format="mem0")`.
+
+**MCP server**: give Claude Desktop, Cursor or any MCP client the same memory:
+
+```json
+"mcpServers": {
+  "recallix": {
+    "command": "python", "args": ["-m", "memoryos.mcp_server"],
+    "env": {"RECALLIX_API_KEY": "rx_...", "RECALLIX_AGENT_ID": "claude-desktop"}
+  }
+}
+```
+
+Tools: `recall_memory`, `store_memory`, `confirm_answer`, `forget_memory`, `export_memories`.
+Memories stored as `shared` are visible to every client and agent of the same user.
+

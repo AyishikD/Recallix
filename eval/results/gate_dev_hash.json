@@ -1,0 +1,45 @@
+{
+  "split": "dev",
+  "embedder": "hash",
+  "facts": {
+    "precision": 0.9583333333333334,
+    "recall": 0.9583333333333334,
+    "f1": 0.9583333333333334
+  },
+  "schemas": {
+    "accuracy": 0.5151515151515151
+  },
+  "importance": {
+    "auc": 0.9936507936507937,
+    "accuracy": 0.8055555555555556
+  },
+  "retrieval": {
+    "hit@1": 0.8214285714285714,
+    "hit@3": 0.9285714285714286,
+    "stale_top": 2,
+    "false_abstain_rate": 0.07142857142857142,
+    "abstain_accuracy": 0.625,
+    "embed_calls_per_query": 1.0,
+    "recall_ms_p50": 2.7,
+    "recall_ms_p95": 3.225,
+    "store_ms_p50": 2.8,
+    "store_stage_ms_mean": {
+      "Sensory & Working Memory": 0.544,
+      "Embedding": 0.0,
+      "Fact Extraction": 0.044,
+      "Schema Classification": 0.151,
+      "Importance Scoring": 0.412,
+      "Episodic Storage": 1.261,
+      "Vector Engine": 0.0,
+      "Long-Term Promotion": 0.472
+    }
+  },
+  "legacy": {
+    "gauntlet_passed": 6,
+    "gauntlet_total": 12,
+    "retention_hits": 7,
+    "retention_total": 8
+  },
+  "engine": "in-process brute force",
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2 + LoCoMo dev conversations (5)"
+}

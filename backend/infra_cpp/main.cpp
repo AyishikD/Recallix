@@ -166,7 +166,10 @@ int main() {
     auto idx = registry.get(b.at("namespace").get<std::string>());
     json out = json::array();
     if (idx) {
-      for (auto &r : idx->search(b.at("query").get<std::vector<float>>(), b.value("top_k", 10), b.value("ef_search", -1)))
+      auto q = b.at("query").get<std::vector<float>>();
+      int k = b.value("top_k", 10);
+      auto results = b.value("exact", false) ? idx->searchExact(q, k) : idx->search(q, k, b.value("ef_search", -1));
+      for (auto &r : results)
         out.push_back({{"id", r.first}, {"score", r.second}});
     }
     reply(res, 200, {{"results", out}});

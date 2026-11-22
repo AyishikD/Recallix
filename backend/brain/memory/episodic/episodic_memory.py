@@ -28,6 +28,21 @@ def content_hash(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def user_token(user_id):
+    """
+    A single full-text token per user ("u" + hex digest), indexed in its own FTS column so
+    a search can be restricted to one user *inside* the index. Without it, FTS matched and
+    BM25-scored every user's rows before filtering, so recall slowed down as other tenants
+    added data (5.4 s per query on a 247k-memory, 500-user database).
+    """
+    return "u" + hashlib.sha1(str(user_id).encode("utf-8")).hexdigest()[:20]
+
+
+_FTS_DDL = "CREATE VIRTUAL TABLE IF NOT EXISTS episodic_fts USING fts5(content, content_id UNINDEXED, user_id UNINDEXED, utok)"
+# BM25 over the content column only: the user token restricts the match but adds nothing to the score.
+_BM25 = "bm25(episodic_fts, 1.0, 0.0, 0.0, 0.0)"
+
+
 class EpisodicMemory:
     def __init__(self, db_path=None):
         self.db_path = db_path or get_db_path("backend/storage/sqlite_db/memory.db")
@@ -51,8 +66,21 @@ class EpisodicMemory:
                 status TEXT DEFAULT 'ACTIVE'
             )
         ''')
-        cursor.execute("CREATE VIRTUAL TABLE IF NOT EXISTS episodic_fts USING fts5(content, content_id UNINDEXED, user_id UNINDEXED)")
+        conn.create_function("rx_user_token", 1, user_token, deterministic=True)
+        fts_cols = None
+        if cursor.execute("SELECT 1 FROM sqlite_master WHERE name = 'episodic_fts'").fetchone():
+            fts_cols = [d[0] for d in cursor.execute("SELECT * FROM episodic_fts LIMIT 0").description]
+        if fts_cols is not None and "utok" not in fts_cols:
+            # Migration: rebuild the full-text index with the per-user token column. Rows are
+            # keyed by the memory id (rowid) so deletes are index lookups, not table scans.
+            cursor.execute("DROP TABLE IF EXISTS episodic_vocab")
+            cursor.execute("DROP TABLE episodic_fts")
+            fts_cols = None
+        cursor.execute(_FTS_DDL)
         cursor.execute("CREATE VIRTUAL TABLE IF NOT EXISTS episodic_vocab USING fts5vocab(episodic_fts, 'row')")
+        if fts_cols is None:
+            cursor.execute("INSERT INTO episodic_fts (rowid, content_id, content, user_id, utok) "
+                           "SELECT id, id, content, user_id, rx_user_token(user_id) FROM episodic_events")
 
         # Migrations (idempotent)
         columns = {row[1] for row in cursor.execute("PRAGMA table_info(episodic_events)")}
@@ -63,6 +91,13 @@ class EpisodicMemory:
                 "SELECT id, content FROM episodic_events WHERE content_hash IS NULL").fetchall():
             cursor.execute("UPDATE episodic_events SET content_hash = ? WHERE id = ?", (content_hash(content or ""), mid))
 
+        # Questions each memory answers (facts.question_keys), embedded; see recall.question_keys.
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS question_keys (
+                memory_id INTEGER, user_id TEXT, text TEXT, embedding BLOB, embedding_model TEXT
+            )
+        ''')
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_qk_memory ON question_keys(memory_id)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relation_status ON episodic_events(entity_id, relation_type, status)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_hash ON episodic_events(user_id, content_hash)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_time ON episodic_events(user_id, timestamp)")
@@ -79,6 +114,24 @@ class EpisodicMemory:
     # ------------------------------------------------------------------
     # Writes
     # ------------------------------------------------------------------
+    def latest_entity_for_relation(self, user_id, relation, agent_id, before):
+        """
+        Entity of this user's most recent fact with `relation` stored before `before` and
+        visible to `agent_id`, or None (used to resolve "the deadline" across messages).
+        """
+        conn = self._connect()
+        try:
+            row = conn.execute(
+                f"SELECT json_extract(j.value, '$.entity') FROM episodic_events e, json_each(e.metadata, '$.slots') j "
+                f"WHERE e.user_id = ? AND e.status = 'ACTIVE' AND {_VISIBLE} AND e.timestamp < ? "
+                f"AND json_extract(j.value, '$.relation') = ? ORDER BY e.timestamp DESC, e.id DESC LIMIT 1",
+                (user_id, agent_id, before, relation)).fetchone()
+            return row[0] if row else None
+        except sqlite3.Error:
+            return None
+        finally:
+            conn.close()
+
     def find_duplicate(self, user_id, content, agent_id):
         """Id of an identical memory already visible to this agent, else None."""
         conn = self._connect()
@@ -111,8 +164,8 @@ class EpisodicMemory:
                   event.get("reinforcement_score", 1.0), json.dumps(metadata), entity_id, relation_type,
                   blob, event.get("embedding_model") if blob else None, content_hash(event["content"])))
             memory_id = cur.lastrowid
-            conn.execute("INSERT INTO episodic_fts (content_id, content, user_id) VALUES (?, ?, ?)",
-                         (memory_id, event["content"], event["user_id"]))
+            conn.execute("INSERT INTO episodic_fts (rowid, content_id, content, user_id, utok) VALUES (?, ?, ?, ?, ?)",
+                         (memory_id, memory_id, event["content"], event["user_id"], user_token(event["user_id"])))
             conn.commit()
             return memory_id
         finally:
@@ -124,7 +177,8 @@ class EpisodicMemory:
         try:
             cur = conn.execute("DELETE FROM episodic_events WHERE id = ? AND user_id = ?", (memory_id, user_id))
             if cur.rowcount:
-                conn.execute("DELETE FROM episodic_fts WHERE content_id = ?", (memory_id,))
+                conn.execute("DELETE FROM episodic_fts WHERE rowid = ?", (memory_id,))
+                conn.execute("DELETE FROM question_keys WHERE memory_id = ?", (memory_id,))
             conn.commit()
             return cur.rowcount > 0
         finally:
@@ -133,7 +187,9 @@ class EpisodicMemory:
     def clear_user(self, user_id):
         conn = self._connect()
         try:
-            conn.execute("DELETE FROM episodic_fts WHERE user_id = ?", (user_id,))
+            conn.execute("DELETE FROM episodic_fts WHERE rowid IN (SELECT id FROM episodic_events WHERE user_id = ?)",
+                         (user_id,))
+            conn.execute("DELETE FROM question_keys WHERE user_id = ?", (user_id,))
             n = conn.execute("DELETE FROM episodic_events WHERE user_id = ?", (user_id,)).rowcount
             conn.commit()
             return n
@@ -144,6 +200,7 @@ class EpisodicMemory:
         conn = self._connect()
         try:
             conn.execute("DELETE FROM episodic_fts")
+            conn.execute("DELETE FROM question_keys")
             n = conn.execute("DELETE FROM episodic_events").rowcount
             conn.commit()
             return n
@@ -181,11 +238,11 @@ class EpisodicMemory:
             if tokens:
                 for r in conn.execute(f"""
                         SELECT {_SELECT}, f.score FROM (
-                            SELECT content_id, bm25(episodic_fts) AS score FROM episodic_fts
-                            WHERE episodic_fts MATCH ? AND user_id = ? ORDER BY score LIMIT ?
+                            SELECT content_id, {_BM25} AS score FROM episodic_fts
+                            WHERE episodic_fts MATCH ? ORDER BY score LIMIT ?
                         ) f JOIN episodic_events e ON e.id = f.content_id
-                        WHERE e.status = 'ACTIVE' {vis}
-                        """, (" OR ".join(tokens), user_id, limit, *vis_args)):
+                        WHERE e.status = 'ACTIVE' AND e.user_id = ? {vis}
+                        """, (f"utok:{user_token(user_id)} AND ({' OR '.join(tokens)})", limit, user_id, *vis_args)):
                     m = self._row(r[:-1])
                     if m["id"] in results:
                         results[m["id"]]["bm25_score"] = r[-1]
@@ -252,6 +309,34 @@ class EpisodicMemory:
     # ------------------------------------------------------------------
     # Embedding cache (source of truth for the vector indexes)
     # ------------------------------------------------------------------
+    def add_question_keys(self, memory_id, user_id, items, model):
+        """items: [(question text, vector)]."""
+        conn = self._connect()
+        try:
+            with conn:
+                conn.executemany("INSERT INTO question_keys VALUES (?, ?, ?, ?, ?)",
+                                 [(int(memory_id), user_id, text, np.asarray(vec, dtype=np.float32).tobytes(), model)
+                                  for text, vec in items if vec is not None])
+        finally:
+            conn.close()
+
+    def get_question_keys(self, memory_ids, model):
+        """{memory id: [(question text, vector)]} for keys embedded with `model`."""
+        ids = [int(i) for i in memory_ids if i is not None]
+        out = {}
+        conn = self._connect()
+        try:
+            for start in range(0, len(ids), 500):
+                chunk = ids[start:start + 500]
+                ph = ",".join("?" * len(chunk))
+                for mid, text, blob in conn.execute(
+                        f"SELECT memory_id, text, embedding FROM question_keys WHERE memory_id IN ({ph}) "
+                        f"AND embedding_model = ?", (*chunk, model)):
+                    out.setdefault(mid, []).append((text, np.frombuffer(blob, dtype=np.float32)))
+        finally:
+            conn.close()
+        return out
+
     def get_embeddings(self, memory_ids, model):
         """{id: vector} for ids whose stored embedding was made by `model`."""
         ids = [int(i) for i in memory_ids if i is not None]

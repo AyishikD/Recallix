@@ -6,7 +6,7 @@ Handlers are plain `def` so FastAPI runs them in its thread pool — the
 blocking SQLite / engine work never stalls the event loop.
 """
 import time
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -64,12 +64,46 @@ def recall_memory(request: RecallRequest, auth=Depends(verify_api_key)):
 
 @router.post("/feedback")
 def recall_feedback(request: FeedbackRequest, auth=Depends(verify_api_key)):
-    """Marks which memories of a recall were useful; used to refit the ranker (fit_ranker --from-db)."""
+    """
+    Marks which memories of a recall were useful: labels ranker training data (fit_ranker --from-db)
+    and remembers the confirmed answer for similar future questions (recall.distillation).
+    """
     user_id = acting_user(auth, request.user_id)
-    n = get_memory_manager().recall_engine.recall_log.feedback(request.recall_id, user_id, request.relevant_memory_ids)
+    n = get_memory_manager().recall_engine.confirm(request.recall_id, user_id, request.relevant_memory_ids)
     if n == 0:
         raise HTTPException(status_code=404, detail="Unknown recall_id for this user")
     return envelope({"labelled_candidates": n})
+
+
+class ImportRequest(BaseModel):
+    format: Literal["recallix", "mem0", "text"] = "recallix"
+    data: Union[dict, list, str]
+    user_id: Optional[str] = None
+    agent_id: str = "default_agent"
+    memory_type: Literal["private", "shared"] = "private"
+
+
+@router.get("/export")
+def export_memories(user_id: Optional[str] = None, auth=Depends(verify_api_key)):
+    """All of the user's memories in the open "recallix-memory" format (backend/tools/portable.py)."""
+    from backend.tools.portable import export_user
+    return envelope(export_user(get_memory_manager(), acting_user(auth, user_id)))
+
+
+@router.post("/import")
+def import_memories(request: ImportRequest, auth=Depends(verify_api_key)):
+    """
+    Imports a Recallix export, a Mem0 export, or plain text (one memory per line). Every memory
+    goes through the normal store pipeline with its original timestamp; duplicates are skipped.
+    """
+    from backend.tools.portable import import_items, parse
+    user_id = acting_user(auth, request.user_id)
+    rate_limit_writes(user_id)
+    try:
+        items = parse(request.data, request.format)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return envelope(import_items(get_memory_manager(), user_id, items, request.agent_id, request.memory_type))
 
 
 @router.delete("/{memory_id}")

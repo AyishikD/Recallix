@@ -184,11 +184,39 @@ static void testConcurrency() {
   std::cout << "  " << searches << " searches during concurrent writes" << std::endl;
 }
 
+static void testExactSearch() {
+  std::cout << "exact search matches brute force and ignores graph state" << std::endl;
+  const int dim = 24, n = 1500, k = 10;
+  auto data = clustered(n, dim, 12, 21);
+  // Two indexes with different level seeds; one fully linked, one with everything pending.
+  VectorEngine linked(dim, 8, 40, 16, 1), raw(dim, 8, 40, 16, 99);
+  for (int i = 0; i < n; ++i) {
+    linked.add(std::to_string(i), data[i]);
+    raw.add(std::to_string(i), data[i]);
+  }
+  indexAll(linked);
+  linked.remove("7");
+  raw.remove("7");
+  int mismatches = 0;
+  for (int qi = 0; qi < 40; ++qi) {
+    const auto &q = data[(qi * 37) % n];
+    auto expect = bruteForce(data, q, k, {7});
+    auto a = linked.searchExact(q, k), b = raw.searchExact(q, k);
+    CHECK(a.size() == (size_t)k && b.size() == (size_t)k, "exact search returned too few results");
+    for (int i = 0; i < k && i < (int)a.size() && i < (int)b.size(); ++i) {
+      if (a[i].first != std::to_string(expect[i]) || a[i].first != b[i].first) ++mismatches;
+      CHECK(a[i].first != "7", "exact search returned a deleted vector");
+    }
+  }
+  CHECK(mismatches == 0, "exact search differs from brute force or between graph states");
+}
+
 int main() {
   std::cout << "SIMD backend: " << simdBackend() << std::endl;
   testPendingVisible();
   testDeleteAndUpsert();
   testDimensionAndK();
+  testExactSearch();
   testConcurrency();
   testRecall();
   if (g_failures) {
