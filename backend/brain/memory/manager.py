@@ -18,6 +18,7 @@ from ..world_model.planning_engine import PlanningEngine
 from ..memory_ranking.importance_ranker import ImportanceRanker, content_terms
 from ..features.facts import extract_triads, question_keys, resolve_definite, to_slots, with_learned
 from ..features.learned_facts import LearnedExtractor
+from .updates import CONTEXT_KEY
 from ..features.schemas import SchemaClassifier
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 
@@ -80,6 +81,7 @@ class MemoryManager:
 
         s = time.time()
         self.sensory.add(user_id, message)
+        before = self._context_before(user_id, message)  # recall.neighbour_context (read before the window moves)
         self.working.update(user_id, message)
         log("python", "Sensory & Working Memory", "Updated sliding windows", s)
 
@@ -153,6 +155,13 @@ class MemoryManager:
                                             self.semantic.model_name)
             log("python", "Question Keys", f"{len(questions)} questions this memory answers", s)
 
+        if before:
+            s = time.time()
+            text = f"{before} {message}"
+            self.episodic.add_question_keys(memory_id, user_id, [(CONTEXT_KEY + text, self.semantic.embed(text))],
+                                            self.semantic.model_name)
+            log("embedding", "Neighbour Context", "Also searchable together with the message before it", s)
+
         s = time.time()
         indexed = self.semantic.index(user_id, memory_id, vector)
         log("cpp", "Vector Engine", "Indexed" if indexed else "Not indexed (no embedding / engine unavailable)", s)
@@ -166,6 +175,20 @@ class MemoryManager:
         return {"status": "stored", "memory_id": memory_id, "importance": importance, "schemas": schema_tags,
                 "promoted": promoted, "indexed": indexed, "conflicts": conflicts,
                 "total_ms": round((time.time() - t0) * 1000, 1), "processing_log": logs}
+
+    def _context_before(self, user_id, message):
+        """
+        recall.neighbour_context: a short message often only means something next to the one before
+        it ("saw doc miller" after "shoulder hurts bad"; "Yes, in June" after a question). Such a
+        message gets a second search key, the previous message(s) plus itself, so a question about
+        the injury can find the doctor. Returns the text to put before it, or "" (off, long message,
+        or nothing said before). The memory's own text, facts and vector are unchanged.
+        """
+        cfg = settings.get("recall.neighbour_context", {}) or {}
+        if not cfg.get("enabled", False) or len(message.split()) > int(cfg.get("max_words", 12)):
+            return ""
+        recent = [m for m in (self.working.get(user_id) or {}).get("history", []) if isinstance(m, str) and m.strip()]
+        return " ".join(recent[-int(cfg.get("previous", 1)):])
 
     _NO_CONFLICT = ("alias_of",)  # relations where a second value is an addition, not a contradiction
 

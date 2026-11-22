@@ -21,6 +21,8 @@ import re
 
 from backend import settings
 
+CONTEXT_KEY = "[with the message before] "  # prefix of neighbour-context keys (recall.neighbour_context)
+
 _CHANGE_CUE = re.compile(
     r"\b(?:instead|rescheduled|re-scheduled|postponed|preponed|pushed (?:back|to)|moved (?:to|from|it)|"
     r"moving \w+ (?:from|to)|shift(?:ed|ing) (?:to|out|from)|switch(?:ed|ing) (?:to|from)|changed (?:to|it)|"
@@ -87,7 +89,7 @@ def promote_updates(ranked, query="", window=5, consider_top=3, max_share=0.3, m
     -> "Kestrel deadline moved": no), and B's meaning match to the question must be at least
     40% of A's (B updates the part of A that was asked about). Each promoted memory gets "update_of": A's id (shown in its explanation).
     """
-    if not _enabled("updates") or len(ranked) < 2:
+    if not _enabled("updates") or len(ranked) < 2 or asks_for_earlier(query):
         return ranked
     head = ranked[:window]
     # A shared word is a topic only if it is specific among the candidates: boilerplate that most
@@ -99,8 +101,7 @@ def promote_updates(ranked, query="", window=5, consider_top=3, max_share=0.3, m
     limit = max(3, max_share * len(ranked))
     topics = {id(m): {w for w in _topic_words(m.get("content", "")) if df.get(w, 0) <= limit} for m in head}
     asked = {w for w in _topic_words(query) if df.get(w, 0) <= limit}
-    first = re.match(r"\s*(\w+)", query)
-    named = {_stem(w.lower()) for w in re.findall(r"\b[A-Z][a-z]+\b", query) if not (first and w == first.group(1))}
+    named = _named_in(query)
     for _ in range(window):  # repeat until stable: chains of updates (A -> B -> C)
         moved = False
         for i, a in enumerate(head[:consider_top]):
@@ -109,20 +110,9 @@ def promote_updates(ranked, query="", window=5, consider_top=3, max_share=0.3, m
                     continue
                 if not _CHANGE_CUE.search(str(b.get("content", ""))):
                     continue
-                shared = topics[id(a)] & topics[id(b)]
+                shared = _same_subject(a, b, topics, asked, named, min_meaning_ratio)
                 if not shared:
                     continue
-                missing = (asked & topics[id(a)]) - topics[id(b)]
-                if missing & named and _names(b) - _names(a) - named:
-                    continue  # A matches a name in the question that B lacks, and B names something else:
-                    # "The Project Alpha deadline was moved" is not an update of "Project Beta deadline".
-                    # Leaving the subject out is fine: "update: ballet got rescheduled" is still about Meera.
-                if missing - named and len(shared) < 2:
-                    continue  # "Who leads Kestrel?": B ("Kestrel deadline moved") shares only the name
-                sa, sb = a.get("semantic_score"), b.get("semantic_score")
-                if sa is not None and sb is not None and sb < min_meaning_ratio * sa:
-                    continue  # B updates another part of A, not what was asked (A: "cover her night duty
-                    # ... taking mom to the eye clinic"; B: "agreed for night shift on 28th instead")
                 b["update_of"] = a.get("id")
                 b["update_shared_words"] = sorted(shared)[:3]
                 b["relevance"] = max(float(b.get("relevance") or 0.0), float(a.get("relevance") or 0.0) + 1e-6)
@@ -136,6 +126,83 @@ def promote_updates(ranked, query="", window=5, consider_top=3, max_share=0.3, m
             break
     ranked[:window] = head
     return ranked
+
+_EARLIER = re.compile(r"\b(?:originally|initially|at first|original|previous|previously|earlier|used to|"
+                      r"before (?:switching|changing|the change|moving|replacing|returning|exchanging|it was))\b", re.I)
+
+
+def asks_for_earlier(query):
+    """"What ointment was ORIGINALLY applied?" asks for the fact an update replaced."""
+    return bool(_EARLIER.search(str(query or "")))
+
+
+def _named_in(query):
+    first = re.match(r"\s*(\w+)", query)
+    return {_stem(w.lower()) for w in re.findall(r"\b[A-Z][a-z]+\b", query) if not (first and w == first.group(1))}
+
+
+def _same_subject(a, b, topics, asked, named, min_meaning_ratio):
+    """
+    Shared specific words if B can be about the same thing as A for this question, else an empty set.
+    B must share a topic word with A and cover the question: it may not lack a name from the
+    question that A matched while naming something else ("Project Alpha deadline was moved" vs a
+    question about Beta); if it lacks any other question word A matched it must share at least two
+    specific words with A ("Kestrel team lead" vs "Kestrel deadline moved": no); and its meaning
+    match to the question must be at least `min_meaning_ratio` of A's (B updates the asked part of A).
+    """
+    shared = topics[id(a)] & topics[id(b)]
+    if not shared:
+        return set()
+    missing = (asked & topics[id(a)]) - topics[id(b)]
+    if missing & named and _names(b) - _names(a) - named:
+        return set()
+    if missing - named and len(shared) < 2:
+        return set()
+    sa, sb = a.get("semantic_score"), b.get("semantic_score")
+    if sa is not None and sb is not None and sb < min_meaning_ratio * sa:
+        return set()  # A: "cover her night duty ... taking mom to the eye clinic"; B: "night shift on 28th instead"
+    return shared
+
+
+def _norm_answer(text):
+    return " ".join(_WORD.findall(str(text or "").lower()))
+
+
+def resolve_answer_conflicts(served, query, min_meaning_ratio=0.4):
+    """
+    Updates without a cue word (recall.answer_conflicts). After the answer checker has read the
+    served memories, two of them that both answer the question with DIFFERENT answers and are about
+    the same thing (same guards as promote_updates) disagree; the later one is served first, or
+    the earlier one when the question asks for the earlier fact ("originally", "previously").
+    "found a chambre de bonne on rue de la roquette" (later) over "my studio on boulevard
+    saint-germain" needs no "moved to"; the reader already found both answers. Returns the list.
+    """
+    if not _enabled("answer_conflicts") or len(served) < 2:
+        return served
+    answered = [m for m in served if m.get("_answer_ok") and _norm_answer(m.get("answer"))]
+    if len(answered) < 2:
+        return served
+    topics = {id(m): _topic_words(m.get("content", "")) for m in served}
+    asked, named = _topic_words(query), _named_in(query)
+    top = answered[0]
+    group = [top]
+    for b in answered[1:]:
+        x, y = _norm_answer(top.get("answer")), _norm_answer(b.get("answer"))
+        if x in y or y in x:
+            continue  # the same answer (or one contains the other): agreement, not a conflict
+        first, second = (top, b) if float(top.get("timestamp") or 0) <= float(b.get("timestamp") or 0) else (b, top)
+        if _norm_answer(second.get("answer")) in _norm_answer(first.get("content")):
+            continue  # the later answer is already in the earlier memory ("ferritin" in the prescription
+            # message): it does not replace it ("ferrex 150"), a replacement names something new
+        if _same_subject(first, second, topics, asked, named, min_meaning_ratio):
+            group.append(b)
+    if len(group) < 2:
+        return served
+    pick = (min if asks_for_earlier(query) else max)(group, key=lambda m: float(m.get("timestamp") or 0))
+    if pick is not served[0]:
+        pick["answer_conflict_with"] = [m.get("id") for m in group if m is not pick]
+        served = [pick] + [m for m in served if m is not pick]
+    return served
 
 
 _PRONOUN = re.compile(r"\b(?:she|he|they|her|his|him|their|them|hers|theirs|the user['’]s|the user)\b", re.I)
@@ -178,3 +245,63 @@ def user_perspective(query, not_people=(), is_speaker=None):
     if query[:1].isupper() and out[:1].islower():
         out = out[0].upper() + out[1:]
     return out
+
+
+# --- who is the clause about ------------------------------------------------------------------
+_RELATIONS = {"roommate", "flatmate", "housemate", "sister", "brother", "sis", "bro", "mom", "mum", "mother",
+              "dad", "father", "wife", "husband", "hubby", "son", "daughter", "kid", "kids", "child", "children",
+              "friend", "bestie", "coworker", "co-worker", "colleague", "boss", "neighbor", "neighbour", "cousin",
+              "uncle", "aunt", "auntie", "partner", "girlfriend", "boyfriend", "fiance", "fiancee", "grandson",
+              "granddaughter", "grandma", "grandpa", "nephew", "niece", "in-law", "classmate", "teammate"}
+_SAME = {"mom": "mother", "mum": "mother", "dad": "father", "hubby": "husband", "sis": "sister", "bro": "brother",
+         "kid": "child", "kids": "child", "children": "child", "son": "child", "daughter": "child",
+         "co-worker": "coworker", "colleague": "coworker", "neighbour": "neighbor", "auntie": "aunt"}
+_CLAUSE = re.compile(r"[,;.!?]+\s*|\s+(?:but|and|so|because|while|whereas)\s+", re.I)
+_LEAD = re.compile(r"^(?:(?:btw|uff|ok|so|actually|also|then|our|my|his|her|the|a|an)\s+)*", re.I)
+_PERSON_PRONOUN = re.compile(r"^(?:he|she|they|his|her|their)\b", re.I)
+
+
+def _rel(w):
+    w = w.lower().rstrip("'’s") if w.lower().endswith(("'s", "’s")) else w.lower()
+    return _SAME.get(w, w)
+
+
+def without_other_people(context, question):
+    """
+    The memory as the answer checker should read it for a question about the user: clauses whose
+    subject is another person ("roommate liam failed his organic chemistry midterm", "my sister
+    chloe is moving to austin", and a following "he/she ..." clause) are removed, unless the
+    question asks about that person (names them or the relation: "Where is her husband
+    traveling?"). The user's own clauses stay ("taking mom to the clinic": mom is not the subject).
+    A memory entirely about someone else becomes empty: it cannot answer a question about the user.
+    Found on unseen Gemini batch 3: "What major is the athlete studying in college?" was answered
+    "organic chemistry" from the roommate's midterm. Config recall.answer_check.other_people.
+    """
+    cfg = (settings.get("recall.answer_check", {}) or {}).get("other_people") or {}
+    if not cfg.get("enabled", True) or not context:
+        return context
+    q_words = {_rel(w) for w in _WORD.findall(str(question).lower())}
+    parts, last, kept, dropped, prev_other = [], 0, [], False, False
+    for m in _CLAUSE.finditer(context):
+        parts.append((context[last:m.start()], context[m.start():m.end()]))
+        last = m.end()
+    parts.append((context[last:], ""))
+    for clause, sep in parts:
+        body = _LEAD.sub("", clause.strip())
+        words = _WORD.findall(body.lower())[:3]
+        rel = words[0] if words and (_rel(words[0]) in _RELATIONS or words[0] in _RELATIONS) else None  # subject position
+        other = False
+        if rel is not None:
+            name = words[words.index(rel) + 1] if words.index(rel) + 1 < len(words) else None
+            asked_about = _rel(rel) in q_words or (name and name in q_words)
+            other = not asked_about
+        elif prev_other and _PERSON_PRONOUN.match(body):
+            other = True  # "he is locking himself in the library" continues the roommate's clause
+        prev_other = other if (rel is not None or other) else False
+        if other:
+            dropped = True
+            continue
+        kept.append(clause + sep)
+    if not dropped:
+        return context
+    return re.sub(r"(?:\s+(?:but|and|so|because|while|whereas))?[\s,;]*$", "", "".join(kept))

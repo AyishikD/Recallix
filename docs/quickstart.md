@@ -22,8 +22,14 @@ creates the storage directory, and prints an **admin API key once**.
 
 Choose the embedding model in `config.yaml` → `models.embedding_provider`:
 `ollama` (default, `ollama pull mxbai-embed-large`), `local`
-(sentence-transformers in-process, no server), or an OpenAI-compatible API.
+(sentence-transformers in-process, no server; default model `BAAI/bge-small-en-v1.5`, the one
+the shipped ranking, answer-check and trust fits were made with), or an OpenAI-compatible API.
 No LLM is needed by Recallix itself.
+
+The shipped fits belong to that model. With another embedding model, recall still works, but
+refit on your own data for best results (`eval/README.md`), and after changing the model on an
+existing deployment run `python -m backend.tools.reindex --backfill` so stored memories are
+embedded again.
 
 ## 3. Run
 

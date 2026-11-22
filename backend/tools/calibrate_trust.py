@@ -83,7 +83,7 @@ def main(argv=None):
     src = ap.add_mutually_exclusive_group(required=True)
     src.add_argument("--from-db", action="store_true")
     src.add_argument("--from-file")
-    ap.add_argument("--embedder", default="st:sentence-transformers/all-MiniLM-L6-v2")
+    ap.add_argument("--embedder", default="st:BAAI/bge-small-en-v1.5")
     ap.add_argument("--min-samples", type=int, default=50)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)

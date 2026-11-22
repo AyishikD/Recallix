@@ -1,0 +1,34 @@
+{
+  "split": "dev",
+  "embedder": "st:sentence-transformers/all-MiniLM-L6-v2",
+  "retrieval": {
+    "hit@1": 0.9285714285714286,
+    "hit@3": 0.9642857142857143,
+    "stale_top": 0,
+    "false_abstain_rate": 0.03571428571428571,
+    "abstain_accuracy": 1.0,
+    "embed_calls_per_query": 1.0,
+    "recall_ms_p50": 35.05,
+    "recall_ms_p95": 39.775,
+    "store_ms_p50": 9.8,
+    "store_stage_ms_mean": {
+      "Sensory & Working Memory": 0.561,
+      "Embedding": 9.505,
+      "Fact Extraction": 0.122,
+      "Schema Classification": 7.922,
+      "Importance Scoring": 0.539,
+      "Episodic Storage": 1.559,
+      "Vector Engine": 0.0,
+      "Long-Term Promotion": 0.56,
+      "Conflict Check": 0.0
+    }
+  },
+  "legacy": {
+    "gauntlet_passed": 8,
+    "gauntlet_total": 12,
+    "retention_hits": 7,
+    "retention_total": 8
+  },
+  "engine": "in-process brute force",
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2 + LoCoMo dev conversations (5)"
+}

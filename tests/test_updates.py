@@ -82,3 +82,39 @@ def test_reader_sees_texting_with_sentence_case_and_cased_text_unchanged():
         assert restore_case(text) == text
     s = "take celebrex 200mg daily"
     assert restore_case(s).lower().rstrip(".") == s   # case-only: answer offsets still index the original
+
+
+def _answered(rows):
+    """rows: [(id, content, timestamp, answer)] in served order, all found answering by the reader."""
+    return [{"id": i, "content": c, "timestamp": t, "answer": a, "_answer_ok": True, "relevance": 0.5,
+             "semantic_score": 0.5} for i, c, t, a in rows]
+
+
+def test_disagreeing_answers_serve_the_later_one_or_the_earlier_when_asked():
+    from backend.brain.memory.updates import resolve_answer_conflicts
+    served = _answered([(1, "landlord at my studio on boulevard saint-germain raised the charges", 1, "boulevard saint-germain"),
+                        (2, "found a small chambre de bonne studio on rue de la roquette near bastille", 5, "rue de la roquette")])
+    assert [m["id"] for m in resolve_answer_conflicts(served, "Where is the new studio located?")] == [2, 1]
+    served = _answered([(2, "forearm burn healed, no need for antibiotic ointment anymore", 5, "antibiotic ointment"),
+                        (1, "burned my forearm, applied silver sulfadiazine cream", 1, "silver sulfadiazine cream")])
+    assert [m["id"] for m in resolve_answer_conflicts(served, "What ointment was originally applied to the forearm burn?")] == [1, 2]
+
+
+def test_no_conflict_when_the_later_answer_is_already_in_the_earlier_memory():
+    from backend.brain.memory.updates import resolve_answer_conflicts
+    served = _answered([(1, "serum ferritin is at 14 ng/ml so doc started me on ferrex 150 capsules", 1, "ferrex"),
+                        (2, "ferritin level bumped up to 38 ng/ml on the recheck", 5, "ferritin")])
+    assert [m["id"] for m in resolve_answer_conflicts(served, "What iron supplement was prescribed?")] == [1, 2]
+
+
+def test_the_reader_does_not_see_other_peoples_clauses_unless_asked_about_them():
+    from backend.brain.memory.updates import without_other_people as w
+    roommate = "roommate liam failed his organic chemistry midterm, he is locking himself in the library"
+    assert w(roommate, "What major is the athlete studying?") == ""
+    assert w(roommate, "What did my roommate fail?") == roommate
+    assert w(roommate, "What did Liam fail?") == roommate
+    sister = "my sister chloe is moving to austin next month because her husband marcus got a job at tesla"
+    assert w(sister, "Where is Chloe moving?") == "my sister chloe is moving to austin next month"
+    own = "told priya no chance, taking mom to shankara nethralaya for her followup"
+    assert w(own, "Where did I go that morning?") == own   # mom is not the subject
+    assert w("Melanie: I went to the park with my kids.", "What did Melanie do?") == "Melanie: I went to the park with my kids."

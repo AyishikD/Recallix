@@ -2,7 +2,7 @@
 Open memory benchmark harness: any memory system, same data, same scoring.
 
     python eval/harness.py --dataset locomo --data locomo10.json --split dev \\
-        --systems recallix,recallix-ranked,vector-search,bm25 --embedder st:sentence-transformers/all-MiniLM-L6-v2 \\
+        --systems recallix,recallix-ranked,vector-search,bm25 --embedder st:BAAI/bge-small-en-v1.5 \\
         --json results.json
 
     python eval/harness.py --dataset longmemeval --data longmemeval_s_cleaned.json --limit 50 ...

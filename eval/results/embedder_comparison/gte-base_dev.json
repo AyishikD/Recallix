@@ -1,0 +1,34 @@
+{
+  "split": "dev",
+  "embedder": "st:thenlper/gte-base",
+  "retrieval": {
+    "hit@1": 0.9285714285714286,
+    "hit@3": 0.9642857142857143,
+    "stale_top": 0,
+    "false_abstain_rate": 0.03571428571428571,
+    "abstain_accuracy": 1.0,
+    "embed_calls_per_query": 1.0,
+    "recall_ms_p50": 40.6,
+    "recall_ms_p95": 45.025,
+    "store_ms_p50": 11.8,
+    "store_stage_ms_mean": {
+      "Sensory & Working Memory": 0.539,
+      "Embedding": 11.478,
+      "Fact Extraction": 0.105,
+      "Schema Classification": 12.888,
+      "Importance Scoring": 0.5,
+      "Episodic Storage": 1.571,
+      "Vector Engine": 0.0,
+      "Conflict Check": 0.0,
+      "Long-Term Promotion": 0.55
+    }
+  },
+  "legacy": {
+    "gauntlet_passed": 8,
+    "gauntlet_total": 12,
+    "retention_hits": 7,
+    "retention_total": 8
+  },
+  "engine": "in-process brute force",
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:thenlper/gte-base + LoCoMo dev conversations (5)"
+}

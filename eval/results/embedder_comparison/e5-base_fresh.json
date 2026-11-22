@@ -1,0 +1,27 @@
+{
+  "split": "fresh",
+  "embedder": "st:intfloat/e5-base-v2::query: ",
+  "retrieval": {
+    "hit@1": 0.84,
+    "hit@3": 0.84,
+    "stale_top": 0,
+    "false_abstain_rate": 0.13333333333333333,
+    "abstain_accuracy": 0.9666666666666667,
+    "embed_calls_per_query": 1.0,
+    "recall_ms_p50": 54.7,
+    "recall_ms_p95": 67.74,
+    "store_ms_p50": 15.9,
+    "store_stage_ms_mean": {
+      "Sensory & Working Memory": 0.618,
+      "Embedding": 14.555,
+      "Fact Extraction": 0.124,
+      "Schema Classification": 4.513,
+      "Importance Scoring": 0.63,
+      "Episodic Storage": 1.803,
+      "Vector Engine": 0.0,
+      "Long-Term Promotion": 0.559
+    }
+  },
+  "engine": "in-process brute force",
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:intfloat/e5-base-v2::query:  + LoCoMo dev conversations (5)"
+}

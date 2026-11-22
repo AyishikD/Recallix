@@ -89,7 +89,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dataset", choices=["longmemeval", "locomo-test"], required=True)
     ap.add_argument("--data", required=True)
-    ap.add_argument("--embedder", default="st:sentence-transformers/all-MiniLM-L6-v2")
+    ap.add_argument("--embedder", default="st:BAAI/bge-small-en-v1.5")
     ap.add_argument("--sample", type=int, default=100)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--recalibrate-on", type=int, default=0,

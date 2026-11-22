@@ -21,7 +21,7 @@ Environment (hermetic by default):
 
 Usage:
   python eval/run_eval.py --split dev
-  python eval/run_eval.py --split test --embedder st:sentence-transformers/all-MiniLM-L6-v2
+  python eval/run_eval.py --split test --embedder st:BAAI/bge-small-en-v1.5
   python eval/run_eval.py --fit-ranker --embedder st:...      # fit on dev, write shipped default model
   python eval/run_eval.py --fit-importance --embedder st:...  # same for importance weights
   python eval/run_eval.py --split dev --json results.json     # machine-readable results
@@ -115,6 +115,10 @@ class FakeEngine:
 class Env:
     def __init__(self, embedder="hash", engine_url=None):
         self.tmp = tempfile.mkdtemp(prefix="recallix_eval_")
+        # each run stores a full copy of its test databases here; without this they pile up (GBs)
+        import atexit
+        import shutil
+        atexit.register(shutil.rmtree, self.tmp, ignore_errors=True)
         os.environ["RECALLIX_STORAGE_ROOT"] = self.tmp
         os.environ.setdefault("RECALLIX_INTERNAL_KEY", "eval-only-key-not-a-secret")
         if engine_url:
@@ -124,6 +128,9 @@ class Env:
 
         self.embed_calls = 0
         raw = self._embedder(embedder)
+        if embedder == "hash" and not os.environ.get("RECALLIX_FITTING"):
+            from backend.tools.sandbox import install_hash_fits
+            install_hash_fits(self.tmp)  # the shipped fits belong to the default embedding model
         import backend.brain.models.model_router as mr
         env = self
 
@@ -153,9 +160,11 @@ class Env:
         if spec == "hash":
             return hash_embedder()
         if spec.startswith("st:"):
+            # "st:<model>" or "st:<model>::<prefix>" (e5 models expect "query: " before every text)
             from sentence_transformers import SentenceTransformer
-            model = SentenceTransformer(spec[3:], cache_folder=os.environ.get("HF_CACHE"))
-            return lambda text: model.encode([text])[0].tolist()
+            name, _, prefix = spec[3:].partition("::")
+            model = SentenceTransformer(name, cache_folder=os.environ.get("HF_CACHE"))
+            return lambda text: model.encode([prefix + text], normalize_embeddings=True)[0].tolist()
         raise SystemExit(f"unknown embedder {spec!r}")
 
 
@@ -515,13 +524,14 @@ def fit_ranker(env, embedder, locomo_path=None):
         groups.update(locomo.labelled_queries(get_memory_manager(), dev))
         source += f" + LoCoMo dev conversations ({len(dev)})"
     model = fr.fit_model_cv(groups, source=source, max_candidates=RANKER_CANDIDATES_PER_QUERY)
-    with open(DEFAULT_MODEL_PATH, "w") as f:
+    out_path = DEFAULT_MODEL_PATH.replace(".default.json", ".hash.json") if embedder == "hash" else DEFAULT_MODEL_PATH
+    with open(out_path, "w") as f:
         json.dump(model, f, indent=2)
     print(f"fitted ranker on {model['n_queries']} dev queries / {model['n_candidates']} candidates; lam={model['lam']}; "
           f"CV hit@{model['answer_k']}={model['cv_hit_at_k']:.3f} (by lam: {model['cv_by_lam']}); "
           f"threshold={model['threshold']:.3f} -> out-of-fold: answerable declined {model['cv_answerable_declined']:.1%}, "
           f"unanswerable declined {model['cv_unanswerable_declined']:.1%}")
-    print(f"wrote {DEFAULT_MODEL_PATH}")
+    print(f"wrote {out_path}")
 
 
 def fit_importance(embedder):
@@ -534,11 +544,12 @@ def fit_importance(embedder):
     feats = [f for f, _, _ in rows if f is not None]
     labels = [y for f, y, _ in rows if f is not None]
     w = logistic.fit(feats, labels, prior, FEATURES, lam=0.5)
-    with open(DEFAULT_WEIGHTS_PATH, "w") as f:
+    out_path = DEFAULT_WEIGHTS_PATH
+    with open(out_path, "w") as f:
         json.dump({"weights": w, "source": f"eval/data/dev/importance.jsonl, embedder={embedder}",
                    "n_examples": len(labels), "lam": 0.5}, f, indent=2)
     print("fitted importance weights:", {k: round(v, 2) for k, v in w.items()})
-    print(f"wrote {DEFAULT_WEIGHTS_PATH}")
+    print(f"wrote {out_path}")
 
 
 def main():
@@ -559,6 +570,8 @@ def main():
     global SCENARIO_PREFIX
     SCENARIO_PREFIX = args.scenarios
 
+    if args.fit_ranker or args.fit_importance or args.fit_answer_check:
+        os.environ["RECALLIX_FITTING"] = "1"  # fit from the shipped defaults, not from an earlier hash fit
     env = Env(args.embedder, args.engine_url)
     if args.fit_importance:
         fit_importance(args.embedder)

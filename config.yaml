@@ -29,7 +29,7 @@ models:
 
   # --- Local (in-process, offline) ---
   local:
-    embedding_model: "sentence-transformers/all-MiniLM-L6-v2"   # 384-d, ~90 MB
+    embedding_model: "BAAI/bge-small-en-v1.5"   # 384-d, ~130 MB; chosen on dev data (eval/results/embedder_comparison)
 
   # --- Ollama (Local) ---
   # Any model pulled via `ollama pull <name>` works here.
@@ -140,6 +140,11 @@ recall:
     # wrong answers cost more than refusals). Gemini batches 1-2 (development): right memory recognised
     # 44/50 -> 49/50. Unseen batch 3: +1 answered, but traps wrongly answered 0/10 -> 2/10.
     restore_case: false
+    # Read each memory without clauses whose subject is another person the question does not ask
+    # about ("roommate liam failed his organic chemistry midterm" cannot answer "What is my major?").
+    # A memory entirely about someone else then cannot answer (memory/updates.py without_other_people).
+    other_people:
+      enabled: true
     # "Who said what": when a question names one of the speakers, a memory counts as answering
     # only if the reader finds the answer more strongly for that person than for every other
     # speaker (contrast > min_contrast). LoCoMo dev (999 questions): adversarial questions
@@ -155,6 +160,14 @@ recall:
   # few extractable facts. Off by default; may help fact-heavy deployments (verify with memtest).
   question_keys:
     enabled: false
+  # Neighbour context: a short message (<= max_words) also gets a search key made of the `previous`
+  # message(s) before it plus itself, so "saw doc miller" can be found by a question about the
+  # shoulder injury mentioned just before. One extra embedding per short message; the memory's own
+  # text and vector are unchanged (memory/manager.py _context_before).
+  neighbour_context:
+    enabled: false
+    max_words: 12
+    previous: 1
   # Implicit facts: ATOMIC 2020 commonsense proposes what a memory implies; an NLI model verifies
   # it (backend/brain/features/implicit.py; build the index with backend/tools/build_inference_rules).
   # OFF: measured precision of verified inferences on eval/data/implicit (119 sentences, 71
@@ -190,6 +203,12 @@ recall:
   # else first. The answer check still reads the question as asked.
   user_perspective:
     enabled: true
+  # Updates without a cue word: the answer checker reads the top `read` served memories; when two
+  # about the same thing give different answers, the later is served first (the earlier when the
+  # question asks "originally", "previously", ...). memory/updates.py resolve_answer_conflicts.
+  answer_conflicts:
+    enabled: true
+    read: 3
   # Fact half-lives: every fact in a recall receipt carries the probability it is still true,
   # from how often this user's facts of the same kind were replaced (exponential survival model,
   # Gamma prior: prior_events replacements per prior_days; see backend/brain/memory/freshness.py).

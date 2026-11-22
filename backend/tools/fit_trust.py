@@ -61,7 +61,7 @@ def calibration(p, y, bins=10):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--locomo", required=True)
-    ap.add_argument("--embedder", default="st:sentence-transformers/all-MiniLM-L6-v2")
+    ap.add_argument("--embedder", default="st:BAAI/bge-small-en-v1.5")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 

@@ -10,37 +10,37 @@
     "accuracy": 0.5151515151515151
   },
   "importance": {
-    "auc": 0.9936507936507937,
-    "accuracy": 0.8055555555555556
+    "auc": 0.9841269841269841,
+    "accuracy": 0.7222222222222222
   },
   "retrieval": {
     "hit@1": 0.8928571428571429,
-    "hit@3": 0.9285714285714286,
+    "hit@3": 0.9642857142857143,
     "stale_top": 0,
-    "false_abstain_rate": 0.07142857142857142,
-    "abstain_accuracy": 0.625,
+    "false_abstain_rate": 0.03571428571428571,
+    "abstain_accuracy": 0.25,
     "embed_calls_per_query": 1.0,
-    "recall_ms_p50": 4.1,
-    "recall_ms_p95": 4.525,
+    "recall_ms_p50": 4.2,
+    "recall_ms_p95": 4.7,
     "store_ms_p50": 3.2,
     "store_stage_ms_mean": {
-      "Sensory & Working Memory": 0.478,
-      "Embedding": 0.0,
-      "Fact Extraction": 0.08,
+      "Sensory & Working Memory": 0.502,
+      "Embedding": 0.002,
+      "Fact Extraction": 0.085,
       "Schema Classification": 0.149,
-      "Importance Scoring": 0.427,
-      "Episodic Storage": 1.327,
+      "Importance Scoring": 0.424,
+      "Episodic Storage": 1.324,
       "Vector Engine": 0.0,
-      "Long-Term Promotion": 0.483,
+      "Long-Term Promotion": 0.441,
       "Conflict Check": 0.0
     }
   },
   "legacy": {
-    "gauntlet_passed": 6,
+    "gauntlet_passed": 7,
     "gauntlet_total": 12,
     "retention_hits": 7,
     "retention_total": 8
   },
   "engine": "in-process brute force",
-  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2 + LoCoMo dev conversations (5)"
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=hash + LoCoMo dev conversations (5)"
 }

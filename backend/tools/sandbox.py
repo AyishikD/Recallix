@@ -82,6 +82,25 @@ def hash_embedder(dim=384):
     return embed
 
 
+HASH_FITS = {"ranker_model.json": "ranker_model.hash.json"}  # importance weights barely differ between embedders
+
+
+def install_hash_fits(storage_root):
+    """
+    The shipped ranking fit belongs to the default embedding model (its weight on the meaning
+    score matches that model's similarity scale). The model-free hash embedder used
+    in CI and offline sandboxes has its own fit (backend/brain/memory_ranking/ranker_model.hash.json, from
+    `eval/run_eval.py --fit-ranker --embedder hash`); it is placed in the
+    temporary storage root, where fitted files already take precedence over the defaults.
+    """
+    import shutil
+    src_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "brain", "memory_ranking")
+    for dst, src in HASH_FITS.items():
+        path = os.path.join(src_dir, src)
+        if os.path.exists(path):
+            shutil.copyfile(path, os.path.join(storage_root, dst))
+
+
 def make_embedder(spec):
     if spec == "hash":
         return hash_embedder()
@@ -121,6 +140,8 @@ class Sandbox:
         isync.engine_post, isync.engine_get = self.engine.post, self.engine.get
         if self.embedder != "configured":
             raw = make_embedder(self.embedder)
+            if self.embedder == "hash":
+                install_hash_fits(self.tmp)
             self._patches.append((mr.ModelRouter, "get_embedding", mr.ModelRouter.get_embedding))
             mr.ModelRouter.get_embedding = lambda _self, text: raw(text)
 

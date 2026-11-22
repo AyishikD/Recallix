@@ -1,16 +1,16 @@
 {
   "weights": {
-    "bias": -2.17786236357734,
-    "novelty": 1.8716768409728959,
-    "information": 0.2886165012385592,
-    "specificity": 2.4982121628179166,
-    "goal": 1.090326631117408,
-    "preference": 1.3094057040134364,
-    "explicit": 1.7948960508920053,
-    "small_talk": -2.0591933355272896,
-    "brevity": -1.7499080675130216
+    "bias": -1.8899295271766252,
+    "novelty": 2.114285838521357,
+    "information": 0.465581276329619,
+    "specificity": 2.5254951028930637,
+    "goal": 1.0914238257511535,
+    "preference": 1.2992734332033251,
+    "explicit": 1.793419587585752,
+    "small_talk": -2.0644019657749944,
+    "brevity": -1.7517268337920746
   },
-  "source": "eval/data/dev/importance.jsonl, embedder=st:sentence-transformers/all-MiniLM-L6-v2",
+  "source": "eval/data/dev/importance.jsonl, embedder=st:BAAI/bge-small-en-v1.5",
   "n_examples": 35,
   "lam": 0.5
 }

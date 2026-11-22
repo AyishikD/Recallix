@@ -98,6 +98,10 @@ def hermetic(tmp_path, monkeypatch):
 
     from backend.api.middleware import auth
     monkeypatch.setenv("RECALLIX_STORAGE_ROOT", str(tmp_path / "storage"))
+    # the shipped ranking fit belongs to the default embedding model; the hash embedder has its own
+    from backend.tools.sandbox import install_hash_fits
+    (tmp_path / "storage").mkdir(parents=True, exist_ok=True)
+    install_hash_fits(str(tmp_path / "storage"))
     settings.reload()
     deps.reset()
     keys._cache.update(mtime=None, keys={})

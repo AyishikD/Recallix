@@ -43,7 +43,7 @@ done > eval/results/hnsw_reference.jsonl
 export RECALLIX_INTERNAL_KEY=$(python -c "import secrets;print(secrets.token_hex(16))") RECALLIX_ENGINE_PORT=18431
 backend/infra_cpp/build/memory_service & 
 for split in dev test; do
-  for e in hash st:sentence-transformers/all-MiniLM-L6-v2; do
+  for e in hash st:BAAI/bge-small-en-v1.5; do
     python eval/run_eval.py --split $split --embedder $e --engine-url http://127.0.0.1:18431 \
       --only facts,schemas,importance,retrieval,legacy,example \
       --json eval/results/${split}_$(echo $e | sed 's/st:sentence-transformers\///; s/[:\/]/_/g').json
@@ -55,7 +55,7 @@ mkdir -p /tmp/locomo && curl -sSfL -o /tmp/locomo/locomo10.json \
   https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json
 for split in test dev; do   # dev = conversations 1-5 (used for fitting), test = 6-10
   python eval/benchmarks/locomo.py --split $split --data /tmp/locomo/locomo10.json \
-    --embedder st:sentence-transformers/all-MiniLM-L6-v2 --engine-url http://127.0.0.1:18431 \
+    --embedder st:BAAI/bge-small-en-v1.5 --engine-url http://127.0.0.1:18431 \
     --json eval/results/locomo_${split}_all-MiniLM-L6-v2.json
 done
 kill %1
@@ -69,12 +69,24 @@ Without `--engine-url` the harness uses an in-process brute-force engine (hermet
 ## Refitting the shipped models (dev data only, in this order)
 
 ```bash
-E=st:sentence-transformers/all-MiniLM-L6-v2; L=/tmp/locomo/locomo10.json
+E=st:BAAI/bge-small-en-v1.5; L=/tmp/locomo/locomo10.json
 python eval/run_eval.py --fit-importance --embedder $E
 RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --fit-ranker --locomo $L --embedder $E
 python eval/run_eval.py --fit-answer-check deepset/minilm-uncased-squad2,deepset/tinyroberta-squad2,deepset/roberta-base-squad2,deepset/deberta-v3-base-squad2 \
     --locomo $L --embedder $E          # then set recall.answer_check.model in config.yaml to the chosen model
 ```
+
+The ranking fit is specific to the embedding model (it sets how much the meaning score counts).
+The model-free `hash` embedder used by CI and offline sandboxes therefore has its own fit,
+`backend/brain/memory_ranking/ranker_model.hash.json`, which the eval harness, the sandbox and
+the test fixtures install automatically:
+
+```bash
+RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --fit-ranker --locomo $L --embedder hash
+```
+
+How the default embedding model was chosen (8 candidates, development data only):
+`eval/results/embedder_comparison/`.
 
 * Importance and ranker fits start from fixed, documented priors (`backend/brain/memory_ranking/*.prior.json`)
   and write `*.default.json` with provenance. The ranker uses our dev scenarios plus LoCoMo **dev**
@@ -125,7 +137,7 @@ A system is a four-method adapter (`eval/adapters/base.py`); built in are `recal
 ```bash
 python eval/harness.py --dataset locomo --data locomo10.json --split dev \
     --systems recallix,recallix-ranked,vector-search,bm25 \
-    --embedder st:sentence-transformers/all-MiniLM-L6-v2 --json results.json
+    --embedder st:BAAI/bge-small-en-v1.5 --json results.json
 ```
 
 Each result records every system's configuration and a fingerprint of the dataset file.

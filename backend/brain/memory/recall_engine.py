@@ -29,7 +29,7 @@ from ..features.implicit import ImplicitInference, rules_config as implicit_conf
 from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
-from .updates import promote_updates, user_perspective
+from .updates import CONTEXT_KEY, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok")
@@ -164,8 +164,10 @@ class RecallEngine:
         """
         recall.question_keys: a memory's meaning score becomes the better of question-vs-memory
         and question-vs-the-questions-it-answers (stored at write time from its facts).
+        recall.neighbour_context: likewise for a short message's key "previous message + itself".
         """
-        if q_vec is None or not (settings.get("recall.question_keys", {}) or {}).get("enabled", False):
+        on = lambda name: (settings.get(f"recall.{name}", {}) or {}).get("enabled", False)
+        if q_vec is None or not (on("question_keys") or on("neighbour_context")):
             return
         keys = self.episodic.get_question_keys([c["id"] for c in candidates], self.semantic.model_name)
         for c in candidates:
@@ -176,7 +178,10 @@ class RecallEngine:
                     best = (sim, text)
             if best and best[0] > (c.get("semantic_score") or 0.0):
                 c["semantic_score"] = best[0]
-                c["matched_question"] = best[1]
+                if best[1].startswith(CONTEXT_KEY):  # recall.neighbour_context: matched together with the message before it
+                    c["matched_with_context"] = best[1][len(CONTEXT_KEY):]
+                else:
+                    c["matched_question"] = best[1]
 
     def _attach_semantic_scores(self, q_vec, candidates):
         """q · v from stored embeddings for lexical-only candidates; legacy rows are embedded once and saved."""
@@ -277,7 +282,9 @@ class RecallEngine:
             final = resolved[:top_k]
             t = checker.threshold()
             accept, subject = self._subject_contrast(checker, asked, all_scored)
-            read, best, answered = self._read_until_answer(checker, asked, final, t, accept)  # the reader keeps the question as asked
+            conflicts = (settings.get("recall.answer_conflicts", {}) or {})
+            min_read = int(conflicts.get("read", 3)) if conflicts.get("enabled", True) else 1
+            read, best, answered = self._read_until_answer(checker, asked, final, t, accept, min_read)  # the reader keeps the question as asked
             cert = checker.certificate() if hasattr(checker, "certificate") else None  # custom checkers may omit it
             answer_check = {"model": checker.model_name, "threshold": t, "best_margin": round(best, 3),
                             "read": len(read), "guarantee": cert["statement"] if cert else None,
@@ -295,6 +302,8 @@ class RecallEngine:
             elif (settings.get("recall.answer_check", {}) or {}).get("rerank", False):
                 # memories in which the reader found an answer first (stable: keeps relevance order within)
                 final = sorted(final, key=lambda m: not m.get("_answer_ok"))
+            if status == "CONSISTENT" and not answer_check.get("inferred_from"):
+                final = resolve_answer_conflicts(final, asked)  # recall.answer_conflicts: later answer first
         elif resolved[0]["relevance"] < threshold:
             status, final = "ABSTAINED", []
         else:
@@ -447,7 +456,7 @@ class RecallEngine:
         return accept, subject
 
     @staticmethod
-    def _read_until_answer(checker, query, memories, threshold, accept=None):
+    def _read_until_answer(checker, query, memories, threshold, accept=None, min_read=1):
         """
         Reads memories in rank order — 1, then 2 at a time — and stops at the first batch in
         which one contains an answer (margin >= threshold). The decision ("does any served
@@ -455,16 +464,24 @@ class RecallEngine:
         needs one read instead of top_k. Declines still read everything. With a non-finite or
         calibration-mode threshold (<= -1e8) everything is read, so margins stay complete.
         `accept(memory, context)`, if given, must also hold for a memory to count as answering
-        (the subject-contrast check). Returns (memories read, best margin, answered).
+        (the subject-contrast check). At least `min_read` memories are read even when the first
+        answers, so disagreeing answers can be found (recall.answer_conflicts).
+        Returns (memories read, best margin, answered).
         """
-        # the reader sees first-person statements resolved to their recorded speaker
-        contexts = [resolve_first_person(m.get("content", ""), memory_speaker(m)) for m in memories]
+        # the reader sees first-person statements resolved to their recorded speaker, and without
+        # clauses about other people the question does not ask about (recall.answer_check.other_people)
+        contexts = [without_other_people(resolve_first_person(m.get("content", ""), memory_speaker(m)), query)
+                    for m in memories]
         early_exit = threshold > -1e8
         read, best, answered, i = [], float("-inf"), False, 0
         while i < len(memories):
-            size = (1 if i == 0 else 2) if early_exit else len(memories) - i
+            size = (max(1, min_read) if i == 0 else 2) if early_exit else len(memories) - i
             batch, ctxs = memories[i:i + size], contexts[i:i + size]
-            for m, c in zip(batch, checker.check(query, ctxs)):
+            results = checker.check(query, [c or "." for c in ctxs])
+            for m, c, ctx in zip(batch, results, ctxs):
+                if not ctx:  # entirely about someone else the question does not ask about
+                    c = {"margin": -100.0, "answer": ""}
+                    m["about_someone_else"] = True
                 m["answer"], m["answer_margin"] = c["answer"], round(c["margin"], 3)
                 best = max(best, c["margin"])
             for m, ctx in zip(batch, ctxs):
@@ -491,6 +508,7 @@ class RecallEngine:
         return {"memory_id": m.get("id"), "stored_at": m.get("timestamp"), "agent_id": m.get("agent_id"),
                 "memory_type": m.get("memory_type"), "speaker": memory_speaker(m) or None, "facts": facts,
                 "matched_question": m.get("matched_question"),
+                "matched_with_context": m.get("matched_with_context"),
                 "confirmed_for": m.get("confirmed_for"),
                 "inferred": m.get("inferred"),
                 "answer": m.get("answer") or None, "answer_margin": m.get("answer_margin")}

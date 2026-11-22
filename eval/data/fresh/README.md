@@ -33,3 +33,17 @@ let 2 trap questions through ("organic chemistry" as the user's major, when it w
 $45 entry fee as the mug price). The quantity cue made things worse: "ferritin bumped up to 38" was
 promoted above the prescription, so the cue was removed. The purchase cue never fired. Gemini batch 3
 is now development data.
+
+### Fixes 1–2 (2026-11-22, development on batches 1–3)
+
+- **Answer conflicts:** a later memory that answers differently is served first, or the earlier one when the question asks "originally".
+- **Other people's clauses:** hidden from the reader.
+
+| Setup | gemini1 | gemini2 | gemini3 | traps declined (all) | dev |
+|---|---|---|---|---|---|
+| both fixes off (lowercase reading off) | 0.88 | 0.84 | 0.80 | 29/30 | 0.93 |
+| both fixes on (lowercase reading off, the default) | 0.88 | 0.84 | 0.88 | 29/30 | 0.93 |
+| both fixes on + lowercase reading | 1.00 | 0.88 | 0.96 | 27/30 | 0.93 |
+
+The figures are hit@1. All three batches were tuned on, so none of these are claims; gemini4 confirms or rejects.
+Recall latency on these batches: p50 48 → 61 ms, p95 unchanged (about 77 ms).
