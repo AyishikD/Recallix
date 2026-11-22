@@ -49,6 +49,13 @@ export class Memory {
         });
     }
 
+    /** Memories worth keeping in mind for a new message (no question needed), each with the reason. */
+    proactive(message: string, opts: { agentId?: string; limit?: number; userId?: string } = {}) {
+        return this.client.request("POST", "/memory/proactive", {
+            message, agent_id: opts.agentId ?? "default_agent", limit: opts.limit ?? 5, user_id: opts.userId,
+        });
+    }
+
     /** All memories in the open "recallix-memory" format. */
     export(userId?: string) {
         return this.client.request("GET", `/memory/export${q({ user_id: userId })}`);

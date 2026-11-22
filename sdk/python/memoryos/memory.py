@@ -35,6 +35,12 @@ class Memory:
         return self.client.request("POST", "/memory/feedback", data={
             "recall_id": recall_id, "relevant_memory_ids": relevant_memory_ids, "user_id": user_id})
 
+    def proactive(self, message: str, agent_id: str = "default_agent", limit: int = 5,
+                  user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Memories worth keeping in mind for a new message (no question needed), each with the reason."""
+        return self.client.request("POST", "/memory/proactive", data={
+            "message": message, "agent_id": agent_id, "limit": limit, "user_id": user_id})
+
     def export(self, user_id: Optional[str] = None) -> Dict[str, Any]:
         """All memories in the open "recallix-memory" format (portable to another Recallix)."""
         return self.client.request("GET", "/memory/export", params=_params(user_id=user_id))

@@ -60,6 +60,10 @@ TOOLS = [
          "recall_id": {"type": "string"},
          "memory_ids": {"type": "array", "items": {"type": "integer"}}},
          "required": ["recall_id", "memory_ids"]}},
+    {"name": "relevant_memories",
+     "description": "Given what the user just said, return memories worth keeping in mind even though they did not "
+                    "ask (e.g. an allergy when they mention a restaurant), each with the reason.",
+     "inputSchema": {"type": "object", "properties": {"message": {"type": "string"}}, "required": ["message"]}},
     {"name": "forget_memory",
      "description": "Delete a memory permanently (its vector, long-term copy and timeline entry too).",
      "inputSchema": {"type": "object", "properties": {"memory_id": {"type": "integer"}},
@@ -96,6 +100,10 @@ class RecallixMCP:
         out = self.memory.feedback(recall_id, [int(i) for i in memory_ids])
         return f"confirmed ({out.get('labelled_candidates')} candidates labelled)"
 
+    def _relevant(self, message):
+        rows = self.memory.proactive(message, agent_id=self.agent_id)
+        return "\n".join(f"- [memory {r['memory_id']}] {r['content']} ({r['why']})" for r in rows) or "nothing relevant"
+
     def _forget(self, memory_id):
         self.memory.delete(int(memory_id))
         return f"memory {memory_id} deleted"
@@ -105,7 +113,7 @@ class RecallixMCP:
 
     def call_tool(self, name, args):
         handlers = {"recall_memory": self._recall, "store_memory": self._store, "confirm_answer": self._confirm,
-                    "forget_memory": self._forget, "export_memories": self._export}
+                    "forget_memory": self._forget, "relevant_memories": self._relevant, "export_memories": self._export}
         if name not in handlers:
             raise KeyError(name)
         return handlers[name](**(args or {}))

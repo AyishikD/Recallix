@@ -114,6 +114,28 @@ class EpisodicMemory:
     # ------------------------------------------------------------------
     # Writes
     # ------------------------------------------------------------------
+    def latest_fact_values(self, user_id, slot_ids, agent_id, before):
+        """
+        {slot_id: (value, memory_id, timestamp)} — the most recent earlier value of each fact
+        this agent can see (used to flag a new message that contradicts it).
+        """
+        if not slot_ids:
+            return {}
+        conn = self._connect()
+        try:
+            ph = ",".join("?" * len(slot_ids))
+            rows = conn.execute(
+                f"SELECT json_extract(j.value, '$.slot_id'), json_extract(j.value, '$.value'), e.id, e.timestamp "
+                f"FROM episodic_events e, json_each(e.metadata, '$.slots') j "
+                f"WHERE e.user_id = ? AND e.status = 'ACTIVE' AND {_VISIBLE} AND e.timestamp < ? "
+                f"AND json_extract(j.value, '$.slot_id') IN ({ph}) ORDER BY e.timestamp, e.id",
+                (user_id, agent_id, before, *slot_ids)).fetchall()
+        except sqlite3.Error:
+            return {}
+        finally:
+            conn.close()
+        return {slot: (value, mid, ts) for slot, value, mid, ts in rows}  # later rows overwrite: latest wins
+
     def latest_entity_for_relation(self, user_id, relation, agent_id, before):
         """
         Entity of this user's most recent fact with `relation` stored before `before` and

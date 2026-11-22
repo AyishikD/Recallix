@@ -40,6 +40,13 @@ class RecallRequest(BaseModel):
     limit: int = Field(default=10, ge=1, le=100)
 
 
+class ProactiveRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=20000)
+    user_id: Optional[str] = None
+    agent_id: str = "default_agent"
+    limit: int = Field(default=5, ge=1, le=20)
+
+
 class FeedbackRequest(BaseModel):
     recall_id: str
     relevant_memory_ids: List[int] = []
@@ -53,13 +60,20 @@ def store_memory(request: StoreRequest, auth=Depends(verify_api_key)):
     result = get_memory_manager().store(user_id, request.content, agent_id=request.agent_id,
                                         memory_type=request.memory_type, client_metadata=request.metadata)
     return envelope({k: result.get(k) for k in
-                     ("status", "memory_id", "importance", "schemas", "promoted", "indexed", "total_ms", "processing_log")})
+                     ("status", "memory_id", "importance", "schemas", "promoted", "indexed", "conflicts", "total_ms", "processing_log")})
 
 
 @router.post("/recall")
 def recall_memory(request: RecallRequest, auth=Depends(verify_api_key)):
     user_id = acting_user(auth, request.user_id)
     return envelope(get_memory_manager().retrieve(user_id, request.query, agent_id=request.agent_id, limit=request.limit))
+
+
+@router.post("/proactive")
+def proactive_memories(request: ProactiveRequest, auth=Depends(verify_api_key)):
+    """Memories an agent should keep in mind for this message (e.g. an allergy when food is mentioned)."""
+    user_id = acting_user(auth, request.user_id)
+    return envelope(get_memory_manager().proactive(user_id, request.message, request.agent_id, request.limit))
 
 
 @router.post("/feedback")
@@ -109,9 +123,16 @@ def import_memories(request: ImportRequest, auth=Depends(verify_api_key)):
 @router.delete("/{memory_id}")
 def delete_memory(memory_id: int, user_id: Optional[str] = None, auth=Depends(verify_api_key)):
     uid = acting_user(auth, user_id)
-    if not get_memory_manager().delete(uid, memory_id):
+    receipt = get_memory_manager().delete(uid, memory_id)
+    if receipt is None:
         raise HTTPException(status_code=404, detail="Memory not found")
-    return envelope({"deleted": memory_id})
+    return envelope({"deleted": memory_id, "receipt": receipt})
+
+
+@router.get("/deletions")
+def deletion_receipts(user_id: Optional[str] = None, limit: int = Query(100, ge=1, le=1000), auth=Depends(verify_api_key)):
+    """This user's deletion receipts from the tamper-evident log (newest first)."""
+    return envelope(get_memory_manager().audit.receipts(acting_user(auth, user_id), limit))
 
 
 @router.get("/timeline")

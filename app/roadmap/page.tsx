@@ -35,6 +35,12 @@ const GROUPS: { title: string; lede: string; items: { name: string; detail: stri
             { name: "Search that scales with tenants", detail: "Full-text search is restricted to one user inside the index, so recall time no longer grows with other users’ data.", status: "shipped" },
             { name: "Export, import and MCP", detail: "An open export format, imports from Mem0 or plain text, and an MCP server for Claude Desktop, Cursor and other clients.", status: "shipped" },
             { name: "Open benchmark harness", detail: "Any memory system behind a small adapter, scored on the same data in the same way.", status: "shipped" },
+            { name: "Conflict alerts", detail: "When a message changes a known fact, the store response says so — the old value, when it was said, and the new one. The newest value wins; another agent’s private facts never raise alerts.", status: "shipped" },
+            { name: "Verifiable deletion", detail: "Deleting a memory removes every derived copy, checks each store, and returns a receipt. Receipts go into a hash-chained log that exposes any later edit and never stores the content.", status: "shipped" },
+            { name: "Memory fuzzer", detail: "Generates tests from stored facts — ask it differently, ask about a stranger, change it — and writes failures as runnable memory tests. It found three real bugs, now fixed.", status: "shipped" },
+            { name: "Unknown-person check", detail: "A question about someone memory has never heard of no longer returns your own facts.", status: "shipped" },
+            { name: "Trust score", detail: "Every answer carries a probability that it is right, combined from the signals Recallix already computes and checked for calibration on conversations it was not fitted on.", status: "shipped" },
+            { name: "Proactive recall", detail: "Given what the user just said, surface facts worth keeping in mind — an allergy when they book a restaurant — each with the reason. Small talk surfaces nothing.", status: "shipped" },
         ],
     },
     {
@@ -48,7 +54,9 @@ const GROUPS: { title: string; lede: string; items: { name: string; detail: stri
             { name: "Answer check costs time", detail: "The QA reader adds latency on CPU. It now stops at the first memory that answers, which roughly halves its cost, and can be switched off.", status: "known gap" },
             { name: "Tenants share term statistics", detail: "The importance score’s word-rarity feature is counted across all users. Fixing it needs a refit of the importance model.", status: "known gap" },
             { name: "Single API process", detail: "One process owns SQLite and the background jobs. Scaling out needs a shared database.", status: "known gap" },
-            { name: "Deleted vectors linger", detail: "They stay in the graph, filtered out, until a rebuild (python -m backend.tools.reindex --force).", status: "known gap" },
+            { name: "Deleted vectors linger", detail: "They stay in the graph, filtered out, until a rebuild (python -m backend.tools.reindex --force). Deletion receipts check the vector is unreachable, not physically erased.", status: "known gap" },
+            { name: "Trust score needs calibrating per deployment", detail: "Checked on data it was not fitted on: well calibrated on new LoCoMo conversations, but on LongMemEval it still ranks answers while understating how often they are right. Each deployment can now recalibrate it on its own confirmed answers; until then, treat it as a relative score.", status: "known gap" },
+            { name: "Proactive recall uses a fixed table", detail: "Situations are matched by cue words (food, travel, health, gifts, scheduling); others are missed. The table is editable in config.", status: "known gap" },
         ],
     },
     {
@@ -60,7 +68,6 @@ const GROUPS: { title: string; lede: string; items: { name: string; detail: stri
             { name: "Faster imports", detail: "Batched storing and a persistent embedding cache for large histories.", status: "next" },
             { name: "Parallel index build", detail: "Multi-threaded HNSW insertion for faster rebuilds.", status: "next" },
             { name: "Disk-mapped indexes", detail: "Load indexes instantly instead of rebuilding them at start-up.", status: "next" },
-            { name: "Conflicts between agents", detail: "Surface contradictory facts written by different agents.", status: "next" },
         ],
     },
     {

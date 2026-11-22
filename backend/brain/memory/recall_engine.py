@@ -28,6 +28,7 @@ from ..features.answer_check import AnswerChecker
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
+from ..features import trust
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok")
@@ -263,7 +264,10 @@ class RecallEngine:
         # memories when it is available; otherwise the relevance threshold decides.
         answer_check = None
         checker = AnswerChecker.from_config()
-        if not resolved:
+        outsider = self._unknown_person(query, all_scored)
+        if outsider:
+            status, final = "ABSTAINED", []
+        elif not resolved:
             status, final = "NO_MATCH", []
         elif checker is not None:
             final = resolved[:top_k]
@@ -317,13 +321,15 @@ class RecallEngine:
             freshness.annotate([f for m in memories for f in m["receipt"]["facts"]], self.episodic.db_path,
                                user_id, agent_id, time.time(), float(fresh.get("prior_events", 1.0)),
                                float(fresh.get("prior_days", 365.0)))
+        for m in memories:  # calibrated P(this memory answers), when a fitted trust model is installed
+            m["trust"] = trust.score(m)
 
         result = {
             "recall_id": recall_id,
             "intent": self.classify_query(analysis),
             "status": status,
             "memories": memories,
-            "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check),
+            "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check, outsider),
             "debug": {
                 "aliases": aliases,
                 "query_entities": analysis["strong_entities"],
@@ -335,9 +341,40 @@ class RecallEngine:
             },
             "latency_ms": round((time.time() - t0) * 1000, 1),
         }
+        if memories:
+            result["receipt"]["trust"] = memories[0].get("trust")
+            result["receipt"]["trust_calibration"] = trust.trust_calibration()
+            z = trust.logit(memories[0])
+            if z is not None:  # feedback on this recall later labels it: deployment calibration data
+                self.recall_log.log_trust(recall_id, user_id, memories[0]["id"], z)
         if return_candidates:
             result["_candidates"] = all_scored
         return result
+
+    _PERSON_IN_QUESTION = re.compile(
+        r"\b(?:does|did|do|is|was|are|were|has|have|had|will|can|would)\s+([A-Z][a-z]+)\b|\b([A-Z][a-z]+)['’]s\b")
+    _NOT_PEOPLE = {"I", "The", "What", "When", "Where", "Who", "Which", "How", "Why", "January", "February", "March",
+                   "April", "May", "June", "July", "August", "September", "October", "November", "December", "Monday",
+                   "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
+
+    def _unknown_person(self, query, candidates):
+        """
+        recall.unknown_person_check: a question about a named person ("Where does Morgan work?",
+        "What is Quinn's dog?") whom no candidate memory mentions and who never spoke cannot be
+        answered from memory — returning the user's own facts would misattribute them. Returns the
+        name, or None. Only person-like wording triggers it (not "my favourite Netflix show").
+        """
+        if not (settings.get("recall.unknown_person_check", {}) or {}).get("enabled", True):
+            return None
+        names = {a or b for a, b in self._PERSON_IN_QUESTION.findall(query)} - self._NOT_PEOPLE
+        if not names:
+            return None
+        known_text = " ".join(c.get("content", "") for c in candidates[:200]).lower()
+        speakers = {(memory_speaker(c) or "").lower() for c in candidates[:200]}
+        for name in sorted(names):
+            if name.lower() not in speakers and not re.search(rf"\b{re.escape(name.lower())}\b", known_text):
+                return name
+        return None
 
     @staticmethod
     def _answer_by_inference(checker, query, memories, threshold):
@@ -451,9 +488,11 @@ class RecallEngine:
                 "inferred": m.get("inferred"),
                 "answer": m.get("answer") or None, "answer_margin": m.get("answer_margin")}
 
-    def _recall_receipt(self, status, resolved, final, threshold, answer_check):
+    def _recall_receipt(self, status, resolved, final, threshold, answer_check, outsider=None):
         """Why this recall answered or declined, and which models and rules were involved."""
-        if status == "NO_MATCH":
+        if outsider:
+            reason = f"the question asks about {outsider}, who is not mentioned in any memory"
+        elif status == "NO_MATCH":
             reason = "no stored memory matched the question"
         elif answer_check is not None:
             t, b = answer_check["threshold"], answer_check["best_margin"]
@@ -480,6 +519,7 @@ class RecallEngine:
         return {
             "decision": status,
             "reason": reason,
+            "trust": None,
             "guarantee": (answer_check or {}).get("guarantee"),
             "versions": {"ranker": Ranker.model().get("source", ""), "embedding": self.semantic.model_name,
                          "extractor": EXTRACTOR_VERSION, "answer_check": (answer_check or {}).get("model")},

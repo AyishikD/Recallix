@@ -149,3 +149,31 @@ or over the API: `GET /memory/export`, `POST /memory/import`, and in the SDKs
 Tools: `recall_memory`, `store_memory`, `confirm_answer`, `forget_memory`, `export_memories`.
 Memories stored as `shared` are visible to every client and agent of the same user.
 
+## 9. Find problems before your users do
+
+```bash
+# Memory fuzzer: generates tests from the stored facts — asked differently, asked about a
+# stranger, and changed — and writes every failure as a runnable memory test.
+python -m backend.tools.fuzz --user alice --write-failures failures.yaml
+
+# Deletion log: every delete returns a receipt; this checks no entry was altered afterwards.
+python -m backend.tools.audit verify
+```
+
+Each recall reports `trust` (a "this answers it" probability), each store reports
+`conflicts` (facts the message changed), and `POST /memory/proactive` returns memories worth
+keeping in mind for a message nobody asked a question about. In the SDK: `mem.proactive(message)`.
+
+The trust score ships fitted on LoCoMo. It stays calibrated on new conversations of that kind,
+but not on every kind (on LongMemEval it understated how often answers were right), so
+recalibrate it once your users have confirmed about 50 answers (feedback / `confirm_answer`):
+
+```bash
+python -m backend.tools.calibrate_trust --from-db          # or --from-file sample.json
+```
+
+It refits only the score's scale (two numbers), keeps the result only if it improves held-out
+accuracy, and from then on `receipt.trust_calibration` says `this deployment`.
+In a simulated deployment (fitted on about a hundred answers from other LongMemEval questions), this
+brought the score back within the calibration bar: eval/results/trust_check_longmemeval_recalibrated.json.
+

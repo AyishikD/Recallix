@@ -222,6 +222,13 @@ class RecallLog:
                 PRIMARY KEY (user_id, query, memory_id)
             )
         ''')
+        # Trust log-odds of each recall's top memory: feedback on that recall labels it, which
+        # recalibrates the trust score for this deployment (backend/tools/calibrate_trust.py).
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS recall_trust (
+                recall_id TEXT PRIMARY KEY, user_id TEXT, memory_id INTEGER, logit REAL, timestamp REAL
+            )
+        ''')
         conn.execute('''
             CREATE TABLE IF NOT EXISTS recall_answer_check (
                 recall_id TEXT PRIMARY KEY, user_id TEXT, model TEXT, best_margin REAL,
@@ -247,6 +254,43 @@ class RecallLog:
                          (recall_id, user_id, model, float(best_margin), json.dumps([int(i) for i in checked_ids]),
                           time.time()))
         conn.close()
+
+    def log_trust(self, recall_id, user_id, memory_id, logit):
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        with conn:
+            conn.execute("INSERT OR REPLACE INTO recall_trust VALUES (?, ?, ?, ?, ?)",
+                         (recall_id, user_id, int(memory_id), float(logit), time.time()))
+        conn.close()
+
+    def trust_samples(self):
+        """[(logit, label)] for recalls whose top memory received feedback (1 = confirmed as the answer)."""
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        rows = conn.execute(
+            "SELECT t.logit, c.label FROM recall_trust t JOIN recall_candidates c "
+            "ON c.recall_id = t.recall_id AND c.memory_id = t.memory_id WHERE c.label IS NOT NULL").fetchall()
+        conn.close()
+        return [(float(z), int(y)) for z, y in rows]
+
+    def forget_memory(self, user_id, memory_id, count_only=False):
+        """Removes (or counts) every log row that refers to a memory: {"confirmed_answers", "ranking_features", "trust_log"}."""
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        try:
+            with conn:
+                counts = {
+                    "confirmed_answers": conn.execute("SELECT COUNT(*) FROM confirmed_answers WHERE user_id = ? AND memory_id = ?",
+                                                      (user_id, memory_id)).fetchone()[0],
+                    "ranking_features": conn.execute("SELECT COUNT(*) FROM recall_candidates WHERE user_id = ? AND memory_id = ?",
+                                                     (user_id, memory_id)).fetchone()[0],
+                    "trust_log": conn.execute("SELECT COUNT(*) FROM recall_trust WHERE user_id = ? AND memory_id = ?",
+                                              (user_id, memory_id)).fetchone()[0],
+                }
+                if not count_only:
+                    conn.execute("DELETE FROM confirmed_answers WHERE user_id = ? AND memory_id = ?", (user_id, memory_id))
+                    conn.execute("DELETE FROM recall_candidates WHERE user_id = ? AND memory_id = ?", (user_id, memory_id))
+                    conn.execute("DELETE FROM recall_trust WHERE user_id = ? AND memory_id = ?", (user_id, memory_id))
+            return counts
+        finally:
+            conn.close()
 
     def log_query(self, recall_id, user_id, agent_id, query):
         conn = sqlite3.connect(self.db_path, timeout=30)
@@ -324,6 +368,7 @@ class RecallLog:
             conn.execute("DELETE FROM recall_answer_check WHERE user_id = ?", (user_id,))
             conn.execute("DELETE FROM recall_queries WHERE user_id = ?", (user_id,))
             conn.execute("DELETE FROM confirmed_answers WHERE user_id = ?", (user_id,))
+            conn.execute("DELETE FROM recall_trust WHERE user_id = ?", (user_id,))
         conn.close()
 
     def clear_all(self):
@@ -333,4 +378,5 @@ class RecallLog:
             conn.execute("DELETE FROM recall_answer_check")
             conn.execute("DELETE FROM recall_queries")
             conn.execute("DELETE FROM confirmed_answers")
+            conn.execute("DELETE FROM recall_trust")
         conn.close()

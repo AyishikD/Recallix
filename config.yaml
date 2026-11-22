@@ -166,6 +166,10 @@ recall:
     store_min_entailment: 0.95
     question_min_entailment: 0.9
     max_restatement_similarity: 0.8
+  # Decline questions about a named person ("Where does Morgan work?") whom no memory mentions
+  # and who never spoke, instead of returning the user's own facts (found by the memory fuzzer).
+  unknown_person_check:
+    enabled: true
   # Fact half-lives: every fact in a recall receipt carries the probability it is still true,
   # from how often this user's facts of the same kind were replaced (exponential survival model,
   # Gamma prior: prior_events replacements per prior_days; see backend/brain/memory/freshness.py).
@@ -180,6 +184,17 @@ recall:
     min_similarity: 0.9
   # Runtime override of the learned relevance threshold (null = the fitted ranker model's threshold).
   abstain_threshold: null
+
+
+# ============================================================================
+# Facts: learned extractor (phase6/) — a small token tagger distilled offline from an
+# open-weight teacher LLM; complements the rule grammar. No LLM at runtime. Off until a
+# trained model is installed under the storage root and its evaluation justifies it.
+# ============================================================================
+facts:
+  learned_extractor:
+    enabled: false
+    path: models/fact_extractor
 
 # ============================================================================
 # HTTP API

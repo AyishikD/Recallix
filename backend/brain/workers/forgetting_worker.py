@@ -69,8 +69,8 @@ class ForgettingWorker:
         for m in rows:
             action = self.decide(m, now, cfg)
             if action == "delete":
-                counts["deleted"] += self.memory.delete(m["user_id"], m["id"])
+                counts["deleted"] += self.memory.delete(m["user_id"], m["id"], reason="forgetting policy") is not None
             elif action == "archive":
                 self.memory.archive.archive(m)
-                counts["archived"] += self.memory.delete(m["user_id"], m["id"])
+                counts["archived"] += self.memory.delete(m["user_id"], m["id"], reason="forgetting policy (archived first)") is not None
         return counts

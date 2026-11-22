@@ -54,7 +54,7 @@ _KNOWN_RELS = (
     r"name|full\s+name|nickname|status|state|phase|stage|code|password|passcode|pin|address|"
     r"phone(?:\s+number)?|number|email|birthday|location|city|country|hometown|budget|owner|"
     r"lead|manager|version|price|cost|salary|goal|role|title|"
-    r"job|age|priority|capital|timezone|time\s+zone|"
+    r"job|age|priority|capital|timezone|time\s+zone|diet|allergy|religion|nationality|"
     r"favou?rite\s+[a-z]+"
 )
 _KNOWN_REL_RE = re.compile(rf"^(?:{_KNOWN_RELS})$", re.I)
@@ -85,7 +85,7 @@ _PATTERNS = [
     ("entity_np", re.compile(rf"(?:\b[Tt]he\s+)?{_ENTITY_CAP}\s+(?P<rel>[a-z][a-z-]*(?:\s+[a-z][a-z-]*){{0,2}})\s+(?i:{_VERB})\s+{_VALUE}"), None),
     # the <event> is on/at <time>   /   the <event> was moved to <time>
     ("event", re.compile(
-        rf"\b(?:the\s+)?(?P<ent>[a-z][a-z-]*(?:\s+[a-z][a-z-]*)??)\s+(?:{_VERB}|is\s+scheduled|runs)\s+"
+        rf"(?<!['’])\b(?:the\s+)?(?P<ent>[a-z][a-z-]*(?:\s+[a-z][a-z-]*)??)\s+(?:{_VERB}|is\s+scheduled|runs)\s+"
         r"(?P<val>(?:on|at|for|from|by)\s+[^.;!?\n]{1,60}|(?:the\s+)?\d[^.;!?\n]{0,40}|"
         r"(?:next|this)\s+\w+|(?:mon|tues|wednes|thurs|fri|satur|sun)day\b[^.;!?\n]{0,30}|"
         r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d[^.;!?\n]{0,30})", re.I), "__event__"),
@@ -124,6 +124,17 @@ _STOP_ENTITIES = {"it", "this", "that", "there", "he", "she", "they", "we", "i",
 
 # Event subjects worth tracking as "<event>::when". Generic nouns that are
 # rarely calendar events are excluded to protect precision.
+# An event's value must look like a time: weekday, month, clock time, date or relative day.
+# ("Falcon runs on Ubuntu 22.04" and "the plumber's number is 98765 43210" are not schedules.)
+_TIMEY = re.compile(
+    r"\b(?:(?:mon|tues|wednes|thurs|fri|satur|sun)days?|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*|"
+    r"today|tomorrow|tonight|morning|afternoon|evening|night|nights|noon|midnight|weekend|week|month|year|daily|"
+    r"\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.|p\.m\.)|\d{1,2}:\d{2}|\d{1,2}(?:st|nd|rd|th)\b|\d{4}-\d{2}-\d{2}|"
+    r"\d{1,2}/\d{1,2}(?:/\d{2,4})?)", re.I)
+
+_AUX_WORDS = {"was", "is", "are", "were", "has", "have", "had", "been", "will", "would", "got", "gets", "be", "being",
+              "can", "could", "should", "may", "might", "must", "did", "does", "do"}
+
 _EVENT_STOP = {"weather", "day", "week", "it", "this", "that", "flight", "food", "coffee", "movie", "build",
                "tests", "test", "sky", "traffic", "match", "game", "trip"}
 
@@ -225,6 +236,8 @@ def extract_triads(message):
                     ent = m.group("ent").strip()
                     if ent.lower() in _EVENT_STOP or ent.split()[-1].lower() in _EVENT_STOP:
                         continue
+                    if not _TIMEY.search(val):
+                        continue  # not a time: "runs on Ubuntu 22.04", "number is 98765 43210"
                     add(m, ent, "when", val, guard=False, rule=kind)
                 elif kind in ("named", "inverse"):
                     add(m, fixed_entity, m.group("rel"), val, guard=False, rule=kind)
@@ -232,6 +245,8 @@ def extract_triads(message):
                     ent = fixed_entity or m.group("ent").strip()
                     if kind == "entity_np" and m.start("ent") == 0 and " " not in ent and not re.search(r"\d", ent):
                         continue  # a lone capitalised first word is not evidence of a name
+                    if kind == "entity_np" and m.group("rel").split()[0].lower() in _AUX_WORDS:
+                        continue  # "Standup was moved to ..." is a schedule change, not a fact named "was"
                     add(m, ent, m.group("rel"), val, guard=(kind in ("my", "possessive", "of", "entity_np", "code_colon")), rule=kind)
         for pattern, rel in _FIRST_PERSON:
             m = pattern.search(sentence)
@@ -273,7 +288,7 @@ def to_slots(triads, timestamp=None):
             "value": v,
             "version": version,
             "truth_status": "active",
-            "source": {"rule": t.get("rule", ""), "span": t.get("span"), "extractor": EXTRACTOR_VERSION},
+            "source": {"rule": t.get("rule", ""), "span": t.get("span"), "extractor": t.get("extractor", EXTRACTOR_VERSION)},
         })
     return slots
 
@@ -344,4 +359,21 @@ def question_keys(slot, display_entity=None):
     subject = display_entity or ent
     templates = _QUESTION_TEMPLATES.get(rel, ("What is {p} " + rel.replace("_", " ") + "?",))
     return [t.format(s=subject, p=f"{subject}'s") for t in templates]
+
+
+def with_learned(message, triads, extractor):
+    """
+    Rule facts plus the learned extractor's facts whose value span no rule already covers
+    (rules first: they are precise and explainable; the model adds phrasings they miss).
+    """
+    if extractor is None:
+        return triads
+    covered = [t["span"] for t in triads if t.get("span")]
+    out = list(triads)
+    for f in extractor.extract(message):
+        a, b = f["span"]
+        if not any(a < cb and ca < b for ca, cb in covered):
+            out.append(f)
+            covered.append(f["span"])
+    return out
 

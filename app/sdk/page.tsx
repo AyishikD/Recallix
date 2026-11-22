@@ -110,6 +110,58 @@ mem.import_memories("I live in Pune.\nI'm vegetarian.",
 
 $ python -m backend.tools.memtest tests/memory/*.yaml`,
     },
+    {
+        title: "Know when to trust an answer",
+        text: "Every recalled memory carries a trust score: a probability that it answers the question. Answer, hedge or ask. Calibration differs between kinds of conversation, so recalibrate it on your own confirmed answers; the receipt says which calibration a score carries. And when a message changes a fact you already know, the store response tells you.",
+        label: "Python",
+        code: `out = mem.recall("Where do I live?")
+top = out["memories"][0]
+if (top.get("trust") or 0) < 0.5:
+    ...  # hedge, or ask the user
+out["receipt"]["trust_calibration"]
+# {"source": "this deployment", "n": 120, ...}
+
+$ python -m backend.tools.calibrate_trust --from-db
+
+res = mem.store("I moved to Mumbai.")
+res["conflicts"]
+# [{"fact": "user::location", "previous_value": "Pune",
+#   "previous_said_at": ..., "new_value": "Mumbai"}]`,
+    },
+    {
+        title: "Remind without being asked",
+        text: "Agents rarely know when to look something up. Pass what the user just said and get back the facts worth keeping in mind, each with the reason. Small talk returns nothing. Also available as an MCP tool.",
+        label: "Python",
+        code: `mem.proactive("Book a table at the Thai place tonight")
+# [{"content": "I'm allergic to peanuts.",
+#   "fact": "user::allergy", "value": "peanuts",
+#   "why": "the message is about eating or ordering
+#           food; this is a known allergy"}]`,
+    },
+    {
+        title: "Delete with proof",
+        text: "Deleting a memory removes every copy derived from it, checks each store and returns a receipt. Receipts are chained by hash, so any later edit to the log shows up, and the log never keeps the deleted content.",
+        label: "Python",
+        code: `receipt = mem.delete(42)["receipt"]
+receipt["all_copies_gone"]     # True
+receipt["verified_absent"]
+# {"memory": True, "full_text_index": True,
+#  "long_term_copy": True, "timeline_entry": True,
+#  "vector": True, ...}
+
+$ python -m backend.tools.audit verify`,
+    },
+    {
+        title: "Let it find its own bugs",
+        text: "The memory fuzzer turns every stored fact into tests: ask it another way, ask about a stranger, change it. Failures are written out as memory tests you can keep in CI.",
+        label: "Terminal",
+        code: `$ python -m backend.tools.fuzz --spec tests/memory/example.yaml \\
+      --write-failures tests/memory/fuzz_failures.yaml
+4 facts -> 12 generated cases
+  ask      5/5 passed
+  someone  3/3 passed
+  change   4/4 passed`,
+    },
 ];
 
 const SETUP = [

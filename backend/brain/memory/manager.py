@@ -16,7 +16,8 @@ from ..world_model.timeline_engine import TimelineEngine
 from ..world_model.prediction_engine import PredictionEngine
 from ..world_model.planning_engine import PlanningEngine
 from ..memory_ranking.importance_ranker import ImportanceRanker, content_terms
-from ..features.facts import extract_triads, question_keys, resolve_definite, to_slots
+from ..features.facts import extract_triads, question_keys, resolve_definite, to_slots, with_learned
+from ..features.learned_facts import LearnedExtractor
 from ..features.schemas import SchemaClassifier
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 
@@ -41,6 +42,8 @@ class MemoryManager:
         self.planning_engine = PlanningEngine(self)
 
         self.recall_engine = RecallEngine(self.episodic, self.semantic)
+        from .audit import AuditLog
+        self.audit = AuditLog()
         self._store_lock = threading.Lock()  # serialises dedupe-check + insert
 
     # ------------------------------------------------------------------
@@ -86,9 +89,13 @@ class MemoryManager:
 
         s = time.time()
         metadata_slots = resolve_definite(
-            to_slots(extract_triads(message), timestamp=ts),
+            to_slots(with_learned(message, extract_triads(message), LearnedExtractor.from_config()), timestamp=ts),
             lambda rel: self.episodic.latest_entity_for_relation(user_id, rel, agent_id, ts))
         log("python", "Fact Extraction", f"Slots: {[m['slot_id'] for m in metadata_slots]}", s)
+
+        conflicts = self._conflicts(user_id, agent_id, metadata_slots, ts)
+        if conflicts:
+            log("python", "Conflict Check", f"{len(conflicts)} fact(s) differ from what was said before", time.time())
 
         implied = []
         inference = ImplicitInference.from_config()
@@ -157,12 +164,36 @@ class MemoryManager:
             log("python", "Long-Term Promotion", f"importance {importance:.1f}", s)
 
         return {"status": "stored", "memory_id": memory_id, "importance": importance, "schemas": schema_tags,
-                "promoted": promoted, "indexed": indexed, "total_ms": round((time.time() - t0) * 1000, 1),
-                "processing_log": logs}
+                "promoted": promoted, "indexed": indexed, "conflicts": conflicts,
+                "total_ms": round((time.time() - t0) * 1000, 1), "processing_log": logs}
+
+    _NO_CONFLICT = ("alias_of",)  # relations where a second value is an addition, not a contradiction
+
+    def _conflicts(self, user_id, agent_id, slots, ts):
+        """
+        Facts in the new message whose value differs from the latest earlier value this agent can see:
+        [{"fact", "previous_value", "previous_memory_id", "previous_said_at", "new_value"}]. The newest
+        value still wins (TruthEngine); this tells the caller so it can confirm with the user.
+        """
+        candidates = [s for s in slots if s.get("relation") not in self._NO_CONFLICT]
+        previous = self.episodic.latest_fact_values(user_id, [s["slot_id"] for s in candidates], agent_id, ts)
+        norm = lambda v: " ".join(str(v or "").lower().split())  # noqa: E731
+        out = []
+        for s in candidates:
+            prev = previous.get(s["slot_id"])
+            if prev and norm(prev[0]) != norm(s["value"]):
+                out.append({"fact": s["slot_id"], "previous_value": prev[0], "previous_memory_id": prev[1],
+                            "previous_said_at": prev[2], "new_value": s["value"]})
+        return out
 
     # ------------------------------------------------------------------
     # Recall
     # ------------------------------------------------------------------
+    def proactive(self, user_id, message, agent_id="default_agent", limit=5):
+        """Memories worth keeping in mind for `message`, with the reason (see memory/proactive.py)."""
+        from .proactive import relevant
+        return relevant(self.episodic, user_id, message, agent_id, limit)
+
     def retrieve(self, user_id, query, agent_id="default_agent", limit=5, return_candidates=False):
         return self.recall_engine.multi_stage_recall(user_id, query, agent_id=agent_id, top_k=limit,
                                                      return_candidates=return_candidates)
@@ -170,14 +201,47 @@ class MemoryManager:
     # ------------------------------------------------------------------
     # Deletion (removes every derived copy)
     # ------------------------------------------------------------------
-    def delete(self, user_id, memory_id):
-        """Deletes one memory and everything derived from it. Returns False if not found."""
-        if not self.episodic.delete(user_id, memory_id):
-            return False
-        self.semantic.remove(user_id, memory_id)
-        self.long_term.delete_by_source(user_id, memory_id)
-        self.timeline.delete_by_memory(user_id, memory_id)
-        return True
+    def delete(self, user_id, memory_id, reason="user request"):
+        """
+        Deletes one memory and everything derived from it, checks that nothing is left, and records
+        a receipt in the tamper-evident deletion log. Returns the receipt, or None if not found.
+        """
+        import sqlite3
+        from .audit import deletion_receipt
+        mid = int(memory_id)
+        found = self.episodic.get_many(user_id, [mid])
+        if mid not in found:
+            return None
+        content = found[mid].get("content", "")
+        vector = self.episodic.get_embeddings([mid], self.semantic.model_name).get(mid)
+
+        def counts():
+            out = {}
+            with sqlite3.connect(self.episodic.db_path) as c:
+                out["memory"] = c.execute("SELECT COUNT(*) FROM episodic_events WHERE id = ? AND user_id = ?", (mid, user_id)).fetchone()[0]
+                out["full_text_index"] = c.execute("SELECT COUNT(*) FROM episodic_fts WHERE rowid = ?", (mid,)).fetchone()[0]
+                out["question_keys"] = c.execute("SELECT COUNT(*) FROM question_keys WHERE memory_id = ?", (mid,)).fetchone()[0]
+            with sqlite3.connect(self.long_term.db_path) as c:
+                out["long_term_copy"] = c.execute("SELECT COUNT(*) FROM long_term_facts WHERE user_id = ? AND source_id = ?", (user_id, mid)).fetchone()[0]
+            with sqlite3.connect(self.timeline.db_path) as c:
+                out["timeline_entry"] = c.execute("SELECT COUNT(*) FROM events WHERE user_id = ? AND memory_id = ?", (user_id, mid)).fetchone()[0]
+            out.update(self.recall_engine.recall_log.forget_memory(user_id, mid, count_only=True))
+            return out
+
+        before = counts()
+        self.episodic.delete(user_id, mid)
+        vector_removed = self.semantic.remove(user_id, mid)
+        self.long_term.delete_by_source(user_id, mid)
+        self.timeline.delete_by_memory(user_id, mid)
+        self.recall_engine.recall_log.forget_memory(user_id, mid)
+        after = counts()
+        removed = {k: v for k, v in before.items() if v}
+        absent = {k: after[k] == 0 for k in before}
+        removed["vector"] = int(bool(vector_removed))
+        if vector is not None:  # the vector must no longer be the nearest match to itself
+            hits = self.semantic.search(user_id, "", top_k=1, vector=vector)
+            absent["vector"] = not any(h[0] == mid for h in hits)
+        return self.audit.record(user_id, deletion_receipt(mid, content, removed, absent, reason))
 
     def clear_user(self, user_id):
         """Deletes all of one user's data in every store and their vector index."""
