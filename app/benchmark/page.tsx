@@ -5,7 +5,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CountUp, DataTable, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
 import { ClosingCTA, MemoryField } from "@/components/site/story";
-import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, mem0Comparison, ms, pct, results } from "@/lib/results";
+import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, mem0Comparison, ms, pct, perMillion, results, writeSpeedup } from "@/lib/results";
 
 const MEM0 = mem0Comparison;
 const usd = (x: number) => `$${x.toFixed(2)}`;
@@ -95,19 +95,20 @@ export default function BenchmarkPage() {
                 </Section>
             )}
 
-            {/* Head-to-head with Mem0: every number from eval/results/mem0_comparison/summary.json */}
-            <Section tone="cloud" id="mem0">
+            {/* Head-to-head with an existing LLM-based memory layer (not named on the site, by choice):
+                every number from eval/results/mem0_comparison/summary.json */}
+            <Section tone="cloud" id="head-to-head">
                 <Reveal>
                     <Eyebrow tone="muted">Head to head</Eyebrow>
-                    <Headline className="max-w-[760px]">Recallix vs Mem0, same questions.</Headline>
+                    <Headline className="max-w-[760px]">Recallix vs an existing memory layer, same questions.</Headline>
                     <Lede className="mt-5 max-w-[680px]">
-                        Both systems stored the same held-out LoCoMo conversation ({n(MEM0.scope.messages)} messages) and answered the
+                        Recallix and a widely used open-source memory layer that calls an LLM on every write both stored the same held-out LoCoMo conversation ({n(MEM0.scope.messages)} messages) and answered the
                         same {MEM0.scope.questions} questions. One model wrote every final answer and one judge marked them, so only the
                         memory layer differs. The protocol was written before the run.
                     </Lede>
                 </Reveal>
                 <Reveal from="right" className="mt-10">
-                    <DataTable head={["", "Recallix", "Mem0"]} rows={[
+                    <DataTable head={["", "Recallix", "LLM-based memory layer"]} rows={[
                         ["Accuracy, all questions", pct(MEM0.accuracy.recallix.accuracy_overall, 1), pct(MEM0.accuracy.mem0.accuracy_overall, 1)],
                         ["Accuracy, answerable questions", pct(MEM0.accuracy.recallix.accuracy_answerable, 1), pct(MEM0.accuracy.mem0.accuracy_answerable, 1)],
                         ["Trick questions declined", pct(MEM0.accuracy.recallix.adversarial_declined, 1), pct(MEM0.accuracy.mem0.adversarial_declined, 1)],
@@ -122,20 +123,22 @@ export default function BenchmarkPage() {
                 <div className="mt-6 max-w-[760px] space-y-3 text-[14px] text-ink-2">
                     <p>
                         <strong className="text-ink">Accuracy is a statistical tie.</strong> Recallix alone was right on{" "}
-                        {MEM0.significance.all.only_recallix_right} questions, Mem0 alone on {MEM0.significance.all.only_mem0_right}{" "}
+                        {MEM0.significance.all.only_recallix_right} questions, the other system alone on {MEM0.significance.all.only_mem0_right}{" "}
                         (exact McNemar p = {MEM0.significance.all.p.toFixed(2)}). No per-category difference is significant at this sample
-                        size. Mem0 is stronger on multi-hop questions; Recallix on single facts and dates.
+                        size. The LLM-based system is stronger on multi-hop questions; Recallix on single facts and dates.
                     </p>
                     <p>
-                        <strong className="text-ink">Cost and speed are not close.</strong> Recallix stores without calling an LLM; Mem0
-                        made {n(MEM0.store.mem0.llm_calls)} model calls to store one conversation.
+                        <strong className="text-ink">Cost and speed are not close.</strong> Recallix stores without calling an LLM; the other
+                        system made {n(MEM0.store.mem0.llm_calls)} model calls to store one conversation. Writes were about {writeSpeedup(MEM0)}×
+                        faster at the median. Extrapolated from its measured cost per message, a million messages would cost about
+                        ${perMillion(MEM0).toLocaleString("en-US")} in LLM calls to store; Recallix stays at $0.
                     </p>
                     <p className="text-ink-3">
-                        One conversation, so the error bars are wide. Mem0: {MEM0.setup.mem0}. Recallix: {MEM0.setup.recallix}. Answers and
-                        judging: {MEM0.setup.answer_and_judge}. {MEM0.notes.join(" ")}{" "}
-                        <a className="underline" href="https://github.com/AyishikD/Recallix/blob/main/eval/mem0_comparison/PROTOCOL.md">Protocol</a>
-                        {" · "}
-                        <a className="underline" href="https://github.com/AyishikD/Recallix/blob/main/eval/results/mem0_comparison/RESULTS.md">Results and every answer</a>
+                        One conversation, so the error bars are wide. The other system ran its open-source release at default settings,
+                        with gpt-4o-mini extracting memories. Recallix: {MEM0.setup.recallix}. Answers and judging:{" "}
+                        {MEM0.setup.answer_and_judge}. Recallix was timed in-process on an Apple M4; the other system’s times include its
+                        model calls. Its cost is estimated from token usage at list prices. A second conversation was stopped part-way to
+                        stay within the test budget.
                     </p>
                 </div>
             </Section>

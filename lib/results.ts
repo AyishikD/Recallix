@@ -81,6 +81,16 @@ export interface Mem0Comparison {
 }
 export const mem0Comparison = mem0Summary as unknown as Mem0Comparison;
 
+/** Median write-time ratio, rounded to one significant figure ("about 200×"). */
+export const writeSpeedup = (c: Mem0Comparison) => {
+    const r = c.store.mem0.ms_p50 / c.store.recallix.ms_p50;
+    const mag = Math.pow(10, Math.floor(Math.log10(r)));
+    return Math.round(r / mag) * mag;
+};
+
+/** Mem0's measured storage cost per message, extrapolated to a million messages, rounded to $100. */
+export const perMillion = (c: Mem0Comparison) => Math.round((c.store.mem0.usd / c.scope.messages) * 1e6 / 100) * 100;
+
 /** The headline run: held-out test split with the real (non-hash) embedder. */
 export const headline: EvalRun | undefined = evalRuns.find(r => r.split === "test" && r.embedder !== "hash");
 

@@ -4,7 +4,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ButtonLink, CodeBlock, CountUp, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
 import { AgentsHub, ClosingCTA, MemoryField, MemoryStory, TypeCode } from "@/components/site/story";
-import { headline, headlineBenchmark, largestClustered, lift, mem0Comparison, ms, pct, results, signedPct } from "@/lib/results";
+import { headline, headlineBenchmark, largestClustered, lift, mem0Comparison, ms, pct, perMillion, results, signedPct, writeSpeedup } from "@/lib/results";
 import { DemoVideo } from "@/components/site/DemoVideo";
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
@@ -214,13 +214,15 @@ export default function HomePage() {
                 </div>
                 <Reveal delay={0.1}>
                     <p className="mt-10 max-w-[760px] text-[15px] text-ink-2">
-                        <strong className="text-ink">Head to head with Mem0</strong> on the same held-out LoCoMo conversation: comparable
+                        <strong className="text-ink">Head to head with an existing LLM-based memory layer</strong> on the same held-out LoCoMo conversation: comparable
                         accuracy ({pct(mem0Comparison.accuracy.recallix.accuracy_overall, 1)} vs{" "}
-                        {pct(mem0Comparison.accuracy.mem0.accuracy_overall, 1)}, a statistical tie),{" "}
-                        {mem0Comparison.store.recallix.llm_calls} vs {mem0Comparison.store.mem0.llm_calls.toLocaleString("en-US")} LLM calls to
-                        store it, and {Math.round(mem0Comparison.store.recallix.ms_p50)} ms vs{" "}
-                        {Math.round(mem0Comparison.store.mem0.ms_p50).toLocaleString("en-US")} ms per message.{" "}
-                        <a className="text-accent underline" href="/benchmark#mem0">See the comparison</a>
+                        {pct(mem0Comparison.accuracy.mem0.accuracy_overall, 1)}, a statistical tie) with no LLM bill:{" "}
+                        {mem0Comparison.store.recallix.llm_calls} vs {mem0Comparison.store.mem0.llm_calls.toLocaleString("en-US")} LLM calls and{" "}
+                        ${mem0Comparison.store.recallix.usd.toFixed(2)} vs ${mem0Comparison.store.mem0.usd.toFixed(2)} to store it, and about{" "}
+                        {writeSpeedup(mem0Comparison)}× faster writes ({Math.round(mem0Comparison.store.recallix.ms_p50)} ms vs{" "}
+                        {Math.round(mem0Comparison.store.mem0.ms_p50).toLocaleString("en-US")} ms per message). At its measured rate, a
+                        million messages would cost about ${perMillion(mem0Comparison).toLocaleString("en-US")} in LLM calls.{" "}
+                        <a className="text-accent underline" href="/benchmark#head-to-head">See the comparison</a>
                     </p>
                 </Reveal>
             </Section>
