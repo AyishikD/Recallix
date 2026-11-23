@@ -155,4 +155,16 @@ Recallix does not).
 
 ## License
 
-Apache-2.0
+- **Recallix (server, engine, everything in this repository except the SDKs):**
+  [Functional Source License 1.1, ALv2 Future License](LICENSE) (FSL-1.1-ALv2).
+  - **What you may do:** use, modify and self-host it for anything, including inside your own commercial
+    products.
+  - **What you may not do:** offer it, or a substantially similar product built from it, as a competing
+    commercial product or service.
+  - **Each version becomes Apache 2.0** two years after release.
+- **Client SDKs** ([`sdk/python`](sdk/python), [`sdk/typescript`](sdk/typescript)), published as `recallix` on PyPI and
+  npm: [Apache 2.0](sdk/python/LICENSE).
+- **Earlier releases:** versions up to commit `e5fddcd0` (2026-11-24) were released under Apache 2.0 and stay available
+  under it.
+
+"Recallix" and its logo are trademarks of Ayishik Das; see [NOTICE](NOTICE).

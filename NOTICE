@@ -1,0 +1,19 @@
+Recallix
+Copyright 2026 Ayishik Das
+
+Licensing:
+- Everything in this repository is licensed under the Functional Source License, Version 1.1, ALv2 Future
+  License (FSL-1.1-ALv2); see LICENSE. The exceptions are the client SDKs below. Under FSL you may use, copy,
+  modify and self-host Recallix for any purpose except a Competing Use: offering it, or something
+  substantially similar built from it, as a commercial product or service. Each version becomes available
+  under the Apache License 2.0 two years after it is published.
+- The client SDKs in sdk/python and sdk/typescript (published as "recallix" on PyPI and npm) are licensed
+  under the Apache License 2.0; see the LICENSE file in each folder.
+- Versions published up to and including commit e5fddcd0 (2026-11-24) were released under the Apache License
+  2.0, and remain available under it.
+
+"Recallix" and the Recallix logo are trademarks of Ayishik Das. Neither license grants any right to use them,
+except to identify the origin of the software.
+
+When you redistribute this software or derivatives of it, keep this NOTICE file, the LICENSE file and all
+copyright notices.
