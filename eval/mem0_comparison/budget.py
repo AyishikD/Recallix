@@ -33,6 +33,8 @@ def _price(model):
 
 
 class Ledger:
+    _thread_lock = __import__("threading").Lock()   # threads of one process also take turns
+
     def __init__(self, path):
         self.path = path
         if not os.path.exists(path):
@@ -40,17 +42,25 @@ class Ledger:
                 json.dump({"usd": 0.0, "calls": 0, "by_purpose": {}}, f)
 
     def _update(self, fn):
-        with open(self.path, "r+") as f:
+        with self._thread_lock, open(self.path, "r+") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
-            d = json.load(f)
-            out = fn(d)
-            f.seek(0); f.truncate(); json.dump(d, f, indent=1)
-            fcntl.flock(f, fcntl.LOCK_UN)
+            try:
+                d = json.load(f)
+                out = fn(d)
+                f.seek(0); f.truncate(); json.dump(d, f, indent=1)
+                f.flush(); os.fsync(f.fileno())   # written before the lock is released, never after
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)
         return out
 
     def spent(self):
-        with open(self.path) as f:
-            return json.load(f)["usd"]
+        # shared lock: wait while another thread or process is rewriting the ledger (it truncates, then writes)
+        with self._thread_lock, open(self.path) as f:
+            fcntl.flock(f, fcntl.LOCK_SH)
+            try:
+                return json.load(f)["usd"]
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)
 
     def check(self):
         if self.spent() >= STOP_USD:

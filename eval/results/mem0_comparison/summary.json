@@ -1,0 +1,97 @@
+{
+ "date": "2026-11-24",
+ "protocol": "eval/mem0_comparison/PROTOCOL.md",
+ "scope": {
+  "dataset": "LoCoMo test split",
+  "conversations": [
+   "conv-44"
+  ],
+  "messages": 675,
+  "questions": 158,
+  "answerable": 123,
+  "adversarial": 35,
+  "per_category": {
+   "multi-hop": 30,
+   "temporal": 24,
+   "open-domain": 7,
+   "single-hop": 62,
+   "adversarial": 35
+  },
+  "not_judged": [
+   "conv-47"
+  ]
+ },
+ "setup": {
+  "mem0": "mem0ai 2.2.1 (nlp, extras), gpt-4o-mini, text-embedding-3-small",
+  "recallix": "as shipped 2026-11-24: bge-small embeddings, answer check, date resolution; no LLM",
+  "answer_and_judge": "gpt-4o-mini, temperature 0, identical for both"
+ },
+ "accuracy": {
+  "recallix": {
+   "accuracy_overall": 0.6772,
+   "accuracy_answerable": 0.6098,
+   "adversarial_declined": 0.9143,
+   "by_category": {
+    "multi-hop": 0.4333,
+    "temporal": 0.5417,
+    "open-domain": 0.0,
+    "single-hop": 0.7903,
+    "adversarial": 0.9143
+   }
+  },
+  "mem0": {
+   "accuracy_overall": 0.6646,
+   "accuracy_answerable": 0.5691,
+   "adversarial_declined": 1.0,
+   "by_category": {
+    "multi-hop": 0.5333,
+    "temporal": 0.4167,
+    "open-domain": 0.0,
+    "single-hop": 0.7097,
+    "adversarial": 1.0
+   }
+  }
+ },
+ "significance": {
+  "all": {
+   "only_recallix_right": 22,
+   "only_mem0_right": 20,
+   "p": 0.878
+  },
+  "answerable": {
+   "only_recallix_right": 22,
+   "only_mem0_right": 17,
+   "p": 0.522
+  }
+ },
+ "store": {
+  "recallix": {
+   "llm_calls": 0,
+   "usd": 0.0,
+   "ms_p50": 12.1,
+   "ms_p95": 20.4
+  },
+  "mem0": {
+   "llm_calls": 3134,
+   "usd": 1.25,
+   "ms_p50": 2488.9,
+   "ms_p95": 3806.9
+  }
+ },
+ "recall_ms": {
+  "recallix": {
+   "p50": 142.0,
+   "p95": 197.3
+  },
+  "mem0": {
+   "p50": 705.9,
+   "p95": 830.1
+  }
+ },
+ "notes": [
+  "Recallix timed in-process on an Apple M4; Mem0 times include OpenAI network calls.",
+  "Mem0 store cost is estimated from the API's token usage at list prices plus 10%.",
+  "A second conversation (conv-47) was stopped at 80 of 689 messages to stay under a $3 budget."
+ ],
+ "openai_spend_total_usd": 1.33
+}

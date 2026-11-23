@@ -5,7 +5,11 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CountUp, DataTable, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
 import { ClosingCTA, MemoryField } from "@/components/site/story";
-import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, ms, pct, results } from "@/lib/results";
+import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, mem0Comparison, ms, pct, results } from "@/lib/results";
+
+const MEM0 = mem0Comparison;
+const usd = (x: number) => `$${x.toFixed(2)}`;
+const n = (x: number) => Math.round(x).toLocaleString("en-US");
 
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
@@ -90,6 +94,51 @@ export default function BenchmarkPage() {
                     </p>
                 </Section>
             )}
+
+            {/* Head-to-head with Mem0: every number from eval/results/mem0_comparison/summary.json */}
+            <Section tone="cloud" id="mem0">
+                <Reveal>
+                    <Eyebrow tone="muted">Head to head</Eyebrow>
+                    <Headline className="max-w-[760px]">Recallix vs Mem0, same questions.</Headline>
+                    <Lede className="mt-5 max-w-[680px]">
+                        Both systems stored the same held-out LoCoMo conversation ({n(MEM0.scope.messages)} messages) and answered the
+                        same {MEM0.scope.questions} questions. One model wrote every final answer and one judge marked them, so only the
+                        memory layer differs. The protocol was written before the run.
+                    </Lede>
+                </Reveal>
+                <Reveal from="right" className="mt-10">
+                    <DataTable head={["", "Recallix", "Mem0"]} rows={[
+                        ["Accuracy, all questions", pct(MEM0.accuracy.recallix.accuracy_overall, 1), pct(MEM0.accuracy.mem0.accuracy_overall, 1)],
+                        ["Accuracy, answerable questions", pct(MEM0.accuracy.recallix.accuracy_answerable, 1), pct(MEM0.accuracy.mem0.accuracy_answerable, 1)],
+                        ["Trick questions declined", pct(MEM0.accuracy.recallix.adversarial_declined, 1), pct(MEM0.accuracy.mem0.adversarial_declined, 1)],
+                        ...["single-hop", "temporal", "multi-hop"].map(c => [`Accuracy, ${c} (${MEM0.scope.per_category[c]} questions)`,
+                            pct(MEM0.accuracy.recallix.by_category[c], 1), pct(MEM0.accuracy.mem0.by_category[c], 1)]),
+                        ["LLM calls to store the conversation", n(MEM0.store.recallix.llm_calls), n(MEM0.store.mem0.llm_calls)],
+                        ["Cost to store the conversation", usd(MEM0.store.recallix.usd), usd(MEM0.store.mem0.usd)],
+                        ["Store one message, median", `${n(MEM0.store.recallix.ms_p50)} ms`, `${n(MEM0.store.mem0.ms_p50)} ms`],
+                        ["Answer one question, median", `${n(MEM0.recall_ms.recallix.p50)} ms`, `${n(MEM0.recall_ms.mem0.p50)} ms`],
+                    ]} />
+                </Reveal>
+                <div className="mt-6 max-w-[760px] space-y-3 text-[14px] text-ink-2">
+                    <p>
+                        <strong className="text-ink">Accuracy is a statistical tie.</strong> Recallix alone was right on{" "}
+                        {MEM0.significance.all.only_recallix_right} questions, Mem0 alone on {MEM0.significance.all.only_mem0_right}{" "}
+                        (exact McNemar p = {MEM0.significance.all.p.toFixed(2)}). No per-category difference is significant at this sample
+                        size. Mem0 is stronger on multi-hop questions; Recallix on single facts and dates.
+                    </p>
+                    <p>
+                        <strong className="text-ink">Cost and speed are not close.</strong> Recallix stores without calling an LLM; Mem0
+                        made {n(MEM0.store.mem0.llm_calls)} model calls to store one conversation.
+                    </p>
+                    <p className="text-ink-3">
+                        One conversation, so the error bars are wide. Mem0: {MEM0.setup.mem0}. Recallix: {MEM0.setup.recallix}. Answers and
+                        judging: {MEM0.setup.answer_and_judge}. {MEM0.notes.join(" ")}{" "}
+                        <a className="underline" href="https://github.com/AyishikD/Recallix/blob/main/eval/mem0_comparison/PROTOCOL.md">Protocol</a>
+                        {" · "}
+                        <a className="underline" href="https://github.com/AyishikD/Recallix/blob/main/eval/results/mem0_comparison/RESULTS.md">Results and every answer</a>
+                    </p>
+                </div>
+            </Section>
 
             <Section tone="night">
                 <Reveal>

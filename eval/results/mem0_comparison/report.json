@@ -1,0 +1,70 @@
+{
+ "convs": [
+  "conv-44"
+ ],
+ "not_judged_mem0_incomplete": [
+  "conv-47"
+ ],
+ "complete": true,
+ "stopped": null,
+ "systems": {
+  "recallix": {
+   "questions": 158,
+   "accuracy_overall": 0.6772,
+   "accuracy_answerable": 0.6098,
+   "adversarial_declined": 0.9143,
+   "answerable_said_idk": 0.2927,
+   "by_category": {
+    "multi-hop": 0.4333,
+    "temporal": 0.5417,
+    "open-domain": 0.0,
+    "single-hop": 0.7903,
+    "adversarial": 0.9143
+   }
+  },
+  "mem0": {
+   "questions": 158,
+   "accuracy_overall": 0.6646,
+   "accuracy_answerable": 0.5691,
+   "adversarial_declined": 1.0,
+   "answerable_said_idk": 0.2439,
+   "by_category": {
+    "multi-hop": 0.5333,
+    "temporal": 0.4167,
+    "open-domain": 0.0,
+    "single-hop": 0.7097,
+    "adversarial": 1.0
+   }
+  }
+ },
+ "ledger": {
+  "usd": 1.328104,
+  "calls": 4898,
+  "by_purpose": {
+   "mem0-store": {
+    "usd": 1.245703,
+    "calls": 3134,
+    "tokens_in": 7397140,
+    "tokens_out": 54237
+   },
+   "mem0-search": {
+    "usd": 2e-06,
+    "calls": 315,
+    "tokens_in": 2455,
+    "tokens_out": 0
+   },
+   "answer": {
+    "usd": 0.052596,
+    "calls": 906,
+    "tokens_in": 300160,
+    "tokens_out": 4648
+   },
+   "judge": {
+    "usd": 0.029802,
+    "calls": 543,
+    "tokens_in": 168738,
+    "tokens_out": 2957
+   }
+  }
+ }
+}

@@ -66,3 +66,46 @@ On the same conversations and questions, how do Recallix and Mem0 compare on:
 - Each system is run once.
 - No prompt, threshold or setting is changed after seeing results.
 - Results are published whichever way they fall, including categories where Mem0 is better.
+
+## Amendment 1 (2026-11-24, before any run)
+
+Corrections from reading mem0ai 2.2.1's source, plus one Recallix change measured on dev data only:
+
+- **Dates for Mem0:** Mem0's open-source `add()` rejects `timestamp` ("Platform-only temporal parameter. Not
+  supported in OSS"). Mem0 therefore gets each message's date only inside the text (`[session date] Speaker:
+  message`), the same text Recallix gets.
+- **Dates for Recallix:** Recallix also receives each message's session time as its `timestamp`, which its API
+  accepts, plus one second per turn to keep order.
+  - Recallix has resolved relative dates since 2026-11-24 (`memory.resolve_dates`, on by default).
+  - Measured on LoCoMo **dev** only (eval/results/date_resolution/).
+  - The answer passed to the answer model is each memory's `content_resolved` when present, else `content`:
+    what Recallix returns to any caller.
+- **Mem0 search:** `m.search(question, filters={"user_id": conv}, top_k=10)`, which is the 2.2.1 signature
+  (`limit` is not a parameter). The default threshold of 0.1 is kept.
+
+## Amendment 2: calibration and scope (2026-11-24, before the main run)
+
+- **Calibration** (conv-44, first 40 messages, Mem0 storing): $0.057, 111 OpenAI calls, ~8,400 input tokens per
+  message, median 2.2 s per `add()`, 0 errors. Mem0's prompts grow with the number of stored memories, so later
+  messages cost more.
+- **Scope** under the $2.60 projection rule: the first **2** test conversations (conv-44, conv-47), with 1,364 messages
+  and 348 questions (273 answerable, 75 adversarial). The owner kept the $3 cap (not raised).
+- **Mem0 install:** `mem0ai[nlp,extras]` (spaCy and fastembed: local, no API cost). Without them Mem0 warns that its
+  BM25 keyword search and lemmatisation are disabled, which would handicap it.
+- **The calibration's $0.057 counts toward the cap.** The main run stores into fresh storage.
+
+## Amendment 3: aborted first start (2026-11-24)
+- **What happened:** the first main-run start was stopped after about 2 minutes, with no results looked at. The
+  Recallix side's offline setting (`HF_HUB_OFFLINE=1`) had leaked into the Mem0 processes, so Mem0 could not load its
+  BM25 keyword-search model and would have run handicapped.
+- **Cost:** about $0.07 was spent and counts toward the cap.
+- **Fix:** the restart uses fresh storage, with the offline setting applied to the Recallix process only. Mem0 was
+  verified to load BM25 first.
+
+## Amendment 4: cost overrun on conv-47 (2026-11-24, during storage, before any answers)
+- **Cost per message:** Mem0 cost more than the calibration showed (about $0.0019 and rising, against $0.0014),
+  because its prompts grow with stored memories. Storing both conversations would have reached the $2.85 stop
+  with nothing left for answering.
+- **conv-47:** stopped after 80 of 689 messages. Its storage is saved and can be resumed.
+- **Judging scope:** only conversations both systems fully completed are judged, so Recallix is never scored on
+  questions Mem0 did not get.
