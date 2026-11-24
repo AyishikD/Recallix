@@ -62,6 +62,10 @@ def main():
     rx = json.load(open(Path(args.out) / "recallix.json"))
     systems = {"recallix": {c: rx[c]["search"] for c in convs},
                "mem0": {c: json.load(open(Path(args.out) / f"mem0_{c}.json"))["search"] for c in convs}}
+    deep_path = Path(args.out) / "recallix_deep.json"   # optional third system: Recallix with deep recall
+    if deep_path.exists():
+        rxd = json.load(open(deep_path))
+        systems["recallix_deep"] = {c: rxd[c]["search"] for c in convs}
     ans_path = Path(args.out) / "answers.json"
     answers = json.load(open(ans_path)) if ans_path.exists() else {}
 

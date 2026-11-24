@@ -109,3 +109,15 @@ Corrections from reading mem0ai 2.2.1's source, plus one Recallix change measure
 - **conv-47:** stopped after 80 of 689 messages. Its storage is saved and can be resumed.
 - **Judging scope:** only conversations both systems fully completed are judged, so Recallix is never scored on
   questions Mem0 did not get.
+
+## Amendment 5: conv-47 with the current Recallix and deep recall (2026-11-24, before any conv-47 answers)
+- **Why:** conv-44 was inspected question by question while designing the 2026-11-24 retrieval fixes, so it is
+  development data now. conv-47 was never inspected; it is the held-out comparison.
+- **Recallix:** the version shipped on 2026-11-24 evening (second pass, non-statement filter, resolved dates),
+  default settings (`keep_on_decline` off). A second Recallix system, `recallix_deep`, recalls every question with
+  `deep=True`. Each variant stores its own fresh copy of the conversation (a recall reinforces what it returns).
+- **Mem0:** unchanged setup, resumed from its saved conv-47 storage (80 of 689 messages).
+- **Answering and judging:** unchanged (gpt-4o-mini, same prompts, same rules for all three systems; a decline
+  answers "I don't know").
+- **Budget:** unchanged cap and ledger; Mem0's storage runs first, and answering starts only if the remaining
+  budget covers it.
