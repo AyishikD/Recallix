@@ -5,7 +5,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CountUp, DataTable, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
 import { ClosingCTA, MemoryField } from "@/components/site/story";
-import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, mem0Comparison, ms, pct, perMillion, results, writeSpeedup } from "@/lib/results";
+import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, longMemEvalDeep, mem0Comparison, ms, pct, perMillion, results, writeSpeedup } from "@/lib/results";
 
 const MEM0 = mem0Comparison;
 const usd = (x: number) => `$${x.toFixed(2)}`;
@@ -56,8 +56,9 @@ export default function BenchmarkPage() {
                         <Eyebrow>Fresh, held-out test</Eyebrow>
                         <Headline>LongMemEval.</Headline>
                         <Lede className="mt-5">
-                            {longMemEval.questions} questions over {longMemEval.turns.toLocaleString()} chat turns, run once after every design
-                            decision was frozen. Scored on whether the turns containing the answer are retrieved — no LLM judge.
+                            {longMemEval.questions} questions over {longMemEval.turns.toLocaleString()} chat turns. Never used to fit or choose
+                            anything; each run uses a configuration fixed beforehand (earlier runs stay in the repository). Scored on whether
+                            the turns containing the answer are retrieved — no LLM judge.
                         </Lede>
                     </Reveal>
                     <div className="mt-12 grid gap-5 md:grid-cols-2">
@@ -68,8 +69,11 @@ export default function BenchmarkPage() {
                     </div>
                     <Reveal className="mt-8">
                         <DataTable head={["System", "recall@5", "recall@10", "hit@10"]}
-                            rows={Object.entries(longMemEval.systems).map(([name, r]) => [SYSTEM_LABEL[name] ?? name,
-                                pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)])} />
+                            rows={[...Object.entries(longMemEval.systems).map(([name, r]) => [SYSTEM_LABEL[name] ?? name,
+                                pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)]),
+                                ...(longMemEvalDeep ? [["Recallix, deep recall (served)",
+                                    pct(longMemEvalDeep.systems.recallix.overall["recall@5"], 1), pct(longMemEvalDeep.systems.recallix.overall["recall@10"], 1),
+                                    pct(longMemEvalDeep.systems.recallix.overall["hit@10"], 1)]] : [])]} />
                     </Reveal>
                 </Section>
             )}

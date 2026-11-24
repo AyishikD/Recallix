@@ -11,11 +11,13 @@ import { largestClustered, ms, pct, results } from "@/lib/results";
 const LAYERS = [
     {
         name: "Memory logic", lang: "Python",
-        summary: "Store and recall pipelines built from rules, embeddings and small fitted models. No LLM anywhere in the loop.",
+        summary: "Store and recall pipelines built from rules, embeddings and small fitted models. No LLM anywhere in the loop: the only neural models are small encoders that score text (embeddings, the answer check, the deep-recall re-ranker), run locally on CPU.",
         parts: [
             ["RecallEngine", "Full-text, entity and vector candidates, ranked by a learned logistic model, then answer-checked."],
             ["TruthEngine", "One current value per fact: newer values supersede, “X is not V” removes V only."],
             ["AnswerChecker", "Local SQuAD 2.0 reader. Decides whether any returned memory actually answers."],
+            ["Second pass", "Refills the places after the first five with a second search and the messages around the best result."],
+            ["Deep recall", "Optional, per request: a local cross-encoder re-reads 50 candidates with the question. Slower; better when the answer is spread over several memories."],
             ["Importance", "1 + 9·σ(w·x) over novelty, information content, specificity and cue words."],
         ],
     },

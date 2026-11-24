@@ -38,6 +38,7 @@ export interface SystemScores {
 }
 
 export interface LongMemEvalRun {
+    file?: string; deep_recall?: boolean; stored_in_earlier_run?: boolean;
     questions: number; turns: number; embedder: string; engine: string; answer_check?: string;
     systems: Record<string, SystemScores>;
     abstention: { unanswerable_declined: number; answerable_wrongly_declined: number; n_unanswerable: number;
@@ -45,7 +46,7 @@ export interface LongMemEvalRun {
 }
 
 export interface LoCoMoRun {
-    split: string; conversations: number; turns: number; questions: number; embedder: string; engine: string;
+    file?: string; split: string; conversations: number; turns: number; questions: number; embedder: string; engine: string;
     systems: Record<string, SystemScores>;
     abstention: { adversarial_declined: number; answerable_wrongly_declined: number; n_adversarial: number; n_answerable: number };
 }
@@ -63,9 +64,19 @@ export interface Summary {
 export const results = summary as unknown as Summary;
 export const hnsw: HnswResult[] = results.hnsw || [];
 export const hnswReference: HnswResult[] = results.hnsw_reference || [];
-export const evalRuns: EvalRun[] = Object.values(results.eval || {});
-export const longMemEval: LongMemEvalRun | undefined = (results.longmemeval || [])[0];
-export const locomoRuns: LoCoMoRun[] = results.locomo || [];
+/** The embedding model the shipped fits belong to (config.yaml models.embedding); older runs stay in eval/results. */
+export const CURRENT_EMBEDDER = "st:BAAI/bge-small-en-v1.5";
+const current = (e: string) => e === CURRENT_EMBEDDER || e === "hash";
+
+/** Our own splits (dev, test) with the current embedder, plus the hash stand-in used in CI. */
+export const evalRuns: EvalRun[] = Object.values(results.eval || {})
+    .filter(r => ["dev", "test"].includes(r.split) && current(r.embedder));
+const lmeRuns: LongMemEvalRun[] = results.longmemeval || [];
+/** LongMemEval as shipped (default recall), and with deep recall on every question. */
+export const longMemEval: LongMemEvalRun | undefined =
+    lmeRuns.find(r => r.file === "longmemeval_s_bge-small-en-v1.5") ?? lmeRuns[lmeRuns.length - 1];
+export const longMemEvalDeep: LongMemEvalRun | undefined = lmeRuns.find(r => r.file === "longmemeval_s_bge-small-en-v1.5_deep");
+export const locomoRuns: LoCoMoRun[] = (results.locomo || []).filter(r => r.embedder === CURRENT_EMBEDDER);
 
 /* Head-to-head with Mem0 (eval/mem0_comparison, summarize.py). */
 export interface Mem0Comparison {

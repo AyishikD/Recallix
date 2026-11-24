@@ -209,7 +209,7 @@ export default function HomePage() {
                     </Tile></Reveal>
                     <Reveal from="right" delay={0.2}><Tile>
                         <Stat value="0" label="LLM calls to store or recall"
-                            sub="Facts, importance and ranking are rules and small fitted models. You only need an embedding model." />
+                            sub="No generative model anywhere. Facts, importance and ranking are rules and small fitted models; small encoder models (embeddings, an answer check, an optional re-ranker) run on your own CPU." />
                     </Tile></Reveal>
                 </div>
                 <Reveal delay={0.1}>

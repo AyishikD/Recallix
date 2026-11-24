@@ -95,6 +95,13 @@ mem.used(out)
 `status` is `CONSISTENT` (answer found), `ABSTAINED` (none of the matching memories
 answers the question — Recallix returns nothing rather than a guess) or `NO_MATCH`.
 
+For questions whose answer is spread over several things the user said ("what activities has
+she done with her kids?"), ask for a deep recall: `mem.recall(question, deep=True)`. A small
+local re-ranker (no LLM) then re-reads 50 candidates together with the question. It finds
+more of the evidence for such questions (measurements: `eval/results/retrieval_fixes/`) and
+costs about half a second per recall on a laptop CPU. `recall.rerank.enabled: true` makes every
+recall deep.
+
 The "does it answer?" decision is made by a small local reading-comprehension model
 (SQuAD 2.0, no LLM) when `requirements-local.txt` is installed
 (`recall.answer_check` in config.yaml; first use downloads the model, ~500 MB).

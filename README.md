@@ -8,47 +8,76 @@ later by meaning, keep facts up to date, and say "I don't know" instead of guess
 *50-second demo, narrated (click to play). Every message, answer and timing in it comes from a real run.*
 
 * **No LLM in the memory pipeline.** Fact extraction, schema tagging, importance, ranking,
-  reflections and predictions are rules, embeddings and small fitted models. Recallix needs
-  only an embedding model (Ollama, in-process sentence-transformers, or an API).
+  reflections and predictions are rules, embeddings and small fitted models. Nothing generates
+  text. Three small encoder models run locally on CPU: the embedding model (bge-small, 33M
+  parameters; or Ollama / an API), the answer check (a SQuAD 2.0 reader, 125M) and, for deep
+  recall, a re-ranker (MiniLM cross-encoder, 22M). No per-token bill, no API key.
 * **Per-user HNSW vector engine in C++** (NEON / AVX2), rebuilt from SQLite on start, so
   the engine can restart at any time without losing anything.
 * **Learned, explainable recall.** Each result carries its relevance and the feature
-  breakdown behind it. Weights and the abstention threshold are fitted on labelled data and
-  can be refit from your users' feedback.
+  breakdown behind it, plus a top-level `answer` (the span a local reader found). Weights
+  and the abstention threshold are fitted on labelled data, and the ranker refits itself
+  nightly from your users' feedback (`mem.used(out)`), keeping a new fit only if it ranks
+  better on feedback it was not fitted on.
+* **Deep recall for spread-out answers.** `mem.recall(question, deep=True)` re-reads 50
+  candidates with a small local re-ranker: slower, but finds more of the evidence when the
+  answer is spread over several memories. Measurements: [`eval/results/retrieval_fixes/`](eval/results/retrieval_fixes/).
 
 ## Measured results
 
-Copied from [`eval/results/RESULTS.md`](eval/results/RESULTS.md) (generated 2026-11-21 on an
+Copied from [`eval/results/RESULTS.md`](eval/results/RESULTS.md) (generated 2026-11-24 on an
 Apple M4; regenerate with the commands in [`eval/README.md`](eval/README.md)). The website's
-Benchmarks page reads the same file.
+Benchmarks page reads the same files. Embeddings: `BAAI/bge-small-en-v1.5`, real engine, no LLM
+anywhere, API cost $0.
 
-**Memory pipeline**: held-out test split, `all-MiniLM-L6-v2` embeddings, real engine:
+**LongMemEval_S** (public benchmark: 500 questions over 246,750 chat turns; never used to fit or
+choose anything, each run uses a configuration fixed beforehand). Share of each question's
+evidence in the top 10:
+
+| recall@10 | overall | multi-session | temporal | knowledge update | single-session user | preference |
+|---|---|---|---|---|---|---|
+| **Recallix ranking** | **0.860** | **0.748** | **0.838** | **0.963** | **0.977** | 0.717 |
+| Recallix, served (default) | 0.727 | 0.559 | 0.622 | 0.928 | 0.953 | 0.744 |
+| Recallix, served (deep recall) | 0.763 | 0.649 | 0.668 | 0.965 | 0.922 | 0.722 |
+| Dense vectors (same embeddings) | 0.798 | 0.737 | 0.674 | 0.903 | 0.898 | **0.828** |
+| BM25 | 0.767 | 0.636 | 0.753 | 0.889 | 0.930 | 0.444 |
+
+The ranking puts 8% more evidence in the top 10 than dense search with the same embeddings.
+What is *served* is lower, because recall declines when its answer check finds no answer: it
+declined 56.7% of the 30 unanswerable questions, but also 16.6% of the 470 answerable ones. The
+answer check's threshold was set on a different dataset and needs calibrating per deployment.
+Earlier runs stay in [`eval/results/`](eval/results/) (`longmemeval_s_*.json`).
+
+**Memory pipeline**: held-out test split, real engine:
 
 | Metric | Result |
 |---|---|
-| Recall hit@1 / hit@3 (answerable questions) | 0.79 / 0.93 |
+| Recall hit@1 / hit@3 (answerable questions) | 0.86 / 0.93 |
 | Unanswerable questions correctly declined | 3/4 (false abstention on answerable: 0.07) |
-| Fact extraction F1 | 0.84 |
+| Fact extraction F1 | 0.93 |
 | Schema accuracy | 0.85 |
 | Importance ROC AUC | 1.00 |
-| Recall / store latency, p50 (incl. embedding) | 8.3 ms / 9.2 ms |
-| Legacy adversarial gauntlet v1–v3 | 4/12 |
+| Recall / store latency, p50 (incl. embedding) | 41.3 ms / 16.1 ms |
+| Legacy adversarial gauntlet v1–v3 | 8/12 |
 | Legacy 500-turn retention, recall@1 | 7/8 |
 
-**LoCoMo** (independent public benchmark: 10 conversations, 5,882 turns, 1,986 questions; never
-used for tuning). It measures how much of each question's labelled evidence is retrieved, with
-no LLM involved:
+The test split has been evaluated several times during development, so treat it as a
+regression check rather than an unseen benchmark.
+
+**LoCoMo** (public benchmark; test split: 5 conversations, 3,122 turns, 987 questions; held out
+from fitting, but evaluated repeatedly during development). Evidence retrieved, no LLM involved:
 
 | recall@10 | overall | multi-hop | temporal | open-domain | single-hop |
 |---|---|---|---|---|---|
-| **Recallix** | **0.591** | **0.317** | **0.643** | **0.342** | **0.690** |
-| Dense vectors (same embeddings) | 0.499 | 0.307 | 0.554 | 0.269 | 0.566 |
-| BM25 | 0.544 | 0.221 | 0.630 | 0.283 | 0.647 |
+| **Recallix** | **0.659** | 0.363 | **0.650** | 0.340 | **0.793** |
+| Dense vectors (same embeddings) | 0.570 | **0.393** | 0.584 | **0.351** | 0.646 |
+| BM25 | 0.527 | 0.208 | 0.543 | 0.293 | 0.651 |
 
-Abstention does **not** transfer to LoCoMo's adversarial questions: Recallix declined only 0.4%
-of them. They ask about topics the conversation did discuss (attributing an event to the wrong
-person), which a retrieval-confidence threshold cannot detect; that needs an answer-level check.
-Recallix also wrongly declined only 0.4% of answerable questions.
+Recallix declined 31.6% of LoCoMo's 209 adversarial questions (they attribute something the
+conversation did discuss to the wrong person) and wrongly declined 9.0% of the 778 answerable
+ones. Multi-hop questions, whose answer is spread over several messages, are the weak spot;
+deep recall (`deep=True`) raises them most. Measurements:
+[`eval/results/retrieval_fixes/`](eval/results/retrieval_fixes/).
 
 The legacy gauntlet and retention benchmarks are the pre-existing ones from this repository.
 Earlier versions of this README reported 10/12 and 75% for them. Those scores depended on
