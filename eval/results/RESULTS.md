@@ -1,6 +1,6 @@
 # Measured results
 
-Generated 2026-11-24 14:30 UTC from commit `010f7cd5 + uncommitted changes` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
+Generated 2026-11-24 15:19 UTC from commit `51b68fec + uncommitted changes` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
 
 ## Memory pipeline (eval harness)
 
@@ -75,6 +75,28 @@ Recallix declined 53.3% of 30 unanswerable questions and wrongly declined 18.3% 
 | system | recall@5 | recall@10 | hit@10 | knowledge-update recall@10 | multi-session recall@10 | single-session-assistant recall@10 | single-session-preference recall@10 | single-session-user recall@10 | temporal-reasoning recall@10 |
 |---|---|---|---|---|---|---|---|---|---|
 | recallix | 0.641 | 0.763 | 0.804 | 0.965 | 0.649 | 0.804 | 0.722 | 0.922 | 0.668 |
+| recallix_ranked | 0.745 | 0.860 | 0.940 | 0.963 | 0.748 | 0.964 | 0.717 | 0.977 | 0.838 |
+| dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
+| bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
+
+Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
+
+## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — results kept on decline (`recall.keep_results_on_decline`) — `longmemeval_s_bge-small-en-v1.5_keep-on-decline.json`
+
+| system | recall@5 | recall@10 | hit@10 | knowledge-update recall@10 | multi-session recall@10 | single-session-assistant recall@10 | single-session-preference recall@10 | single-session-user recall@10 | temporal-reasoning recall@10 |
+|---|---|---|---|---|---|---|---|---|---|
+| recallix | 0.748 | 0.838 | 0.921 | 0.942 | 0.718 | 0.929 | 0.811 | 0.984 | 0.786 |
+| recallix_ranked | 0.745 | 0.860 | 0.940 | 0.963 | 0.748 | 0.964 | 0.717 | 0.977 | 0.838 |
+| dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
+| bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
+
+Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
+
+## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — deep recall — results kept on decline (`recall.keep_results_on_decline`) — `longmemeval_s_bge-small-en-v1.5_keep-on-decline_deep.json`
+
+| system | recall@5 | recall@10 | hit@10 | knowledge-update recall@10 | multi-session recall@10 | single-session-assistant recall@10 | single-session-preference recall@10 | single-session-user recall@10 | temporal-reasoning recall@10 |
+|---|---|---|---|---|---|---|---|---|---|
+| recallix | 0.738 | 0.874 | 0.936 | 0.979 | 0.808 | 0.929 | 0.789 | 0.953 | 0.833 |
 | recallix_ranked | 0.745 | 0.860 | 0.940 | 0.963 | 0.748 | 0.964 | 0.717 | 0.977 | 0.838 |
 | dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |

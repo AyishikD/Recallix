@@ -111,6 +111,10 @@ python eval/benchmarks/longmemeval.py --data /tmp/lme/longmemeval_s_cleaned.json
     --engine-url http://127.0.0.1:18431 --storage /tmp/lme_store --json eval/results/longmemeval_s_bge-small-en-v1.5.json
 # Storing the 246,750 turns takes ~3.5 h on an M4; --storage keeps them. Recall-only re-runs then take minutes:
 python eval/benchmarks/longmemeval.py ... --storage /tmp/lme_store --reuse [--deep] --json ...
+# The vector-search and BM25 baselines do not depend on Recallix settings and re-embedding them
+# takes ~1 h; copy them from an earlier result file instead (a re-run then takes ~5-8 min):
+python eval/benchmarks/longmemeval.py ... --reuse --baselines-from eval/results/longmemeval_s_bge-small-en-v1.5.json --json ...
+# Try a setting without editing config.yaml: RECALLIX_CONFIG=/path/to/changed-copy.yaml
 ```
 
 ## CI

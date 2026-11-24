@@ -77,6 +77,9 @@ def main():
     ap.add_argument("--reuse", action="store_true",
                     help="recall only, from memories a previous run kept with --storage (store settings must match)")
     ap.add_argument("--deep", action="store_true", help="deep recall (recall.rerank) for every question")
+    ap.add_argument("--baselines-from", default=None,
+                    help="copy the dense and BM25 results from this earlier result file instead of recomputing "
+                         "them (they do not depend on Recallix settings; recomputing takes about an hour)")
     args = ap.parse_args()
     if args.reuse and not args.storage:
         ap.error("--reuse needs --storage")
@@ -148,17 +151,21 @@ def main():
         chk = out["debug"].get("answer_check")
         decision.append((out["debug"].get("top_relevance") or 0.0, chk["best_margin"] if chk else None, unanswerable))
 
-        t0 = time.time()
-        vecs = np.vstack([mm.semantic.embed(t) for t in texts])
-        dense = [keys[i] for i in np.argsort(-(vecs @ mm.semantic.embed(q)))[:kmax]]
-        timing["dense_s"] += time.time() - t0
-        t0 = time.time()
-        lexical = [keys[i] for i in BM25(texts).top(q, kmax)]
-        timing["bm25_s"] += time.time() - t0
+        dense = lexical = None
+        if not args.baselines_from:
+            t0 = time.time()
+            vecs = np.vstack([mm.semantic.embed(t) for t in texts])
+            dense = [keys[i] for i in np.argsort(-(vecs @ mm.semantic.embed(q)))[:kmax]]
+            timing["dense_s"] += time.time() - t0
+            t0 = time.time()
+            lexical = [keys[i] for i in BM25(texts).top(q, kmax)]
+            timing["bm25_s"] += time.time() - t0
 
         (abstain["unanswerable"] if unanswerable else abstain["answerable"]).append(declined)
         if not unanswerable and evidence:
             for name, ids in (("recallix", served), ("recallix_ranked", ranked), ("dense", dense), ("bm25", lexical)):
+                if ids is None:
+                    continue
                 for metric, v in score(ids, evidence, ks).items():
                     per_type[name][item["question_type"]][metric].append(v)
         if (qi + 1) % 25 == 0:
@@ -171,9 +178,16 @@ def main():
                "answer_check": (out["debug"].get("answer_check") or {}).get("model"),
                "ranker_model": __import__("backend.brain.memory_ranking.ranker", fromlist=["Ranker"]).Ranker.model().get("source"),
                "deep_recall": bool(args.deep), "stored_in_earlier_run": bool(args.reuse),
-               "recall_settings": {k: settings_get(f"recall.{k}") for k in ("second_pass", "rerank", "answer_check")},
+               "recall_settings": {k: settings_get(f"recall.{k}") for k in ("second_pass", "rerank", "answer_check", "keep_results_on_decline")},
                "systems": {}, "timing_seconds": {k: round(v, 1) for k, v in timing.items()}, "llm_calls": 0, "api_cost_usd": 0.0}
+    if args.baselines_from:
+        earlier = json.load(open(args.baselines_from))
+        assert earlier["questions"] == len(data) and earlier["embedder"] == args.embedder, "baselines from a different run"
+        results["baselines_from"] = Path(args.baselines_from).name
     for name in systems:
+        if args.baselines_from and name in ("dense", "bm25"):
+            results["systems"][name] = earlier["systems"][name]
+            continue
         overall = defaultdict(list)
         res = {}
         for qt, metrics in sorted(per_type[name].items()):

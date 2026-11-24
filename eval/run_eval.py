@@ -317,17 +317,21 @@ def eval_retrieval(env, split, verbose):
     recs = retrieval_queries(env, split)
     ans = [r for r in recs if r["q"].get("expect") is not None]
     unans = [r for r in recs if r["q"].get("expect") is None]
-    hit1 = sum(bool(r["contents"]) and r["q"]["expect"].lower() in r["contents"][0].lower() for r in ans)
-    hit3 = sum(any(r["q"]["expect"].lower() in c.lower() for c in r["contents"][:3]) for r in ans)
-    stale = sum(bool(r["q"].get("not_top")) and bool(r["contents"]) and r["q"]["not_top"].lower() in r["contents"][0].lower()
+    # A decline is the status, not an empty list: with recall.keep_results_on_decline the results come
+    # back marked ABSTAINED. Declined results count as not served (identical when the setting is off).
+    def served(r):
+        return [] if r["status"] in ("ABSTAINED", "NO_MATCH") else r["contents"]
+    hit1 = sum(bool(served(r)) and r["q"]["expect"].lower() in served(r)[0].lower() for r in ans)
+    hit3 = sum(any(r["q"]["expect"].lower() in c.lower() for c in served(r)[:3]) for r in ans)
+    stale = sum(bool(r["q"].get("not_top")) and bool(served(r)) and r["q"]["not_top"].lower() in served(r)[0].lower()
                 for r in ans)
-    false_abstain = sum(not r["contents"] for r in ans)
+    false_abstain = sum(not served(r) for r in ans)
 
     def answer_ok(r):  # the recall's best answer names the expected fact (expect is a short phrase)
         a, e = (r.get("answer") or "").lower().strip(" .,!?"), r["q"]["expect"].lower()
         return bool(a) and (e in a or (len(a) >= 3 and a in e))
     answer_match = sum(answer_ok(r) for r in ans)
-    abstained = sum(not r["contents"] for r in unans)
+    abstained = sum(not served(r) for r in unans)
     res = {"hit@1": hit1 / len(ans), "hit@3": hit3 / len(ans), "stale_top": stale, "answer_match": answer_match / len(ans),
            "false_abstain_rate": false_abstain / len(ans),
            "abstain_accuracy": (abstained / len(unans)) if unans else float("nan"),
@@ -397,7 +401,7 @@ def eval_legacy(env, verbose):
                 continue
             with quiet():
                 out = mm.retrieve(user, step["query"], limit=5)
-            contents = [m["content"] for m in out["memories"]]
+            contents = [] if out["status"] in ("ABSTAINED", "NO_MATCH") else [m["content"] for m in out["memories"]]
             exp, mode = step["expect"], step["mode"]
             ok = (not contents) if mode == "abstain" else \
                 any(exp.lower() in c.lower() for c in contents) if mode == "any" else \
@@ -419,7 +423,7 @@ def eval_legacy(env, verbose):
     for turn, (_, query, expect) in cfg["important"].items():
         with quiet():
             out = mm.retrieve(user, query, limit=5)
-        top = out["memories"][0]["content"] if out["memories"] else ""
+        top = out["memories"][0]["content"] if out["memories"] and out["status"] not in ("ABSTAINED", "NO_MATCH") else ""
         ok = expect.lower() in top.lower()
         hits += ok
         lines.append(f"   {'PASS' if ok else 'FAIL'} [retention t={turn}] {query!r} -> {top or '(abstained)'}")

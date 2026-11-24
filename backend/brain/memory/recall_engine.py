@@ -378,6 +378,9 @@ class RecallEngine:
         # One abstention mechanism at a time: the answer-level check reads the served
         # memories when it is available; otherwise the relevance threshold decides.
         answer_check = None
+        # recall.keep_results_on_decline: a decline still returns the ranked results (status ABSTAINED,
+        # answer None), so a caller can show them as low-confidence instead of nothing
+        keep_on_decline = bool(settings.get("recall.keep_results_on_decline", False))
         checker = AnswerChecker.from_config()
         outsider = self._unknown_person(asked, all_scored)
         if outsider:
@@ -414,14 +417,14 @@ class RecallEngine:
                 # result says the answer still has to be worked out.
                 status, final, answer_check["needs_calculation"] = "CONSISTENT", resolved[:top_k], True
             if status == "ABSTAINED":
-                final = []
+                final = resolved[:top_k] if keep_on_decline else []
             elif (settings.get("recall.answer_check", {}) or {}).get("rerank", False):
                 # memories in which the reader found an answer first (stable: keeps relevance order within)
                 final = sorted(final, key=lambda m: not m.get("_answer_ok"))
             if status == "CONSISTENT" and not answer_check.get("inferred_from"):
                 final = resolve_answer_conflicts(final, asked)  # recall.answer_conflicts: later answer first
         elif resolved[0]["relevance"] < threshold:
-            status, final = "ABSTAINED", []
+            status, final = "ABSTAINED", (resolved[:top_k] if keep_on_decline else [])
         else:
             status, final = "CONSISTENT", resolved[:top_k]
 
@@ -437,7 +440,7 @@ class RecallEngine:
         if answer_check is not None:
             self.recall_log.log_answer_check(recall_id, user_id, answer_check["model"], answer_check["best_margin"],
                                              [m["id"] for m in read])
-        self._reinforce(final)
+        self._reinforce(final if status == "CONSISTENT" else [])  # kept-on-decline results were not used
 
         memories = []
         for m in final:

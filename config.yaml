@@ -304,6 +304,9 @@ recall:
     min_similarity: 0.9
   # Runtime override of the learned relevance threshold (null = the fitted ranker model's threshold).
   abstain_threshold: null
+  # A decline (status ABSTAINED) still returns the ranked results, marked low-confidence (answer null),
+  # instead of none. The decision itself is unchanged; callers choose whether to use them.
+  keep_results_on_decline: false
 
 
 # ============================================================================

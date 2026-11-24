@@ -36,9 +36,11 @@ evidence in the top 10:
 
 | recall@10 | overall | multi-session | temporal | knowledge update | single-session user | preference |
 |---|---|---|---|---|---|---|
-| **Recallix ranking** | **0.860** | **0.748** | **0.838** | **0.963** | **0.977** | 0.717 |
+| Recallix ranking | 0.860 | 0.748 | **0.838** | 0.963 | 0.977 | 0.717 |
 | Recallix, served (default) | 0.727 | 0.559 | 0.622 | 0.928 | 0.953 | 0.744 |
 | Recallix, served (deep recall) | 0.763 | 0.649 | 0.668 | 0.965 | 0.922 | 0.722 |
+| Recallix, served, declines keep their results* | 0.838 | 0.718 | 0.786 | 0.942 | **0.984** | 0.811 |
+| Recallix, served, deep recall + declines keep their results* | **0.874** | **0.808** | 0.833 | **0.979** | 0.953 | 0.789 |
 | Dense vectors (same embeddings) | 0.798 | 0.737 | 0.674 | 0.903 | 0.898 | **0.828** |
 | BM25 | 0.767 | 0.636 | 0.753 | 0.889 | 0.930 | 0.444 |
 
@@ -46,6 +48,10 @@ The ranking puts 8% more evidence in the top 10 than dense search with the same 
 What is *served* is lower, because recall declines when its answer check finds no answer: it
 declined 56.7% of the 30 unanswerable questions, but also 16.6% of the 470 answerable ones. The
 answer check's threshold was set on a different dataset and needs calibrating per deployment.
+
+\* Optional setting `recall.keep_results_on_decline` (off by default): recall declines exactly as
+often, but a decline still returns its results, marked `ABSTAINED` with no answer, and the agent
+decides whether to use them. These rows count those low-confidence results as served.
 Earlier runs stay in [`eval/results/`](eval/results/) (`longmemeval_s_*.json`).
 
 **Memory pipeline**: held-out test split, real engine:

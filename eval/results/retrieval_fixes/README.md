@@ -89,3 +89,28 @@ on every question; mean recall 207 → 279 ms (every question deep: 494 ms; Appl
 * **Calculation-question pattern, wide version** (`how many|much|long|often ...`): let a trap
   through ("How many total employees work at the rescue shelter?"); narrowed to counting and
   time-between questions.
+
+## Keeping the results on a decline (LongMemEval, evening)
+
+`recall.keep_results_on_decline` (off by default): when recall declines, it still returns the
+ranked results, marked `ABSTAINED` with `answer: null`. The decision is unchanged, so declines are
+identical (56.7% of unanswerable, 16.6% of answerable), and so are our dev and test splits
+(first-answer accuracy, answers, declines). `eval/run_eval.py` now reads a decline from `status`
+rather than from an empty result list (identical numbers with the setting off).
+
+LongMemEval_S, evidence recall@10 of what recall returns (files
+`../longmemeval_s_bge-small-en-v1.5_keep-on-decline*.json`; baselines copied from the default run):
+
+| Setup | overall | multi-session | temporal | time per question |
+|---|---|---|---|---|
+| Default | 0.727 | 0.559 | 0.622 | 0.56 s |
+| Results kept on decline | 0.838 | 0.718 | 0.786 | 0.44 s |
+| Results kept on decline + deep recall | **0.874** | **0.808** | **0.833** | 0.91 s |
+| Dense vectors (same embeddings) | 0.798 | 0.737 | 0.674 | |
+
+Rejected: also running the second pass and deep re-ranking on the kept results of a decline.
+0.831 without deep recall (vs 0.838), 0.878 with it (vs 0.874, about 2 of 500 questions) at 18%
+more time.
+
+The setting stays off by default: an agent that ignores `status` would answer from low-confidence
+results, and a wrong answer is worse than a refusal.

@@ -76,6 +76,9 @@ const lmeRuns: LongMemEvalRun[] = results.longmemeval || [];
 export const longMemEval: LongMemEvalRun | undefined =
     lmeRuns.find(r => r.file === "longmemeval_s_bge-small-en-v1.5") ?? lmeRuns[lmeRuns.length - 1];
 export const longMemEvalDeep: LongMemEvalRun | undefined = lmeRuns.find(r => r.file === "longmemeval_s_bge-small-en-v1.5_deep");
+/** With recall.keep_results_on_decline (off by default): a decline still returns its results, marked low-confidence. */
+export const longMemEvalKeep: LongMemEvalRun | undefined = lmeRuns.find(r => r.file === "longmemeval_s_bge-small-en-v1.5_keep-on-decline");
+export const longMemEvalKeepDeep: LongMemEvalRun | undefined = lmeRuns.find(r => r.file === "longmemeval_s_bge-small-en-v1.5_keep-on-decline_deep");
 export const locomoRuns: LoCoMoRun[] = (results.locomo || []).filter(r => r.embedder === CURRENT_EMBEDDER);
 
 /* Head-to-head with Mem0 (eval/mem0_comparison, summarize.py). */

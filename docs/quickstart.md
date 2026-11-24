@@ -94,6 +94,9 @@ mem.used(out)
 
 `status` is `CONSISTENT` (answer found), `ABSTAINED` (none of the matching memories
 answers the question — Recallix returns nothing rather than a guess) or `NO_MATCH`.
+With `recall.keep_results_on_decline: true` (off by default), a decline still returns its
+results, so your agent can show them as low-confidence; `status` stays `ABSTAINED` and `answer`
+is empty, so check `status` before treating them as an answer.
 
 For questions whose answer is spread over several things the user said ("what activities has
 she done with her kids?"), ask for a deep recall: `mem.recall(question, deep=True)`. A small

@@ -37,6 +37,20 @@ def test_abstains_when_no_served_memory_answers(client, api_keys, monkeypatch):
     assert out["status"] == "ABSTAINED" and out["memories"] == []
 
 
+def test_a_decline_keeps_the_results_only_when_configured(client, api_keys, monkeypatch):
+    from backend import settings
+    h = api_keys["alice"]
+    _store(client, h, "Project Heron deadline is April 3.")
+    _store(client, h, "Project Egret deadline is July 19.")
+    monkeypatch.setattr(answer_check.AnswerChecker, "from_config", classmethod(lambda cls: FakeChecker("October")))
+    real = settings.get
+    monkeypatch.setattr(settings, "get", lambda path, default=None:
+                        True if path == "recall.keep_results_on_decline" else real(path, default))
+    out = client.post("/memory/recall", json={"query": "When is Project Heron due?"}, headers=h).json()["data"]
+    assert out["status"] == "ABSTAINED" and out["answer"] is None   # the decision is unchanged
+    assert "Heron" in out["memories"][0]["content"]                 # but the ranked results come back
+
+
 def test_threshold_resolution(monkeypatch, tmp_path):
     """Override > value fitted for the same model > the model's own boundary (0)."""
     from backend import settings

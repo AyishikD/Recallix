@@ -5,7 +5,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CountUp, DataTable, Eyebrow, Headline, Lede, Reveal, ScrollFade, ScrollWords, ScrollZoom, Section, Stat, Tile } from "@/components/site/ui";
 import { ClosingCTA, MemoryField } from "@/components/site/story";
-import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, longMemEvalDeep, mem0Comparison, ms, pct, perMillion, results, writeSpeedup } from "@/lib/results";
+import { evalRuns, hnsw, hnswReference, largestClustered, locomoRuns, longMemEval, longMemEvalDeep, longMemEvalKeep, longMemEvalKeepDeep, mem0Comparison, ms, pct, perMillion, results, writeSpeedup } from "@/lib/results";
 
 const MEM0 = mem0Comparison;
 const usd = (x: number) => `$${x.toFixed(2)}`;
@@ -71,10 +71,22 @@ export default function BenchmarkPage() {
                         <DataTable head={["System", "recall@5", "recall@10", "hit@10"]}
                             rows={[...Object.entries(longMemEval.systems).map(([name, r]) => [SYSTEM_LABEL[name] ?? name,
                                 pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)]),
-                                ...(longMemEvalDeep ? [["Recallix, deep recall (served)",
-                                    pct(longMemEvalDeep.systems.recallix.overall["recall@5"], 1), pct(longMemEvalDeep.systems.recallix.overall["recall@10"], 1),
-                                    pct(longMemEvalDeep.systems.recallix.overall["hit@10"], 1)]] : [])]} />
+                                ...([["Recallix, deep recall (served)", longMemEvalDeep],
+                                      ["Recallix, declines keep their results*", longMemEvalKeep],
+                                      ["Recallix, deep recall + declines keep their results*", longMemEvalKeepDeep]] as const)
+                                    .filter(([, run]) => run)
+                                    .map(([label, run]) => [label, pct(run!.systems.recallix.overall["recall@5"], 1),
+                                        pct(run!.systems.recallix.overall["recall@10"], 1), pct(run!.systems.recallix.overall["hit@10"], 1)])]} />
                     </Reveal>
+                    {longMemEvalKeep && (
+                        <Reveal className="mt-4">
+                            <p className="text-[13px] text-ink-2 max-w-3xl">
+                                * Optional setting, off by default (<code>recall.keep_results_on_decline</code>). Recall declines exactly as
+                                often, but still returns its results marked <code>ABSTAINED</code> with no answer, so the agent decides
+                                whether to use them. These rows count those low-confidence results as served.
+                            </p>
+                        </Reveal>
+                    )}
                 </Section>
             )}
 
