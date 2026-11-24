@@ -157,12 +157,15 @@ def test_deep_flag_reaches_the_engine_through_the_api(monkeypatch):
     seen = {}
 
     class FakeManager:
-        def retrieve(self, user_id, query, agent_id="default_agent", limit=5, return_candidates=False, deep=None):
-            seen["deep"] = deep
+        def retrieve(self, user_id, query, agent_id="default_agent", limit=5, return_candidates=False, deep=None,
+                     keep_on_decline=None):
+            seen["deep"], seen["keep"] = deep, keep_on_decline
             return {"status": "NO_MATCH", "memories": []}
     monkeypatch.setattr(public_api, "get_memory_manager", lambda: FakeManager())
     public_api.recall_memory(public_api.RecallRequest(query="q", deep=True), auth={"user_id": "u", "role": "user"})
-    assert seen["deep"] is True
+    assert seen["deep"] is True and seen["keep"] is None
+    public_api.recall_memory(public_api.RecallRequest(query="q", keep_on_decline=True), auth={"user_id": "u", "role": "user"})
+    assert seen["keep"] is True
 
 
 def test_spread_out_questions_are_recognised_for_automatic_deep_recall():

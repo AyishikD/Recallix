@@ -320,7 +320,8 @@ class RecallEngine:
         return candidates
 
     # ------------------------------------------------------------------
-    def multi_stage_recall(self, user_id, query, agent_id="default_agent", top_k=5, return_candidates=False, deep=None):
+    def multi_stage_recall(self, user_id, query, agent_id="default_agent", top_k=5, return_candidates=False, deep=None,
+                           keep_on_decline=None):
         """
         deep: True reads the candidates with the re-ranker (recall.rerank: better on questions whose
         answer is spread over several memories, slower); False never; None follows the config.
@@ -378,9 +379,12 @@ class RecallEngine:
         # One abstention mechanism at a time: the answer-level check reads the served
         # memories when it is available; otherwise the relevance threshold decides.
         answer_check = None
-        # recall.keep_results_on_decline: a decline still returns the ranked results (status ABSTAINED,
-        # answer None), so a caller can show them as low-confidence instead of nothing
-        keep_on_decline = bool(settings.get("recall.keep_results_on_decline", False))
+        # keep_on_decline (per request; None = recall.keep_results_on_decline, off by default): a decline
+        # still returns the ranked results (status ABSTAINED, answer None), so a caller that checks the
+        # status can show them as low-confidence instead of nothing
+        if keep_on_decline is None:
+            keep_on_decline = settings.get("recall.keep_results_on_decline", False)
+        keep_on_decline = bool(keep_on_decline)
         checker = AnswerChecker.from_config()
         outsider = self._unknown_person(asked, all_scored)
         if outsider:

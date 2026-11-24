@@ -305,7 +305,9 @@ recall:
   # Runtime override of the learned relevance threshold (null = the fitted ranker model's threshold).
   abstain_threshold: null
   # A decline (status ABSTAINED) still returns the ranked results, marked low-confidence (answer null),
-  # instead of none. The decision itself is unchanged; callers choose whether to use them.
+  # instead of none. The decision itself is unchanged. Per request: keep_on_decline (true/false);
+  # this is the default for requests that omit it. Leave off: callers that ignore `status` would
+  # answer from low-confidence results.
   keep_results_on_decline: false
 
 

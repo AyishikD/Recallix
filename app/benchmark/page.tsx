@@ -81,7 +81,7 @@ export default function BenchmarkPage() {
                     {longMemEvalKeep && (
                         <Reveal className="mt-4">
                             <p className="text-[13px] text-ink-2 max-w-3xl">
-                                * Optional setting, off by default (<code>recall.keep_results_on_decline</code>). Recall declines exactly as
+                                * Per-request option, off unless asked for (<code>keep_on_decline: true</code>). Recall declines exactly as
                                 often, but still returns its results marked <code>ABSTAINED</code> with no answer, so the agent decides
                                 whether to use them. These rows count those low-confidence results as served.
                             </p>

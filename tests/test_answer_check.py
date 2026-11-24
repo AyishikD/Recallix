@@ -51,6 +51,19 @@ def test_a_decline_keeps_the_results_only_when_configured(client, api_keys, monk
     assert "Heron" in out["memories"][0]["content"]                 # but the ranked results come back
 
 
+def test_keep_on_decline_is_a_per_request_choice(client, api_keys, monkeypatch):
+    h = api_keys["alice"]
+    _store(client, h, "Project Heron deadline is April 3.")
+    monkeypatch.setattr(answer_check.AnswerChecker, "from_config", classmethod(lambda cls: FakeChecker("October")))
+    ask = {"query": "When is Project Heron due?"}
+    out = client.post("/memory/recall", json={**ask, "keep_on_decline": True}, headers=h).json()["data"]
+    assert out["status"] == "ABSTAINED" and out["answer"] is None and "Heron" in out["memories"][0]["content"]
+    out = client.post("/memory/recall", json=ask, headers=h).json()["data"]                      # not asked: nothing
+    assert out["status"] == "ABSTAINED" and out["memories"] == []
+    out = client.post("/agents/recall", json={**ask, "agent_id": "default_agent", "keep_on_decline": True}, headers=h).json()["data"]
+    assert out["status"] == "ABSTAINED" and out["memories"]
+
+
 def test_threshold_resolution(monkeypatch, tmp_path):
     """Override > value fitted for the same model > the model's own boundary (0)."""
     from backend import settings

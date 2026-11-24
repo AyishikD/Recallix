@@ -49,8 +49,8 @@ What is *served* is lower, because recall declines when its answer check finds n
 declined 56.7% of the 30 unanswerable questions, but also 16.6% of the 470 answerable ones. The
 answer check's threshold was set on a different dataset and needs calibrating per deployment.
 
-\* Optional setting `recall.keep_results_on_decline` (off by default): recall declines exactly as
-often, but a decline still returns its results, marked `ABSTAINED` with no answer, and the agent
+\* Per-request option `keep_on_decline=True` (off unless asked for; server-wide:
+`recall.keep_results_on_decline`): recall declines exactly as often, but a decline still returns its results, marked `ABSTAINED` with no answer, and the agent
 decides whether to use them. These rows count those low-confidence results as served.
 Earlier runs stay in [`eval/results/`](eval/results/) (`longmemeval_s_*.json`).
 

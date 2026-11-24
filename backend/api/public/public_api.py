@@ -41,6 +41,9 @@ class RecallRequest(BaseModel):
     # Deep recall: re-read the candidates with the re-ranker (recall.rerank). Better when the answer is
     # spread over several memories ("what activities has she done with her kids?"); slower. None = config.
     deep: Optional[bool] = None
+    # A decline (status ABSTAINED) still returns the ranked results, low-confidence, answer null. Only for
+    # callers that check `status`. None = config (recall.keep_results_on_decline, off by default).
+    keep_on_decline: Optional[bool] = None
 
 
 class ProactiveRequest(BaseModel):
@@ -70,7 +73,7 @@ def store_memory(request: StoreRequest, auth=Depends(verify_api_key)):
 def recall_memory(request: RecallRequest, auth=Depends(verify_api_key)):
     user_id = acting_user(auth, request.user_id)
     return envelope(get_memory_manager().retrieve(user_id, request.query, agent_id=request.agent_id, limit=request.limit,
-                                                  deep=request.deep))
+                                                  deep=request.deep, keep_on_decline=request.keep_on_decline))
 
 
 @router.post("/proactive")

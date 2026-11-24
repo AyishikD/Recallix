@@ -17,6 +17,11 @@ export interface RecallOptions {
     userId?: string;
     /** Re-read the candidates with a re-ranker: better when the answer is spread over several memories, slower. */
     deep?: boolean;
+    /**
+     * When recall declines (status "ABSTAINED"), still return the results it found, as low-confidence
+     * (`answer` stays null). Check `status` before using them as an answer. Default: server setting (off).
+     */
+    keepOnDecline?: boolean;
 }
 
 const q = (params: Record<string, string | number | undefined>) => {
@@ -41,7 +46,7 @@ export class Memory {
     recall(query: string, opts: RecallOptions = {}) {
         return this.client.request("POST", "/memory/recall", {
             query, limit: opts.limit ?? 10, agent_id: opts.agentId ?? "default_agent", user_id: opts.userId,
-            deep: opts.deep,
+            deep: opts.deep, keep_on_decline: opts.keepOnDecline,
         });
     }
 

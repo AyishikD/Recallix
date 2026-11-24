@@ -77,6 +77,8 @@ def main():
     ap.add_argument("--reuse", action="store_true",
                     help="recall only, from memories a previous run kept with --storage (store settings must match)")
     ap.add_argument("--deep", action="store_true", help="deep recall (recall.rerank) for every question")
+    ap.add_argument("--keep-on-decline", action="store_true",
+                    help="keep_on_decline=True on every recall (a decline still returns its results)")
     ap.add_argument("--baselines-from", default=None,
                     help="copy the dense and BM25 results from this earlier result file instead of recomputing "
                          "them (they do not depend on Recallix settings; recomputing takes about an hour)")
@@ -143,7 +145,8 @@ def main():
 
         t0 = time.time()
         with contextlib.redirect_stdout(io.StringIO()):
-            out = mm.retrieve(user, q, limit=kmax, return_candidates=True, deep=True if args.deep else None)
+            out = mm.retrieve(user, q, limit=kmax, return_candidates=True, deep=True if args.deep else None,
+                             keep_on_decline=True if args.keep_on_decline else None)
         timing["recallix_query_s"] += time.time() - t0
         served = [k for m in out["memories"] for k in mem_to_turn[m["id"]]]
         ranked = [k for c in sorted(out["_candidates"], key=lambda c: -c["relevance"]) for k in mem_to_turn[c["id"]]]
@@ -177,7 +180,7 @@ def main():
                "questions": len(data), "turns": n_turns,
                "answer_check": (out["debug"].get("answer_check") or {}).get("model"),
                "ranker_model": __import__("backend.brain.memory_ranking.ranker", fromlist=["Ranker"]).Ranker.model().get("source"),
-               "deep_recall": bool(args.deep), "stored_in_earlier_run": bool(args.reuse),
+               "deep_recall": bool(args.deep), "keep_on_decline": bool(args.keep_on_decline), "stored_in_earlier_run": bool(args.reuse),
                "recall_settings": {k: settings_get(f"recall.{k}") for k in ("second_pass", "rerank", "answer_check", "keep_results_on_decline")},
                "systems": {}, "timing_seconds": {k: round(v, 1) for k, v in timing.items()}, "llm_calls": 0, "api_cost_usd": 0.0}
     if args.baselines_from:

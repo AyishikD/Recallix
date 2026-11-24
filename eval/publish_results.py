@@ -89,7 +89,7 @@ def main():
                   f"{lm['embedder']}, {lm['engine']} engine, answer check {lm['answer_check']}; no LLM)"
                   + (" — deep recall" if lm.get("deep_recall") else "")
                   + (" — results kept on decline (`recall.keep_results_on_decline`)"
-                     if (lm.get("recall_settings") or {}).get("keep_results_on_decline") else "")
+                     if lm.get("keep_on_decline") or (lm.get("recall_settings") or {}).get("keep_results_on_decline") else "")
                   + f" — `{lm['file']}.json`\n")
         types = [t for t in lm["systems"]["recallix"] if t != "overall"]
         md.append("| system | recall@5 | recall@10 | hit@10 | " + " | ".join(f"{t} recall@10" for t in types) + " |")

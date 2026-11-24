@@ -29,6 +29,7 @@ class AgentRecallRequest(BaseModel):
     user_id: Optional[str] = None
     limit: int = Field(default=10, ge=1, le=100)
     deep: Optional[bool] = None  # re-read candidates with the re-ranker (see /memory/recall)
+    keep_on_decline: Optional[bool] = None  # a decline still returns its results (see /memory/recall)
 
 
 @router.post("/store")
@@ -46,7 +47,7 @@ def store_agent_memory(request: AgentStoreRequest, auth=Depends(verify_api_key))
 def recall_agent_memory(request: AgentRecallRequest, auth=Depends(verify_api_key)):
     user_id = acting_user(auth, request.user_id)
     data = get_memory_manager().retrieve(user_id, request.query, agent_id=request.agent_id, limit=request.limit,
-                                         deep=request.deep)
+                                         deep=request.deep, keep_on_decline=request.keep_on_decline)
     data["agent_id"] = request.agent_id
     return envelope(data)
 

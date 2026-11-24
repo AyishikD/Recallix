@@ -26,14 +26,21 @@ class Memory:
             "user_id": user_id, "metadata": metadata})
 
     def recall(self, query: str, limit: int = 10, agent_id: str = "default_agent",
-               user_id: Optional[str] = None, deep: Optional[bool] = None) -> Dict[str, Any]:
+               user_id: Optional[str] = None, deep: Optional[bool] = None,
+               keep_on_decline: Optional[bool] = None) -> Dict[str, Any]:
         """
         deep=True re-reads the candidates with a re-ranker: better when the answer is spread over
         several memories ("what activities has she done with her kids?"), but slower. Default: server setting.
+
+        keep_on_decline=True: when recall declines (status "ABSTAINED"), still return the results it
+        found, as low-confidence ("answer" stays None). Check out["status"] before using them as an
+        answer. Default: server setting (off).
         """
         data = {"query": query, "limit": limit, "agent_id": agent_id, "user_id": user_id}
         if deep is not None:
             data["deep"] = deep
+        if keep_on_decline is not None:
+            data["keep_on_decline"] = keep_on_decline
         return self.client.request("POST", "/memory/recall", data=data)
 
     def feedback(self, recall_id: str, relevant_memory_ids: List[int], user_id: Optional[str] = None) -> Dict[str, Any]:
