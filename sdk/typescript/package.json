@@ -1,6 +1,6 @@
 {
     "name": "recallix",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "description": "TypeScript client for Recallix, an LLM-free memory layer for AI agents",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
