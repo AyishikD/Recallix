@@ -216,9 +216,10 @@ export default function HomePage() {
                     <p className="mt-10 max-w-[760px] text-[15px] text-ink-2">
                         <strong className="text-ink">Head to head with an existing LLM-based memory layer</strong> on the same held-out LoCoMo conversation: comparable
                         accuracy ({pct(mem0Comparison.accuracy.recallix.accuracy_overall, 1)} vs{" "}
-                        {pct(mem0Comparison.accuracy.mem0.accuracy_overall, 1)}, a statistical tie) with no LLM bill:{" "}
-                        {mem0Comparison.store.recallix.llm_calls} vs {mem0Comparison.store.mem0.llm_calls.toLocaleString("en-US")} LLM calls and{" "}
-                        ${mem0Comparison.store.recallix.usd.toFixed(2)} vs ${mem0Comparison.store.mem0.usd.toFixed(2)} to store it, and about{" "}
+                        {pct(mem0Comparison.accuracy.mem0.accuracy_overall, 1)}, a statistical tie;{" "}
+                        {pct(mem0Comparison.accuracy.recallix_deep.accuracy_overall, 1)} with deep recall) with no LLM bill:{" "}
+                        {mem0Comparison.store.recallix.llm_calls} vs about {mem0Comparison.store.mem0.llm_calls.toLocaleString("en-US")} LLM calls and{" "}
+                        ${mem0Comparison.store.recallix.usd.toFixed(2)} vs about ${mem0Comparison.store.mem0.usd.toFixed(2)} to store it, and about{" "}
                         {writeSpeedup(mem0Comparison)}× faster writes ({Math.round(mem0Comparison.store.recallix.ms_p50)} ms vs{" "}
                         {Math.round(mem0Comparison.store.mem0.ms_p50).toLocaleString("en-US")} ms per message). At its measured rate, a
                         million messages would cost about ${perMillion(mem0Comparison).toLocaleString("en-US")} in LLM calls.{" "}

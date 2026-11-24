@@ -81,17 +81,21 @@ export const longMemEvalKeep: LongMemEvalRun | undefined = lmeRuns.find(r => r.f
 export const longMemEvalKeepDeep: LongMemEvalRun | undefined = lmeRuns.find(r => r.file === "longmemeval_s_bge-small-en-v1.5_keep-on-decline_deep");
 export const locomoRuns: LoCoMoRun[] = (results.locomo || []).filter(r => r.embedder === CURRENT_EMBEDDER);
 
-/* Head-to-head with Mem0 (eval/mem0_comparison, summarize.py). */
+/* Head-to-head with Mem0 (eval/mem0_comparison, summarize.py): the held-out conv-47 run, plus the earlier conv-44 run. */
+type Accuracy = { accuracy_overall: number; accuracy_answerable: number; adversarial_declined: number; by_category: Record<string, number> };
+type Significance = Record<"all" | "answerable", { only_recallix_right: number; only_mem0_right: number; p: number }>;
+type Scope = { dataset: string; conversations: string[]; messages: number; questions: number; answerable: number; adversarial: number;
+               per_category: Record<string, number> };
 export interface Mem0Comparison {
-    date: string; protocol: string; openai_spend_total_usd: number; notes: string[];
-    scope: { dataset: string; conversations: string[]; messages: number; questions: number; answerable: number; adversarial: number;
-             per_category: Record<string, number> };
+    date: string; protocol: string; headline_conversation: string; openai_spend_total_usd: number; notes: string[];
+    scope: Scope;
     setup: { mem0: string; recallix: string; answer_and_judge: string };
-    accuracy: Record<"recallix" | "mem0", { accuracy_overall: number; accuracy_answerable: number; adversarial_declined: number;
-                                            by_category: Record<string, number> }>;
-    significance: Record<"all" | "answerable", { only_recallix_right: number; only_mem0_right: number; p: number }>;
+    accuracy: Record<"recallix" | "recallix_deep" | "mem0", Accuracy>;
+    significance: Record<"recallix" | "recallix_deep", Significance>;
     store: Record<"recallix" | "mem0", { llm_calls: number; usd: number; ms_p50: number; ms_p95: number }>;
-    recall_ms: Record<"recallix" | "mem0", { p50: number; p95: number }>;
+    mem0_store_cost: { measured_on: string; messages: number; llm_calls: number; usd: number; usd_per_message: number; llm_calls_per_message: number };
+    recall_ms: Record<"recallix" | "recallix_deep" | "mem0", { p50: number; p95: number }>;
+    earlier_run: { scope: Scope; note: string; accuracy: Record<"recallix" | "mem0", Accuracy>; significance: Record<"recallix", Significance> };
 }
 export const mem0Comparison = mem0Summary as unknown as Mem0Comparison;
 

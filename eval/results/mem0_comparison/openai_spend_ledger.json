@@ -1,30 +1,30 @@
 {
- "usd": 1.328104,
- "calls": 4898,
+ "usd": 2.258133,
+ "calls": 8246,
  "by_purpose": {
   "mem0-store": {
-   "usd": 1.245703,
-   "calls": 3134,
-   "tokens_in": 7397140,
-   "tokens_out": 54237
+   "usd": 2.132192,
+   "calls": 5326,
+   "tokens_in": 12661160,
+   "tokens_out": 92554
   },
   "mem0-search": {
-   "usd": 2e-06,
-   "calls": 315,
-   "tokens_in": 2455,
+   "usd": 4e-06,
+   "calls": 695,
+   "tokens_in": 5418,
    "tokens_out": 0
   },
   "answer": {
-   "usd": 0.052596,
-   "calls": 906,
-   "tokens_in": 300160,
-   "tokens_out": 4648
+   "usd": 0.080743,
+   "calls": 1397,
+   "tokens_in": 460407,
+   "tokens_out": 7209
   },
   "judge": {
-   "usd": 0.029802,
-   "calls": 543,
-   "tokens_in": 168738,
-   "tokens_out": 2957
+   "usd": 0.045191,
+   "calls": 828,
+   "tokens_in": 256245,
+   "tokens_out": 4393
   }
  }
 }

@@ -1,97 +1,218 @@
 {
  "date": "2026-11-24",
  "protocol": "eval/mem0_comparison/PROTOCOL.md",
+ "headline_conversation": "conv-47",
  "scope": {
   "dataset": "LoCoMo test split",
   "conversations": [
-   "conv-44"
-  ],
-  "messages": 675,
-  "questions": 158,
-  "answerable": 123,
-  "adversarial": 35,
-  "per_category": {
-   "multi-hop": 30,
-   "temporal": 24,
-   "open-domain": 7,
-   "single-hop": 62,
-   "adversarial": 35
-  },
-  "not_judged": [
    "conv-47"
-  ]
+  ],
+  "messages": 689,
+  "questions": 190,
+  "answerable": 150,
+  "adversarial": 40,
+  "per_category": {
+   "multi-hop": 20,
+   "temporal": 34,
+   "open-domain": 13,
+   "single-hop": 83,
+   "adversarial": 40
+  }
  },
  "setup": {
   "mem0": "mem0ai 2.2.1 (nlp, extras), gpt-4o-mini, text-embedding-3-small",
-  "recallix": "as shipped 2026-11-24: bge-small embeddings, answer check, date resolution; no LLM",
-  "answer_and_judge": "gpt-4o-mini, temperature 0, identical for both"
+  "recallix": "as shipped on the evening of 2026-11-24: bge-small embeddings, answer check, date resolution, second pass; no LLM. Deep recall: the same with deep=True",
+  "answer_and_judge": "gpt-4o-mini, temperature 0, identical for all systems"
  },
  "accuracy": {
   "recallix": {
-   "accuracy_overall": 0.6772,
-   "accuracy_answerable": 0.6098,
-   "adversarial_declined": 0.9143,
+   "accuracy_overall": 0.5947,
+   "accuracy_answerable": 0.5133,
+   "adversarial_declined": 0.9,
    "by_category": {
-    "multi-hop": 0.4333,
-    "temporal": 0.5417,
-    "open-domain": 0.0,
-    "single-hop": 0.7903,
-    "adversarial": 0.9143
+    "multi-hop": 0.2,
+    "temporal": 0.4118,
+    "open-domain": 0.2308,
+    "single-hop": 0.6747,
+    "adversarial": 0.9
+   }
+  },
+  "recallix_deep": {
+   "accuracy_overall": 0.6526,
+   "accuracy_answerable": 0.58,
+   "adversarial_declined": 0.925,
+   "by_category": {
+    "multi-hop": 0.3,
+    "temporal": 0.4412,
+    "open-domain": 0.3077,
+    "single-hop": 0.747,
+    "adversarial": 0.925
    }
   },
   "mem0": {
-   "accuracy_overall": 0.6646,
-   "accuracy_answerable": 0.5691,
-   "adversarial_declined": 1.0,
+   "accuracy_overall": 0.6,
+   "accuracy_answerable": 0.5,
+   "adversarial_declined": 0.975,
    "by_category": {
-    "multi-hop": 0.5333,
-    "temporal": 0.4167,
-    "open-domain": 0.0,
-    "single-hop": 0.7097,
-    "adversarial": 1.0
+    "multi-hop": 0.25,
+    "temporal": 0.3235,
+    "open-domain": 0.2308,
+    "single-hop": 0.6747,
+    "adversarial": 0.975
    }
   }
  },
  "significance": {
-  "all": {
-   "only_recallix_right": 22,
-   "only_mem0_right": 20,
-   "p": 0.878
+  "recallix": {
+   "all": {
+    "only_recallix_right": 28,
+    "only_mem0_right": 29,
+    "p": 1.0
+   },
+   "answerable": {
+    "only_recallix_right": 27,
+    "only_mem0_right": 25,
+    "p": 0.89
+   }
   },
-  "answerable": {
-   "only_recallix_right": 22,
-   "only_mem0_right": 17,
-   "p": 0.522
+  "recallix_deep": {
+   "all": {
+    "only_recallix_right": 33,
+    "only_mem0_right": 23,
+    "p": 0.229
+   },
+   "answerable": {
+    "only_recallix_right": 32,
+    "only_mem0_right": 20,
+    "p": 0.126
+   }
   }
  },
  "store": {
   "recallix": {
    "llm_calls": 0,
    "usd": 0.0,
-   "ms_p50": 12.1,
-   "ms_p95": 20.4
+   "ms_p50": 11.4,
+   "ms_p95": 16.7
   },
   "mem0": {
-   "llm_calls": 3134,
-   "usd": 1.25,
-   "ms_p50": 2488.9,
-   "ms_p95": 3806.9
+   "llm_calls": 2480,
+   "usd": 1.0,
+   "ms_p50": 2608.7,
+   "ms_p95": 4053.1,
+   "estimated_for_messages": 689
   }
+ },
+ "mem0_store_cost": {
+  "measured_on": "conv-47 messages 81-689, one uninterrupted run",
+  "messages": 609,
+  "llm_calls": 2192,
+  "usd": 0.886,
+  "usd_per_message": 0.00146,
+  "llm_calls_per_message": 3.6
  },
  "recall_ms": {
   "recallix": {
-   "p50": 142.0,
-   "p95": 197.3
+   "p50": 131.1,
+   "p95": 212.4
+  },
+  "recallix_deep": {
+   "p50": 271.3,
+   "p95": 365.7
   },
   "mem0": {
-   "p50": 705.9,
-   "p95": 830.1
+   "p50": 593.6,
+   "p95": 700.7
   }
+ },
+ "earlier_run": {
+  "scope": {
+   "dataset": "LoCoMo test split",
+   "conversations": [
+    "conv-44"
+   ],
+   "messages": 675,
+   "questions": 158,
+   "answerable": 123,
+   "adversarial": 35,
+   "per_category": {
+    "multi-hop": 30,
+    "temporal": 24,
+    "open-domain": 7,
+    "single-hop": 62,
+    "adversarial": 35
+   }
+  },
+  "accuracy": {
+   "recallix": {
+    "accuracy_overall": 0.6772,
+    "accuracy_answerable": 0.6098,
+    "adversarial_declined": 0.9143,
+    "by_category": {
+     "multi-hop": 0.4333,
+     "temporal": 0.5417,
+     "open-domain": 0.0,
+     "single-hop": 0.7903,
+     "adversarial": 0.9143
+    }
+   },
+   "mem0": {
+    "accuracy_overall": 0.6646,
+    "accuracy_answerable": 0.5691,
+    "adversarial_declined": 1.0,
+    "by_category": {
+     "multi-hop": 0.5333,
+     "temporal": 0.4167,
+     "open-domain": 0.0,
+     "single-hop": 0.7097,
+     "adversarial": 1.0
+    }
+   }
+  },
+  "significance": {
+   "recallix": {
+    "all": {
+     "only_recallix_right": 22,
+     "only_mem0_right": 20,
+     "p": 0.878
+    },
+    "answerable": {
+     "only_recallix_right": 22,
+     "only_mem0_right": 17,
+     "p": 0.522
+    }
+   }
+  },
+  "recall_ms": {
+   "recallix": {
+    "p50": 142.0,
+    "p95": 197.3
+   },
+   "mem0": {
+    "p50": 705.9,
+    "p95": 830.1
+   }
+  },
+  "store_ms": {
+   "recallix": {
+    "p50": 12.1,
+    "p95": 20.4
+   },
+   "mem0": {
+    "p50": 2488.9,
+    "p95": 3806.9
+   }
+  },
+  "ledger_total_then": {
+   "calls": 3134,
+   "usd": 1.246
+  },
+  "note": "conv-44, the first run (Recallix as shipped on the morning of 2026-11-24). conv-44 was inspected question by question afterwards while designing that day's retrieval fixes, so it is development data now."
  },
  "notes": [
   "Recallix timed in-process on an Apple M4; Mem0 times include OpenAI network calls.",
   "Mem0 store cost is estimated from the API's token usage at list prices plus 10%.",
-  "A second conversation (conv-47) was stopped at 80 of 689 messages to stay under a $3 budget."
+  "A decline counts as \"I don't know\": correct on adversarial questions, wrong on answerable ones."
  ],
- "openai_spend_total_usd": 1.33
+ "openai_spend_total_usd": 2.26
 }

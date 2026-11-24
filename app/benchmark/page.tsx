@@ -118,34 +118,41 @@ export default function BenchmarkPage() {
                     <Eyebrow tone="muted">Head to head</Eyebrow>
                     <Headline className="max-w-[760px]">Recallix vs an existing memory layer, same questions.</Headline>
                     <Lede className="mt-5 max-w-[680px]">
-                        Recallix and a widely used open-source memory layer that calls an LLM on every write both stored the same held-out LoCoMo conversation ({n(MEM0.scope.messages)} messages) and answered the
+                        Recallix and a widely used open-source memory layer that calls an LLM on every write both stored the same held-out LoCoMo conversation ({n(MEM0.scope.messages)} messages), never inspected while building Recallix, and answered the
                         same {MEM0.scope.questions} questions. One model wrote every final answer and one judge marked them, so only the
                         memory layer differs. The protocol was written before the run.
                     </Lede>
                 </Reveal>
                 <Reveal from="right" className="mt-10">
-                    <DataTable head={["", "Recallix", "LLM-based memory layer"]} rows={[
-                        ["Accuracy, all questions", pct(MEM0.accuracy.recallix.accuracy_overall, 1), pct(MEM0.accuracy.mem0.accuracy_overall, 1)],
-                        ["Accuracy, answerable questions", pct(MEM0.accuracy.recallix.accuracy_answerable, 1), pct(MEM0.accuracy.mem0.accuracy_answerable, 1)],
-                        ["Trick questions declined", pct(MEM0.accuracy.recallix.adversarial_declined, 1), pct(MEM0.accuracy.mem0.adversarial_declined, 1)],
+                    <DataTable head={["", "Recallix", "Recallix, deep recall", "LLM-based memory layer"]} rows={[
+                        ...([["Accuracy, all questions", "accuracy_overall"], ["Accuracy, answerable questions", "accuracy_answerable"],
+                             ["Trick questions declined", "adversarial_declined"]] as const).map(([label, k]) =>
+                            [label, pct(MEM0.accuracy.recallix[k], 1), pct(MEM0.accuracy.recallix_deep[k], 1), pct(MEM0.accuracy.mem0[k], 1)]),
                         ...["single-hop", "temporal", "multi-hop"].map(c => [`Accuracy, ${c} (${MEM0.scope.per_category[c]} questions)`,
-                            pct(MEM0.accuracy.recallix.by_category[c], 1), pct(MEM0.accuracy.mem0.by_category[c], 1)]),
-                        ["LLM calls to store the conversation", n(MEM0.store.recallix.llm_calls), n(MEM0.store.mem0.llm_calls)],
-                        ["Cost to store the conversation", usd(MEM0.store.recallix.usd), usd(MEM0.store.mem0.usd)],
-                        ["Store one message, median", `${n(MEM0.store.recallix.ms_p50)} ms`, `${n(MEM0.store.mem0.ms_p50)} ms`],
-                        ["Answer one question, median", `${n(MEM0.recall_ms.recallix.p50)} ms`, `${n(MEM0.recall_ms.mem0.p50)} ms`],
+                            pct(MEM0.accuracy.recallix.by_category[c], 1), pct(MEM0.accuracy.recallix_deep.by_category[c], 1), pct(MEM0.accuracy.mem0.by_category[c], 1)]),
+                        ["LLM calls to store the conversation", n(MEM0.store.recallix.llm_calls), n(MEM0.store.recallix.llm_calls), `≈ ${n(MEM0.store.mem0.llm_calls)}`],
+                        ["Cost to store the conversation", usd(MEM0.store.recallix.usd), usd(MEM0.store.recallix.usd), `≈ ${usd(MEM0.store.mem0.usd)}`],
+                        ["Store one message, median", `${n(MEM0.store.recallix.ms_p50)} ms`, `${n(MEM0.store.recallix.ms_p50)} ms`, `${n(MEM0.store.mem0.ms_p50)} ms`],
+                        ["Answer one question, median", `${n(MEM0.recall_ms.recallix.p50)} ms`, `${n(MEM0.recall_ms.recallix_deep.p50)} ms`, `${n(MEM0.recall_ms.mem0.p50)} ms`],
                     ]} />
                 </Reveal>
                 <div className="mt-6 max-w-[760px] space-y-3 text-[14px] text-ink-2">
                     <p>
-                        <strong className="text-ink">Accuracy is a statistical tie.</strong> Recallix alone was right on{" "}
-                        {MEM0.significance.all.only_recallix_right} questions, the other system alone on {MEM0.significance.all.only_mem0_right}{" "}
-                        (exact McNemar p = {MEM0.significance.all.p.toFixed(2)}). No per-category difference is significant at this sample
-                        size. The LLM-based system is stronger on multi-hop questions; Recallix on single facts and dates.
+                        <strong className="text-ink">Default recall ties; deep recall leads, not yet significantly.</strong> Recallix alone was right on{" "}
+                        {MEM0.significance.recallix.all.only_recallix_right} questions, the other system alone on {MEM0.significance.recallix.all.only_mem0_right}{" "}
+                        (exact McNemar p = {MEM0.significance.recallix.all.p.toFixed(2)}). With deep recall: {MEM0.significance.recallix_deep.all.only_recallix_right} vs{" "}
+                        {MEM0.significance.recallix_deep.all.only_mem0_right} (p = {MEM0.significance.recallix_deep.all.p.toFixed(2)}), so one conversation is not enough
+                        to call it. The other system declines more trick questions.
+                    </p>
+                    <p>
+                        <strong className="text-ink">Earlier run.</strong> On a first conversation ({n(MEM0.earlier_run.scope.questions)} questions) the result was also a
+                        tie: {pct(MEM0.earlier_run.accuracy.recallix.accuracy_overall, 1)} vs {pct(MEM0.earlier_run.accuracy.mem0.accuracy_overall, 1)} (p ={" "}
+                        {MEM0.earlier_run.significance.recallix.all.p.toFixed(2)}). That conversation was studied question by question afterwards to improve
+                        Recallix, so it no longer counts as held out.
                     </p>
                     <p>
                         <strong className="text-ink">Cost and speed are not close.</strong> Recallix stores without calling an LLM; the other
-                        system made {n(MEM0.store.mem0.llm_calls)} model calls to store one conversation. Writes were about {writeSpeedup(MEM0)}×
+                        system made about {MEM0.mem0_store_cost.llm_calls_per_message} model calls per message (measured on {n(MEM0.mem0_store_cost.messages)} messages). Writes were about {writeSpeedup(MEM0)}×
                         faster at the median. Extrapolated from its measured cost per message, a million messages would cost about
                         ${perMillion(MEM0).toLocaleString("en-US")} in LLM calls to store; Recallix stays at $0.
                     </p>
@@ -153,8 +160,7 @@ export default function BenchmarkPage() {
                         One conversation, so the error bars are wide. The other system ran its open-source release at default settings,
                         with gpt-4o-mini extracting memories. Recallix: {MEM0.setup.recallix}. Answers and judging:{" "}
                         {MEM0.setup.answer_and_judge}. Recallix was timed in-process on an Apple M4; the other system’s times include its
-                        model calls. Its cost is estimated from token usage at list prices. A second conversation was stopped part-way to
-                        stay within the test budget.
+                        model calls. Its cost is estimated from token usage at list prices, measured on {MEM0.mem0_store_cost.measured_on}.
                     </p>
                 </div>
             </Section>

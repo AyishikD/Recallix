@@ -1,0 +1,82 @@
+{
+ "convs": [
+  "conv-47"
+ ],
+ "not_judged_mem0_incomplete": [],
+ "complete": true,
+ "stopped": null,
+ "systems": {
+  "recallix": {
+   "questions": 190,
+   "accuracy_overall": 0.5947,
+   "accuracy_answerable": 0.5133,
+   "adversarial_declined": 0.9,
+   "answerable_said_idk": 0.4,
+   "by_category": {
+    "multi-hop": 0.2,
+    "temporal": 0.4118,
+    "open-domain": 0.2308,
+    "single-hop": 0.6747,
+    "adversarial": 0.9
+   }
+  },
+  "mem0": {
+   "questions": 190,
+   "accuracy_overall": 0.6,
+   "accuracy_answerable": 0.5,
+   "adversarial_declined": 0.975,
+   "answerable_said_idk": 0.3533,
+   "by_category": {
+    "multi-hop": 0.25,
+    "temporal": 0.3235,
+    "open-domain": 0.2308,
+    "single-hop": 0.6747,
+    "adversarial": 0.975
+   }
+  },
+  "recallix_deep": {
+   "questions": 190,
+   "accuracy_overall": 0.6526,
+   "accuracy_answerable": 0.58,
+   "adversarial_declined": 0.925,
+   "answerable_said_idk": 0.3267,
+   "by_category": {
+    "multi-hop": 0.3,
+    "temporal": 0.4412,
+    "open-domain": 0.3077,
+    "single-hop": 0.747,
+    "adversarial": 0.925
+   }
+  }
+ },
+ "ledger": {
+  "usd": 2.258133,
+  "calls": 8246,
+  "by_purpose": {
+   "mem0-store": {
+    "usd": 2.132192,
+    "calls": 5326,
+    "tokens_in": 12661160,
+    "tokens_out": 92554
+   },
+   "mem0-search": {
+    "usd": 4e-06,
+    "calls": 695,
+    "tokens_in": 5418,
+    "tokens_out": 0
+   },
+   "answer": {
+    "usd": 0.080743,
+    "calls": 1397,
+    "tokens_in": 460407,
+    "tokens_out": 7209
+   },
+   "judge": {
+    "usd": 0.045191,
+    "calls": 828,
+    "tokens_in": 256245,
+    "tokens_out": 4393
+   }
+  }
+ }
+}
