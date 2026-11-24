@@ -304,6 +304,7 @@ def retrieval_queries(env, split, collect=False, verbose=False):
                 out = mm.retrieve(user, q["q"], limit=3, return_candidates=collect)
             contents = [m.get("content", "") for m in out["memories"]]
             rec = {"scenario": scenario["name"], "q": q, "contents": contents, "status": out["status"],
+                   "answer": (out.get("answer") or {}).get("text"),
                    "embed_calls": env.embed_calls - before, "top_relevance": out["debug"]["top_relevance"],
                    "latency_ms": out["latency_ms"], "store_stage_ms": stage_ms, "store_ms": store_ms}
             if collect:
@@ -321,8 +322,13 @@ def eval_retrieval(env, split, verbose):
     stale = sum(bool(r["q"].get("not_top")) and bool(r["contents"]) and r["q"]["not_top"].lower() in r["contents"][0].lower()
                 for r in ans)
     false_abstain = sum(not r["contents"] for r in ans)
+
+    def answer_ok(r):  # the recall's best answer names the expected fact (expect is a short phrase)
+        a, e = (r.get("answer") or "").lower().strip(" .,!?"), r["q"]["expect"].lower()
+        return bool(a) and (e in a or (len(a) >= 3 and a in e))
+    answer_match = sum(answer_ok(r) for r in ans)
     abstained = sum(not r["contents"] for r in unans)
-    res = {"hit@1": hit1 / len(ans), "hit@3": hit3 / len(ans), "stale_top": stale,
+    res = {"hit@1": hit1 / len(ans), "hit@3": hit3 / len(ans), "stale_top": stale, "answer_match": answer_match / len(ans),
            "false_abstain_rate": false_abstain / len(ans),
            "abstain_accuracy": (abstained / len(unans)) if unans else float("nan"),
            "embed_calls_per_query": float(np.mean([r["embed_calls"] for r in recs])),
@@ -331,7 +337,7 @@ def eval_retrieval(env, split, verbose):
            "recall_ms_p95": float(np.percentile([r["latency_ms"] for r in recs], 95)),
            "store_ms_p50": float(np.percentile(recs[-1]["store_ms"], 50)),
            "store_stage_ms_mean": {k: round(float(np.mean(v)), 3) for k, v in recs[-1]["store_stage_ms"].items()}}
-    print(f"retrieval  hit@1={res['hit@1']:.2f} hit@3={res['hit@3']:.2f} stale-top={stale} "
+    print(f"retrieval  hit@1={res['hit@1']:.2f} hit@3={res['hit@3']:.2f} answer={res['answer_match']:.2f} stale-top={stale} "
           f"false-abstain={res['false_abstain_rate']:.2f} | unanswerable abstained={abstained}/{len(unans)} "
           f"| {len(ans)}+{len(unans)} queries, embed calls/query={res['embed_calls_per_query']:.1f}")
     if verbose:

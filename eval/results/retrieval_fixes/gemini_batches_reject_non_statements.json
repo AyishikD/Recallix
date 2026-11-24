@@ -1,0 +1,32 @@
+{
+ "split": "fresh",
+ "embedder": "st:BAAI/bge-small-en-v1.5",
+ "retrieval": {
+  "hit@1": 0.84,
+  "hit@3": 0.8533333333333334,
+  "stale_top": 0,
+  "false_abstain_rate": 0.12,
+  "abstain_accuracy": 0.9333333333333333,
+  "embed_calls_per_query": 1.0,
+  "recall_ms_p50": 61.6,
+  "recall_ms_p95": 81.97999999999999,
+  "store_ms_p50": 14.7,
+  "store_stage_ms_mean": {
+   "Sensory & Working Memory": 0.769,
+   "Embedding": 12.556,
+   "Fact Extraction": 0.166,
+   "Schema Classification": 4.822,
+   "Importance Scoring": 0.802,
+   "Episodic Storage": 2.137,
+   "Vector Engine": 0.0,
+   "Long-Term Promotion": 0.933,
+   "Date Resolution": 0.0
+  }
+ },
+ "legacy": {
+  "gauntlet_passed": 8,
+  "gauntlet_total": 12,
+  "retention_hits": 7,
+  "retention_total": 8
+ }
+}

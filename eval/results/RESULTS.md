@@ -1,15 +1,28 @@
 # Measured results
 
-Generated 2026-11-21 20:13 UTC from commit `64969ea0` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
+Generated 2026-11-24 14:30 UTC from commit `010f7cd5 + uncommitted changes` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
 
 ## Memory pipeline (eval harness)
 
 | split | embedder | facts F1 | schema acc | importance AUC / acc@5 | retrieval hit@1 / hit@3 | false abstain | unanswerable declined | gauntlet | retention@1 |
 |---|---|---|---|---|---|---|---|---|---|
 | dev | st:sentence-transformers/all-MiniLM-L6-v2 | 0.96 | 0.97 | 1.00 / 0.97 | 0.86 / 0.96 | 0.04 | 0.25 | 7/12 | 7/8 |
+| dev | st:BAAI/bge-small-en-v1.5 | 0.96 | 0.97 | 1.00 / 0.94 | 0.93 / 0.96 | 0.04 | 1.00 | 8/12 | 7/8 |
 | dev | hash | 0.96 | 0.52 | 0.99 / 0.81 | 0.82 / 0.93 | 0.07 | 0.62 | 6/12 | 7/8 |
+| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.92 / 0.92 | 0.08 | 0.90 | -/- | -/- |
+| fresh | st:BAAI/bge-small-en-v1.5 | nan | nan | nan / nan | 0.84 / 0.84 | 0.13 | 0.93 | -/- | -/- |
+| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.76 / 0.88 | 0.08 | 0.90 | -/- | -/- |
+| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.84 | 0.16 | 1.00 | -/- | -/- |
+| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.84 | 0.16 | 0.90 | -/- | -/- |
+| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.96 | 0.04 | 0.80 | -/- | -/- |
+| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.92 | 0.08 | 1.00 | -/- | -/- |
+| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.92 | 0.08 | 1.00 | -/- | -/- |
 | test | st:sentence-transformers/all-MiniLM-L6-v2 | 0.93 | 0.85 | 1.00 / 0.94 | 0.50 / 0.71 | 0.29 | 0.50 | 7/12 | 7/8 |
+| test | st:BAAI/bge-small-en-v1.5 | 0.93 | 0.85 | 1.00 / 0.94 | 0.86 / 0.93 | 0.07 | 0.75 | 8/12 | 7/8 |
 | test | hash | 0.93 | 0.42 | 0.97 / 0.83 | 0.43 / 0.50 | 0.43 | 0.50 | 6/12 | 7/8 |
+| None | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | nan / nan | nan | nan | -/- | -/- |
+| None | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | nan / nan | nan | nan | -/- | -/- |
+| None | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | nan / nan | nan | nan | -/- | -/- |
 
 ## Vector engine (single thread, recall vs exact search)
 
@@ -24,7 +37,7 @@ Generated 2026-11-21 20:13 UTC from commit `64969ea0` on Apple M4 (Darwin). Rege
 | hnswlib | 100,000 | 128 | uniform | 16 | 100 | 50 | 0.190 | 0.139 | – | 30.0 |
 | hnswlib | 100,000 | 128 | uniform | 16 | 100 | 200 | 0.480 | 0.463 | – | 29.7 |
 
-## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:sentence-transformers/all-MiniLM-L6-v2, real engine, answer check deepset/roberta-base-squad2; no LLM)
+## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:sentence-transformers/all-MiniLM-L6-v2, real engine, answer check deepset/roberta-base-squad2; no LLM) — `longmemeval_s_all-MiniLM-L6-v2.json`
 
 | system | recall@5 | recall@10 | hit@10 | knowledge-update recall@10 | multi-session recall@10 | single-session-assistant recall@10 | single-session-preference recall@10 | single-session-user recall@10 | temporal-reasoning recall@10 |
 |---|---|---|---|---|---|---|---|---|---|
@@ -34,6 +47,39 @@ Generated 2026-11-21 20:13 UTC from commit `64969ea0` on Apple M4 (Darwin). Rege
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
 
 Recallix declined 60.0% of 30 unanswerable questions and wrongly declined 20.0% of 470 answerable ones (AUC: answer margin 0.803, top relevance 0.639).
+
+## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — `longmemeval_s_bge-small-en-v1.5.json`
+
+| system | recall@5 | recall@10 | hit@10 | knowledge-update recall@10 | multi-session recall@10 | single-session-assistant recall@10 | single-session-preference recall@10 | single-session-user recall@10 | temporal-reasoning recall@10 |
+|---|---|---|---|---|---|---|---|---|---|
+| recallix | 0.651 | 0.727 | 0.789 | 0.928 | 0.559 | 0.804 | 0.744 | 0.953 | 0.622 |
+| recallix_ranked | 0.745 | 0.860 | 0.940 | 0.963 | 0.748 | 0.964 | 0.717 | 0.977 | 0.838 |
+| dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
+| bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
+
+Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
+
+## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — `longmemeval_s_bge-small-en-v1.5_before-retrieval-fixes.json`
+
+| system | recall@5 | recall@10 | hit@10 | knowledge-update recall@10 | multi-session recall@10 | single-session-assistant recall@10 | single-session-preference recall@10 | single-session-user recall@10 | temporal-reasoning recall@10 |
+|---|---|---|---|---|---|---|---|---|---|
+| recallix | 0.637 | 0.732 | 0.783 | 0.949 | 0.596 | 0.786 | 0.667 | 0.945 | 0.623 |
+| recallix_ranked | 0.743 | 0.859 | 0.940 | 0.963 | 0.748 | 0.964 | 0.717 | 0.977 | 0.834 |
+| dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
+| bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
+
+Recallix declined 53.3% of 30 unanswerable questions and wrongly declined 18.3% of 470 answerable ones (AUC: answer margin 0.782, top relevance 0.672).
+
+## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — deep recall — `longmemeval_s_bge-small-en-v1.5_deep.json`
+
+| system | recall@5 | recall@10 | hit@10 | knowledge-update recall@10 | multi-session recall@10 | single-session-assistant recall@10 | single-session-preference recall@10 | single-session-user recall@10 | temporal-reasoning recall@10 |
+|---|---|---|---|---|---|---|---|---|---|
+| recallix | 0.641 | 0.763 | 0.804 | 0.965 | 0.649 | 0.804 | 0.722 | 0.922 | 0.668 |
+| recallix_ranked | 0.745 | 0.860 | 0.940 | 0.963 | 0.748 | 0.964 | 0.717 | 0.977 | 0.838 |
+| dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
+| bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
+
+Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
 
 ## LoCoMo retrieval, dev split (5 conversations, 2760 turns, 999 questions; embedder st:sentence-transformers/all-MiniLM-L6-v2, real engine; no LLM) — dev conversations were used for fitting
 
@@ -46,6 +92,17 @@ Recallix declined 60.0% of 30 unanswerable questions and wrongly declined 20.0% 
 
 Recallix declined 0.8% of 237 adversarial (unanswerable) questions and wrongly declined 0.4% of 762 answerable ones.
 
+## LoCoMo retrieval, dev split (5 conversations, 2760 turns, 999 questions; embedder st:BAAI/bge-small-en-v1.5, real engine; no LLM) — dev conversations were used for fitting
+
+| system | recall@5 | recall@10 | hit@10 | multi-hop recall@10 | temporal recall@10 | open-domain recall@10 | single-hop recall@10 |
+|---|---|---|---|---|---|---|---|
+| recallix | 0.586 | 0.701 | 0.758 | 0.375 | 0.817 | 0.280 | 0.812 |
+| recallix_ranked | 0.591 | 0.673 | 0.741 | 0.379 | 0.816 | 0.394 | 0.750 |
+| dense | 0.512 | 0.602 | 0.660 | 0.420 | 0.736 | 0.339 | 0.641 |
+| bm25 | 0.486 | 0.561 | 0.616 | 0.233 | 0.722 | 0.273 | 0.642 |
+
+Recallix declined 32.5% of 237 adversarial (unanswerable) questions and wrongly declined 7.9% of 762 answerable ones.
+
 ## LoCoMo retrieval, test split (5 conversations, 3122 turns, 987 questions; embedder st:sentence-transformers/all-MiniLM-L6-v2, real engine; no LLM) — held out from fitting, but evaluated repeatedly during development
 
 | system | recall@5 | recall@10 | hit@10 | multi-hop recall@10 | temporal recall@10 | open-domain recall@10 | single-hop recall@10 |
@@ -56,3 +113,14 @@ Recallix declined 0.8% of 237 adversarial (unanswerable) questions and wrongly d
 | bm25 | 0.449 | 0.527 | 0.587 | 0.208 | 0.543 | 0.293 | 0.651 |
 
 Recallix declined 1.0% of 209 adversarial (unanswerable) questions and wrongly declined 0.0% of 778 answerable ones.
+
+## LoCoMo retrieval, test split (5 conversations, 3122 turns, 987 questions; embedder st:BAAI/bge-small-en-v1.5, real engine; no LLM) — held out from fitting, but evaluated repeatedly during development
+
+| system | recall@5 | recall@10 | hit@10 | multi-hop recall@10 | temporal recall@10 | open-domain recall@10 | single-hop recall@10 |
+|---|---|---|---|---|---|---|---|
+| recallix | 0.535 | 0.659 | 0.727 | 0.363 | 0.650 | 0.340 | 0.793 |
+| recallix_ranked | 0.542 | 0.619 | 0.694 | 0.368 | 0.638 | 0.338 | 0.724 |
+| dense | 0.474 | 0.570 | 0.653 | 0.393 | 0.584 | 0.351 | 0.646 |
+| bm25 | 0.449 | 0.527 | 0.587 | 0.208 | 0.543 | 0.293 | 0.651 |
+
+Recallix declined 31.6% of 209 adversarial (unanswerable) questions and wrongly declined 9.0% of 778 answerable ones.

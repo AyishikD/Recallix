@@ -53,8 +53,9 @@ def main():
     summary = {"generated_at": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "git_commit": commit,
                "machine": machine(), "eval": evals,
                "hnsw": read_jsonl(RESULTS / "hnsw.jsonl"), "hnsw_reference": read_jsonl(RESULTS / "hnsw_reference.jsonl"),
-               "locomo": [json.load(open(p)) for p in sorted(glob.glob(str(RESULTS / "locomo_*.json")))],
-               "longmemeval": [json.load(open(p)) for p in sorted(glob.glob(str(RESULTS / "longmemeval_*.json")))]}
+               "locomo": [{**json.load(open(p)), "file": Path(p).stem} for p in sorted(glob.glob(str(RESULTS / "locomo_*.json")))],
+               "longmemeval": [{**json.load(open(p)), "file": Path(p).stem}
+                               for p in sorted(glob.glob(str(RESULTS / "longmemeval_*.json")))]}
     with open(RESULTS / "summary.json", "w") as f:
         json.dump(summary, f, indent=2)
 
@@ -85,7 +86,8 @@ def main():
                   f"{r['efSearch']} | {r['recall_at_10']:.3f} | {r['search_avg_ms']:.3f} | – | {r['build_seconds']:.1f} |")
     for lm in summary["longmemeval"]:
         md.append(f"\n## LongMemEval_S (fresh held-out: {lm['questions']} questions, {lm['turns']:,} turns; embedder "
-                  f"{lm['embedder']}, {lm['engine']} engine, answer check {lm['answer_check']}; no LLM)\n")
+                  f"{lm['embedder']}, {lm['engine']} engine, answer check {lm['answer_check']}; no LLM)"
+                  + (" — deep recall" if lm.get("deep_recall") else "") + f" — `{lm['file']}.json`\n")
         types = [t for t in lm["systems"]["recallix"] if t != "overall"]
         md.append("| system | recall@5 | recall@10 | hit@10 | " + " | ".join(f"{t} recall@10" for t in types) + " |")
         md.append("|---" * (4 + len(types)) + "|")

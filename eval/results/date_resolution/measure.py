@@ -30,13 +30,23 @@ for sample in locomo.split_samples(json.load(open(sys.argv[1])), "dev"):
         top = out["memories"][0] if out["memories"] else {}
         rows.append({"cat": qa["category"], "declined": out["status"] in ("ABSTAINED", "NO_MATCH"),
                      "recall10": (len(set(served) & ev) / len(ev)) if ev else None,
-                     "answer": top.get("answer"), "gold": qa.get("answer"),
+                     "answer": (out.get("answer") or {}).get("text") or top.get("answer"), "gold": qa.get("answer"),
                      "has_dates": bool((top.get("metadata") or {}).get("dates")) if isinstance(top.get("metadata"), dict) else False})
+import collections
+def f1(a, g):
+    """LoCoMo-style token F1 between an answer and the gold answer (0 for a decline)."""
+    tk = lambda x: [t for t in re.sub(r"[^a-z0-9 ]", " ", str(x).lower()).split()
+                    if t not in ("a", "an", "the", "of", "to", "in", "on", "and", "her", "his", "their")]
+    a, g = tk(a or ""), tk(g)
+    common = sum((collections.Counter(a) & collections.Counter(g)).values())
+    return 0.0 if not common else 2 * common / (len(a) + len(g))
 ans = [r for r in rows if r["cat"] != 5]; adv = [r for r in rows if r["cat"] == 5]
 res = {"recall@10": round(float(np.mean([r["recall10"] for r in ans if r["recall10"] is not None])), 4),
        "recall@10_by_cat": {c: round(float(np.mean([r["recall10"] for r in ans if r["cat"] == c and r["recall10"] is not None])), 4) for c in (1, 2, 3, 4)},
        "adversarial_declined": round(float(np.mean([r["declined"] for r in adv])), 4),
        "answerable_wrongly_declined": round(float(np.mean([r["declined"] for r in ans])), 4),
+       "answer_f1": round(float(np.mean([0.0 if r["declined"] else f1(r["answer"], r["gold"]) for r in ans])), 4),
+       "answer_f1_by_cat": {c: round(float(np.mean([0.0 if r["declined"] else f1(r["answer"], r["gold"]) for r in ans if r["cat"] == c])), 4) for c in (1, 2, 3, 4)},
        "temporal_reader_answer_matches_gold": f'{sum(matches(r["answer"], r["gold"]) for r in ans if r["cat"] == 2)}/{sum(1 for r in ans if r["cat"] == 2)}'}
 json.dump({"summary": res, "rows": rows}, open(sys.argv[2], "w"), indent=1)
 print(json.dumps(res))

@@ -2,7 +2,7 @@
   "dataset": "LoCoMo (locomo10.json)",
   "split": "dev",
   "embedder": "st:BAAI/bge-small-en-v1.5",
-  "engine": "in-process brute force",
+  "engine": "real",
   "conversations": 5,
   "turns": 2760,
   "questions": 999,
@@ -10,38 +10,38 @@
   "systems": {
     "recallix": {
       "multi-hop": {
-        "recall@5": 0.2776,
-        "hit@5": 0.507,
-        "recall@10": 0.3621,
-        "hit@10": 0.6197,
+        "recall@5": 0.2952,
+        "hit@5": 0.5282,
+        "recall@10": 0.375,
+        "hit@10": 0.6268,
         "n": 142
       },
       "temporal": {
-        "recall@5": 0.7115,
-        "hit@5": 0.7308,
-        "recall@10": 0.7692,
-        "hit@10": 0.7821,
+        "recall@5": 0.7372,
+        "hit@5": 0.7564,
+        "recall@10": 0.8173,
+        "hit@10": 0.8269,
         "n": 156
       },
       "open-domain": {
-        "recall@5": 0.1894,
-        "hit@5": 0.2955,
-        "recall@10": 0.2917,
-        "hit@10": 0.4318,
+        "recall@5": 0.2008,
+        "hit@5": 0.3182,
+        "recall@10": 0.2803,
+        "hit@10": 0.3864,
         "n": 44
       },
       "single-hop": {
-        "recall@5": 0.6722,
-        "hit@5": 0.6818,
-        "recall@10": 0.7368,
-        "hit@10": 0.7464,
+        "recall@5": 0.6687,
+        "hit@5": 0.677,
+        "recall@10": 0.8122,
+        "hit@10": 0.8158,
         "n": 418
       },
       "overall": {
-        "recall@5": 0.5786,
-        "hit@5": 0.6368,
-        "recall@10": 0.6477,
-        "hit@10": 0.7118,
+        "recall@5": 0.5859,
+        "hit@5": 0.6447,
+        "recall@10": 0.7008,
+        "hit@10": 0.7579,
         "n": 760
       }
     },
@@ -158,14 +158,14 @@
     }
   },
   "abstention": {
-    "adversarial_declined": 0.23628691983122363,
-    "answerable_wrongly_declined": 0.06955380577427822,
+    "adversarial_declined": 0.32489451476793246,
+    "answerable_wrongly_declined": 0.07874015748031496,
     "n_adversarial": 237,
     "n_answerable": 762
   },
   "abstention_analysis": {
     "answer_margin": {
-      "auc": 0.7148751115075825,
+      "auc": 0.7034204950936663,
       "operating_points": [
         {
           "max_false_decline": 0.05,
@@ -173,16 +173,16 @@
         },
         {
           "max_false_decline": 0.1,
-          "adversarial_declined": 0.2627118644067797
+          "adversarial_declined": 0.2457627118644068
         },
         {
           "max_false_decline": 0.2,
-          "adversarial_declined": 0.4788135593220339
+          "adversarial_declined": 0.4279661016949153
         }
       ]
     },
     "top_relevance": {
-      "auc": 0.6056236641305913,
+      "auc": 0.6056292014131145,
       "operating_points": [
         {
           "max_false_decline": 0.05,
@@ -200,12 +200,12 @@
     }
   },
   "timing_seconds": {
-    "recallix_ingest_s": 33.43,
+    "recallix_ingest_s": 54.95,
     "dense_ingest_s": 0.0,
     "bm25_ingest_s": 0.02,
-    "recallix_query_s": 155.29,
-    "dense_query_s": 0.06,
-    "bm25_query_s": 0.69
+    "recallix_query_s": 209.3,
+    "dense_query_s": 0.07,
+    "bm25_query_s": 0.89
   },
   "embedding_calls_during_ingest": 2824,
   "llm_calls": 0,

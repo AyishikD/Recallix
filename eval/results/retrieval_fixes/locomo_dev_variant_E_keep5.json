@@ -1,0 +1,17 @@
+{
+ "summary": {
+  "questions": 999,
+  "served_recall@10": 0.7218,
+  "ranked_recall@10": 0.6732,
+  "served_any_evidence": "590/760",
+  "served_recall@10_by_cat": {
+   "multi-hop": 0.4629,
+   "temporal": 0.8526,
+   "open-domain": 0.3258,
+   "single-hop": 0.8026
+  },
+  "answerable_wrongly_declined": "49/760",
+  "traps_declined": "56/237",
+  "recall_latency_ms_median": 360.5
+ }
+}

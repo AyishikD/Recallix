@@ -56,7 +56,7 @@ mkdir -p /tmp/locomo && curl -sSfL -o /tmp/locomo/locomo10.json \
 for split in test dev; do   # dev = conversations 1-5 (used for fitting), test = 6-10
   python eval/benchmarks/locomo.py --split $split --data /tmp/locomo/locomo10.json \
     --embedder st:BAAI/bge-small-en-v1.5 --engine-url http://127.0.0.1:18431 \
-    --json eval/results/locomo_${split}_all-MiniLM-L6-v2.json
+    --json eval/results/locomo_${split}_bge-small-en-v1.5.json
 done
 kill %1
 
@@ -99,13 +99,18 @@ How the default embedding model was chosen (8 candidates, development data only)
 
 ## Fresh held-out benchmark: LongMemEval
 
-Never used for fitting or design decisions; run once with the frozen configuration.
+Never used for fitting or design decisions. Each run uses a configuration fixed beforehand:
+2026-11-22 (MiniLM), 2026-11-24 morning (bge-small, before the retrieval fixes:
+`longmemeval_s_bge-small-en-v1.5_before-retrieval-fixes.json`), 2026-11-24 evening (current
+default and deep recall). The 100-question trust sample has also been seen (see the trust check).
 
 ```bash
 python -c "from huggingface_hub import hf_hub_download as d; print(d('xiaowu0162/longmemeval-cleaned', \
     'longmemeval_s_cleaned.json', repo_type='dataset', local_dir='/tmp/lme'))"
 python eval/benchmarks/longmemeval.py --data /tmp/lme/longmemeval_s_cleaned.json --embedder $E \
-    --engine-url http://127.0.0.1:18431 --json eval/results/longmemeval_s_all-MiniLM-L6-v2.json
+    --engine-url http://127.0.0.1:18431 --storage /tmp/lme_store --json eval/results/longmemeval_s_bge-small-en-v1.5.json
+# Storing the 246,750 turns takes ~3.5 h on an M4; --storage keeps them. Recall-only re-runs then take minutes:
+python eval/benchmarks/longmemeval.py ... --storage /tmp/lme_store --reuse [--deep] --json ...
 ```
 
 ## CI

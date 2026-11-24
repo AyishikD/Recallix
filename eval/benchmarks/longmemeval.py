@@ -72,15 +72,36 @@ def main():
     ap.add_argument("--k", default="5,10")
     ap.add_argument("--limit", type=int, default=None, help="first N questions (quick runs)")
     ap.add_argument("--json", default=None)
+    ap.add_argument("--storage", default=None,
+                    help="keep the stored memories here (default: a temporary folder, deleted at exit)")
+    ap.add_argument("--reuse", action="store_true",
+                    help="recall only, from memories a previous run kept with --storage (store settings must match)")
+    ap.add_argument("--deep", action="store_true", help="deep recall (recall.rerank) for every question")
     args = ap.parse_args()
+    if args.reuse and not args.storage:
+        ap.error("--reuse needs --storage")
     ks = [int(x) for x in args.k.split(",")]
     kmax = max(ks)
 
     env = run_eval.Env(args.embedder, args.engine_url)
+    if args.storage:
+        import os
+        os.makedirs(args.storage, exist_ok=True)
+        os.environ["RECALLIX_STORAGE_ROOT"] = os.path.abspath(args.storage)
+        from backend import settings
+        settings.reload()
     from backend.api.deps import get_memory_manager, reset
     reset()
     with contextlib.redirect_stdout(io.StringIO()):
         mm = get_memory_manager()
+    map_path = Path(args.storage) / "lme_map.json" if args.storage else None
+    saved_map = json.load(open(map_path)) if args.reuse else {}
+    if args.reuse:
+        from backend.brain.memory import index_sync
+        t0 = time.time()
+        with contextlib.redirect_stdout(io.StringIO()):
+            index_sync.sync(mm.episodic, mm.semantic)  # the engine starts empty: rebuild it from the kept SQLite
+        print(f"reusing {args.storage}: engine rebuilt in {time.time() - t0:.0f}s", flush=True)
 
     data = json.load(open(args.data))[: args.limit]
     systems = ["recallix", "recallix_ranked", "dense", "bm25"]
@@ -97,10 +118,18 @@ def main():
         n_turns += len(turns)
         mem_to_turn = defaultdict(list)
         t0 = time.time()
-        with contextlib.redirect_stdout(io.StringIO()):
-            for key, text, speaker, _, ts in timed:
-                res = mm.store(user, text, client_metadata={"speaker": speaker}, timestamp=ts)
-                mem_to_turn[res["memory_id"]].append(key)
+        if args.reuse:
+            for mid, keys_ in saved_map[user].items():
+                mem_to_turn[int(mid)] = keys_
+        else:
+            with contextlib.redirect_stdout(io.StringIO()):
+                for key, text, speaker, _, ts in timed:
+                    res = mm.store(user, text, client_metadata={"speaker": speaker}, timestamp=ts)
+                    mem_to_turn[res["memory_id"]].append(key)
+            if map_path:
+                saved_map[user] = {str(k): v for k, v in mem_to_turn.items()}
+                if qi % 25 == 24 or qi == len(data) - 1:
+                    json.dump(saved_map, open(map_path, "w"))
         timing["recallix_ingest_s"] += time.time() - t0
 
         keys = [k for k, *_ in turns]
@@ -111,7 +140,7 @@ def main():
 
         t0 = time.time()
         with contextlib.redirect_stdout(io.StringIO()):
-            out = mm.retrieve(user, q, limit=kmax, return_candidates=True)
+            out = mm.retrieve(user, q, limit=kmax, return_candidates=True, deep=True if args.deep else None)
         timing["recallix_query_s"] += time.time() - t0
         served = [k for m in out["memories"] for k in mem_to_turn[m["id"]]]
         ranked = [k for c in sorted(out["_candidates"], key=lambda c: -c["relevance"]) for k in mem_to_turn[c["id"]]]
@@ -135,11 +164,14 @@ def main():
         if (qi + 1) % 25 == 0:
             print(f"  {qi + 1}/{len(data)} questions", flush=True)
 
+    from backend.settings import get as settings_get
     results = {"dataset": "LongMemEval_S (cleaned)", "embedder": args.embedder,
                "engine": "real" if args.engine_url else "in-process brute force",
                "questions": len(data), "turns": n_turns,
                "answer_check": (out["debug"].get("answer_check") or {}).get("model"),
                "ranker_model": __import__("backend.brain.memory_ranking.ranker", fromlist=["Ranker"]).Ranker.model().get("source"),
+               "deep_recall": bool(args.deep), "stored_in_earlier_run": bool(args.reuse),
+               "recall_settings": {k: settings_get(f"recall.{k}") for k in ("second_pass", "rerank", "answer_check")},
                "systems": {}, "timing_seconds": {k: round(v, 1) for k, v in timing.items()}, "llm_calls": 0, "api_cost_usd": 0.0}
     for name in systems:
         overall = defaultdict(list)
