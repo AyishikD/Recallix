@@ -18,6 +18,7 @@ Both are deterministic and can be switched off (recall.updates.enabled,
 recall.user_perspective.enabled).
 """
 import re
+from functools import lru_cache
 
 from backend import settings
 
@@ -57,9 +58,14 @@ def _stem(w):
 
 
 def _topic_words(text):
+    return set(_topic_words_cached(str(text)))
+
+
+@lru_cache(maxsize=20000)
+def _topic_words_cached(text):  # recall re-reads the same memory texts on every query
     stop = _stopwords()
-    return {_stem(w.strip("'’-")) for w in _WORD.findall(str(text).lower())
-            if len(w) >= 3 and w not in stop and w not in _GENERIC and not w.isdigit()}
+    return frozenset(_stem(w.strip("'’-")) for w in _WORD.findall(text.lower())
+                     if len(w) >= 3 and w not in stop and w not in _GENERIC and not w.isdigit())
 
 
 def _names(memory):

@@ -16,6 +16,7 @@ containment ("kestrel" in "projectkestrel"), or on a string-similarity ratio
 >= 0.85 (typos such as "Kestral").
 """
 import re
+from functools import lru_cache
 
 from backend.brain.memory_ranking.importance_ranker import content_terms
 
@@ -74,6 +75,12 @@ def capitalised_spans(text, skip_sentence_initial_words=False, skip_vocatives=Fa
     skip_vocatives: drop direct address — a name immediately followed by , ! or ?
       ("Thanks, Caroline!" does not make the text about Caroline).
     """
+    # Recall parses the same memory texts on every query: cached (a pure function of its arguments).
+    return list(_capitalised_spans(text, skip_sentence_initial_words, skip_vocatives))
+
+
+@lru_cache(maxsize=20000)
+def _capitalised_spans(text, skip_sentence_initial_words, skip_vocatives):
     out = []
     for m in _CAP_SPAN.finditer(text):
         span = _strip_leading_question_words(m.group(0))
@@ -90,7 +97,7 @@ def capitalised_spans(text, skip_sentence_initial_words=False, skip_vocatives=Fa
         if skip_vocatives and re.match(r"\s*[,!?]", text[m.end():]):
             continue
         out.append(tokens)
-    return out
+    return tuple(out)
 
 
 def capitalised_entities(text):
@@ -99,6 +106,19 @@ def capitalised_entities(text):
 
 
 def spans_match(a, b):
+    """Cached _spans_match (called ~10,000 times per recall); unhashable spans skip the cache."""
+    try:
+        return _spans_match_cached(a, b)
+    except TypeError:
+        return _spans_match(a, b)
+
+
+@lru_cache(maxsize=200000)
+def _spans_match_cached(a, b):
+    return _spans_match(a, b)
+
+
+def _spans_match(a, b):
     """
     Token spans name the same entity if equal, if one is a contiguous run of the
     other ("x99" in "galaxy x99 primary emission"; "kestrel" in "project kestrel"),
@@ -171,6 +191,19 @@ def _edit_distance_at_most_one(a, b):
 
 
 def entity_matches(a, b):
+    """Cached _entity_matches; unhashable ids skip the cache."""
+    try:
+        return _entity_matches_cached(a, b)
+    except TypeError:
+        return _entity_matches(a, b)
+
+
+@lru_cache(maxsize=200000)
+def _entity_matches_cached(a, b):
+    return _entity_matches(a, b)
+
+
+def _entity_matches(a, b):
     """
     Same entity if the ids are equal; or one is the other plus a separate word
     (a prefix/suffix remainder of >= 3 chars: "projectkestrel" ~ "kestrel");
@@ -223,6 +256,12 @@ def memory_subject(memory_text, speaker=None):
                 ("Thanks, Caroline!") and the header
     `speaker` comes from the store call's metadata, never guessed from the text.
     """
+    owner, mentions = _memory_subject(memory_text, speaker)
+    return owner, list(mentions)
+
+
+@lru_cache(maxsize=20000)
+def _memory_subject(memory_text, speaker):
     body = strip_header(memory_text)
     if speaker:
         sp = re.escape(speaker.strip())
@@ -230,7 +269,7 @@ def memory_subject(memory_text, speaker=None):
     owner = None
     if is_first_person(body):
         owner = tuple(t for t in (_norm_token(w) for w in speaker.split()) if t) if speaker else ("user",)
-    mentions = capitalised_spans(body, skip_vocatives=True)
+    mentions = _capitalised_spans(body, False, True)
     return owner, mentions
 
 
