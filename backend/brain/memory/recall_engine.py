@@ -232,7 +232,9 @@ class RecallEngine:
         tail += [m for m in resolved if m["id"] not in kept and m["id"] not in {t["id"] for t in tail}]
         resolved = head + tail
         vecs = self.episodic.get_embeddings([m["id"] for m in resolved], self.semantic.model_name)
-        seeds = [vecs[m["id"]] for m in head[:int(cfg.get("seeds", 3))] if m["id"] in vecs]
+        # anchored on the best-ranked results: the reader may have moved an answering memory to the front
+        by_rank = sorted(head, key=lambda m: -m["relevance"])
+        seeds = [vecs[m["id"]] for m in by_rank[:int(cfg.get("seeds", 3))] if m["id"] in vecs]
         if seeds:
             q2 = unit(unit(np.asarray(q_vec, dtype=np.float32)) + float(cfg.get("weight", 0.5)) * unit(np.mean(seeds, axis=0)))
             sim = {m["id"]: float(np.dot(vecs[m["id"]], q2)) if m["id"] in vecs else -1.0 for m in tail}
@@ -246,7 +248,7 @@ class RecallEngine:
         near = []
         window = int(cfg.get("neighbours", 2))
         if window > 0:
-            rows = self.episodic.neighbours(user_id, head[0]["id"], agent_id, window,
+            rows = self.episodic.neighbours(user_id, by_rank[0]["id"], agent_id, window,
                                             float(cfg.get("max_gap_minutes", 60)) * 60.0)
             fresh = [r for r in rows if r["id"] not in seen_ids]  # not a candidate of the first search: score it now
             if fresh:
@@ -257,7 +259,7 @@ class RecallEngine:
                     continue
                 m = by_id.get(r["id"]) or (r if r["id"] not in seen_ids else None)  # None: removed by truth arbitration
                 if m is not None:
-                    m["found_by"], m["neighbour_of"] = "neighbour", head[0]["id"]
+                    m["found_by"], m["neighbour_of"] = "neighbour", by_rank[0]["id"]
                     near.append(m)
                     taken.add(m["id"])
         return (head + picked + near + [m for m in tail if m["id"] not in taken])[:top_k]

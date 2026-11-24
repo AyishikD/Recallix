@@ -54,7 +54,9 @@ def test_second_pass_keeps_the_first_results_and_adds_the_message_next_to_the_be
         with box.silenced():
             for i, text in enumerate(CHAT):
                 box.mm.store("u", text, timestamp=T0 + i)
+            override({"recall.second_pass": {"enabled": False}})
             before = box.mm.retrieve("u", question, limit=10)["memories"]
+            assert not any(m.get("found_by") for m in before)
             override({"recall.second_pass": {"enabled": True, "keep": 2, "search": 1, "neighbours": 1}})
             after = box.mm.retrieve("u", question, limit=10)["memories"]
     assert [m["id"] for m in after[:2]] == [m["id"] for m in before[:2]]          # the first results do not move
@@ -67,7 +69,7 @@ def test_second_pass_keeps_the_first_results_and_adds_the_message_next_to_the_be
     assert "She said the limp is probably just a sprain" in [m["content"] for m in after[:5]]
 
 
-def test_second_pass_is_off_by_default_and_needs_room_after_the_kept_results(override):
+def test_second_pass_needs_room_after_the_kept_results(override):
     with _box() as box:
         with box.silenced():
             for i, text in enumerate(CHAT):
@@ -79,7 +81,8 @@ def test_second_pass_is_off_by_default_and_needs_room_after_the_kept_results(ove
 
 def test_calculation_questions_are_recognised_only_when_enabled(override):
     asks = RecallEngine._needs_calculation
-    assert not asks("How many times did we plan to hike together?")               # off by default
+    override({"recall.answer_check": {"calculation_questions": False}})
+    assert not asks("How many times did we plan to hike together?")
     override({"recall.answer_check": {"calculation_questions": True}})
     for q in ("How many times did we plan to hike together?", "How long has it been since I adopted Toby?",
               "How many months passed between adopting Toby and Buddy?", "How long ago was my 18th birthday?"):

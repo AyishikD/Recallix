@@ -149,6 +149,15 @@ recall:
     # wrong answers cost more than refusals). Gemini batches 1-2 (development): right memory recognised
     # 44/50 -> 49/50. Unseen batch 3: +1 answered, but traps wrongly answered 0/10 -> 2/10.
     restore_case: false
+    # Calculation questions ("how many times ...", "how many months passed between ...", "how long
+    # has it been since ..."): the answer is a count or a difference across memories, never a phrase
+    # inside one, so the reader cannot confirm it and used to decline. For these the relevance
+    # threshold decides instead, and debug.answer_check.needs_calculation says the answer still has
+    # to be worked out from the memories. "How many employees ..." / "how much rent ..." are single
+    # facts and still go to the reader. Measured (eval/results/retrieval_fixes): answerable questions
+    # wrongly declined 52 -> 49 of 760 on LoCoMo dev and 9 -> 5 of 123 on conv-44; trap questions
+    # declined unchanged on LoCoMo dev (56/237), the Gemini batches (28/30) and our dev set (8/8).
+    calculation_questions: true
     # Read each memory without clauses whose subject is another person the question does not ask
     # about ("roommate liam failed his organic chemistry midterm" cannot answer "What is my major?").
     # A memory entirely about someone else then cannot answer (memory/updates.py without_other_people).
@@ -177,6 +186,25 @@ recall:
   # 0.648 -> 0.665, answerable wrongly declined 7.0% -> 6.6%, Gemini batches hit@1 0.84 -> 0.83,
   # their traps declined 28/30 -> 30/30. Short messages only / 1 before: no change. Off by default
   # (one extra embedding per stored message); to try it: enabled: true, max_words: 100000, previous: 2.
+  # Second pass: the first `keep` results stay exactly as ranked (so does any later one the reader
+  # found the answer in). Of the places after them, `search` go to the memories closest in meaning to
+  # the question and the top results together (finds a second fact that shares few words with the
+  # question), then come the messages stored right around the best-ranked result (`neighbours` on
+  # each side, within `max_gap_minutes` of it: the answer is often one line away), then the rest.
+  # It runs after recall has decided to answer, so it cannot change an answer into a decline or back.
+  # Measured (eval/results/retrieval_fixes, with calculation_questions): evidence recall@10 of what
+  # is served 0.649 -> 0.706 on LoCoMo dev (multi-hop 0.362 -> 0.376, temporal 0.782 -> 0.817,
+  # single-hop 0.734 -> 0.821, open-domain 0.292 -> 0.280 = half a question of 44) and 0.606 -> 0.667
+  # on conv-44; first-answer accuracy and trap declines unchanged everywhere (by construction).
+  # Cost: about 20 ms per recall of more than `keep` results. No effect when limit <= keep.
+  second_pass:
+    enabled: true
+    keep: 5
+    search: 2
+    seeds: 3              # top results whose meaning is added to the question for the second search
+    weight: 0.5           # how much they count next to the question
+    neighbours: 2
+    max_gap_minutes: 60
   neighbour_context:
     enabled: false
     max_words: 12
