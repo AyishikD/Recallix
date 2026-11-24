@@ -17,6 +17,7 @@ const mem = new Memory({ apiKey: process.env.RECALLIX_API_KEY! });   // baseUrl 
 await mem.store("I moved to Pune last month for a job at Infosys.");
 const out = await mem.recall("Where do I live?");
 console.log(out.status, out.memories.map((m) => m.content));
+await mem.used(out);                                                  // one line of feedback: Recallix learns from it on its own
 ```
 
 Node 18+ (uses the built-in `fetch`). License: Apache-2.0.

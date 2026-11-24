@@ -207,6 +207,61 @@ class RecallEngine:
             sim = self.semantic.cosine(q_vec, vec)
             c["semantic_score"] = 0.0 if sim is None else sim
 
+    def _second_pass(self, user_id, agent_id, final, resolved, seen_ids, q_vec, analysis, top_k):
+        """
+        recall.second_pass: the first `keep` results stay exactly as served, and so does any later
+        result in which the reader found the answer. The remaining places go to memories a first
+        search under-ranks:
+          * `search` places to the memories closest in meaning to the question and the top results
+            together (the question alone misses a second fact that shares few words with it);
+          * then the messages stored right around the top result (the answer is often one line away
+            from the best match);
+          * then the rest, in the second search's order.
+        It runs after recall has decided to answer, on the results already chosen (`final`) and the
+        rest of the ranking (`resolved`): it never turns a decline into an answer or the reverse.
+        """
+        cfg = settings.get("recall.second_pass", {}) or {}
+        keep = int(cfg.get("keep", 5))
+        if not cfg.get("enabled", False) or q_vec is None or top_k <= keep or len(final) <= keep:
+            return final
+        import numpy as np
+        unit = lambda v: v / (float(np.linalg.norm(v)) or 1.0)  # noqa: E731
+        head = final[:keep] + [m for m in final[keep:] if m.get("_answer_ok")]
+        kept = {m["id"] for m in head}
+        tail = [m for m in final[keep:] if m["id"] not in kept]
+        tail += [m for m in resolved if m["id"] not in kept and m["id"] not in {t["id"] for t in tail}]
+        resolved = head + tail
+        vecs = self.episodic.get_embeddings([m["id"] for m in resolved], self.semantic.model_name)
+        seeds = [vecs[m["id"]] for m in head[:int(cfg.get("seeds", 3))] if m["id"] in vecs]
+        if seeds:
+            q2 = unit(unit(np.asarray(q_vec, dtype=np.float32)) + float(cfg.get("weight", 0.5)) * unit(np.mean(seeds, axis=0)))
+            sim = {m["id"]: float(np.dot(vecs[m["id"]], q2)) if m["id"] in vecs else -1.0 for m in tail}
+            tail = sorted(tail, key=lambda m: -sim[m["id"]])  # stable: ties keep the first ranking
+        n_search = int(cfg.get("search", 2))
+        picked = tail[:n_search] if seeds else []
+        for m in picked:
+            m["found_by"] = "second_search"
+        taken = {m["id"] for m in head} | {m["id"] for m in picked}
+        by_id = {m["id"]: m for m in tail}
+        near = []
+        window = int(cfg.get("neighbours", 2))
+        if window > 0:
+            rows = self.episodic.neighbours(user_id, head[0]["id"], agent_id, window,
+                                            float(cfg.get("max_gap_minutes", 60)) * 60.0)
+            fresh = [r for r in rows if r["id"] not in seen_ids]  # not a candidate of the first search: score it now
+            if fresh:
+                self._attach_semantic_scores(q_vec, fresh)
+                self._score(fresh, analysis, agent_id)
+            for r in rows:
+                if r["id"] in taken:
+                    continue
+                m = by_id.get(r["id"]) or (r if r["id"] not in seen_ids else None)  # None: removed by truth arbitration
+                if m is not None:
+                    m["found_by"], m["neighbour_of"] = "neighbour", head[0]["id"]
+                    near.append(m)
+                    taken.add(m["id"])
+        return (head + picked + near + [m for m in tail if m["id"] not in taken])[:top_k]
+
     def _score(self, candidates, analysis, agent_id, alias_sources=()):
         candidate_features(candidates, analysis, agent_id, alias_sources)
         for c in candidates:
@@ -298,6 +353,13 @@ class RecallEngine:
                 if inferred is not None:
                     status, answer_check["inferred_from"] = "CONSISTENT", inferred["id"]
                     final = [inferred] + [m for m in resolved[:top_k] if m["id"] != inferred["id"]][: top_k - 1]
+            if status == "ABSTAINED" and self._needs_calculation(asked) and not answer_check["rejected_as_about_someone_else"] \
+                    and resolved[0]["relevance"] >= threshold:
+                # recall.answer_check.calculation_questions: "how many times ...", "how long since ..." are
+                # answered by counting or subtracting across memories, never by a phrase inside one, so
+                # the reader cannot confirm them. The relevance threshold decides instead, and the
+                # result says the answer still has to be worked out.
+                status, final, answer_check["needs_calculation"] = "CONSISTENT", resolved[:top_k], True
             if status == "ABSTAINED":
                 final = []
             elif (settings.get("recall.answer_check", {}) or {}).get("rerank", False):
@@ -309,6 +371,10 @@ class RecallEngine:
             status, final = "ABSTAINED", []
         else:
             status, final = "CONSISTENT", resolved[:top_k]
+
+        if status == "CONSISTENT":
+            # recall.second_pass: applied after the answer-or-decline decision, so it cannot change it
+            final = self._second_pass(user_id, agent_id, final, resolved, {r["id"] for r in ranked}, q_vec, analysis, top_k)
 
         recall_id = uuid.uuid4().hex
         self.recall_log.log(recall_id, user_id, all_scored)
@@ -376,6 +442,18 @@ class RecallEngine:
     _NOT_PEOPLE = {"I", "The", "What", "When", "Where", "Who", "Which", "How", "Why", "January", "February", "March",
                    "April", "May", "June", "July", "August", "September", "October", "November", "December", "Monday",
                    "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
+
+    # Counting occurrences, or the time between / since events. Not "how many employees ..." or
+    # "how much rent ...": those are single facts the reader can find (and a trap if never said).
+    _CALCULATION = re.compile(
+        r"\bhow many times\b"
+        r"|\bhow many (?:days|weeks|months|years) (?:passed|have passed|between|since|ago|apart|has it been)\b"
+        r"|\bhow long (?:ago|has it been|since|passed|between)\b", re.I)
+
+    @classmethod
+    def _needs_calculation(cls, query):
+        on = (settings.get("recall.answer_check", {}) or {}).get("calculation_questions", False)
+        return bool(on and cls._CALCULATION.search(str(query or "")))
 
     def _unknown_person(self, query, candidates):
         """

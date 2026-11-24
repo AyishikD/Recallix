@@ -5,6 +5,8 @@ Background jobs, run in one daemon thread inside the API process.
   prediction       Markov next-topic prediction per active user
   replay           reflection from each active user's long-term facts
   forgetting       forgetting policy over all memories
+  learning         refit the ranker from feedback; kept only if better on held-out feedback
+                   (backend/brain/memory_ranking/self_improve.py)
 
 Intervals and the "active user" window come from config.yaml `workers`.
 Every job can also be run on demand (POST /internal/jobs/run, tests).
@@ -22,6 +24,7 @@ _INTERVAL_KEYS = {
     "prediction": ("workers.prediction_minutes", 30, 60),
     "replay": ("workers.replay_hours", 6, 3600),
     "forgetting": ("workers.forgetting_hours", 24, 3600),
+    "learning": ("workers.learning_hours", 24, 3600),
 }
 
 
@@ -48,6 +51,9 @@ class Scheduler:
         users = [user_id] if user_id else None
         if job == "forgetting":
             result = self.forgetting.run_cleanup(user_id=user_id)
+        elif job == "learning":  # deployment-wide: one ranker for all users
+            from backend.brain.memory_ranking import self_improve
+            result = self_improve.run()
         else:
             users = users or self.active_users()
             result = {}

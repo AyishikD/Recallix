@@ -19,6 +19,7 @@ mem.store("I moved to Pune last month for a job at Infosys.")
 out = mem.recall("Where do I live?")
 print(out["status"], [m["content"] for m in out["memories"]])   # CONSISTENT ['I moved to Pune ...']
 print(mem.recall("What is my brother's name?")["status"])        # ABSTAINED: nothing answers it
+mem.used(out)                               # one line of feedback: Recallix learns from it on its own
 ```
 
 ## MCP (Claude Desktop, Cursor, any MCP client)

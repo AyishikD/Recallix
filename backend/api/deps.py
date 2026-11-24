@@ -1,6 +1,6 @@
 import threading
 
-_lock = threading.Lock()
+_lock = threading.RLock()  # re-entrant: get_scheduler() creates the memory manager while holding it
 _memory_manager = None
 _scheduler = None
 

@@ -39,14 +39,28 @@ import run_eval  # noqa: E402
 from locomo import BM25, score, _auc  # noqa: E402
 
 
-def turns_of(item):
-    """[(turn_key, text, speaker, has_answer)] over the question's haystack, in order."""
+def session_time(date_text):
+    """'2023/05/20 (Sat) 02:21' -> a UTC timestamp (None if it does not parse)."""
+    import re
+    from datetime import datetime, timezone
+    m = re.match(r"\s*(\d{4})/(\d{2})/(\d{2})(?:\s*\(\w+\))?\s*(\d{1,2}):(\d{2})", date_text or "")
+    if not m:
+        return None
+    y, mo, d, h, mi = map(int, m.groups())
+    return datetime(y, mo, d, h, mi, tzinfo=timezone.utc).timestamp()
+
+
+def turns_of(item, with_time=False):
+    """[(turn_key, text, speaker, has_answer)] over the question's haystack, in order
+    (plus the session's timestamp when with_time, so stored memories carry their real date)."""
     out = []
     for s_idx, (sid, date, session) in enumerate(zip(item["haystack_session_ids"], item["haystack_dates"],
                                                      item["haystack_sessions"])):
+        ts = session_time(date)
         for t_idx, turn in enumerate(session):
             speaker = "User" if turn["role"] == "user" else "Assistant"
-            out.append((f"{sid}#{t_idx}", f"[{date}] {speaker}: {turn['content']}", speaker, bool(turn.get("has_answer"))))
+            row = (f"{sid}#{t_idx}", f"[{date}] {speaker}: {turn['content']}", speaker, bool(turn.get("has_answer")))
+            out.append(row + (ts,) if with_time else row)
     return out
 
 
@@ -78,13 +92,14 @@ def main():
 
     for qi, item in enumerate(data):
         user = f"lme_{item['question_id']}"
-        turns = turns_of(item)
+        timed = turns_of(item, with_time=True)
+        turns = [t[:4] for t in timed]
         n_turns += len(turns)
         mem_to_turn = defaultdict(list)
         t0 = time.time()
         with contextlib.redirect_stdout(io.StringIO()):
-            for key, text, speaker, _ in turns:
-                res = mm.store(user, text, client_metadata={"speaker": speaker})
+            for key, text, speaker, _, ts in timed:
+                res = mm.store(user, text, client_metadata={"speaker": speaker}, timestamp=ts)
                 mem_to_turn[res["memory_id"]].append(key)
         timing["recallix_ingest_s"] += time.time() - t0
 

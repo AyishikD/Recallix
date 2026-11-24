@@ -87,9 +87,9 @@ mem.store("My name is Priya and I live in Pune.")
 out = mem.recall("Where do I live?")
 print(out["status"], [m["content"] for m in out["memories"]])
 
-# Tell Recallix which results were useful; this trains the ranker
-# (python -m backend.brain.memory_ranking.fit_ranker --from-db)
-mem.feedback(out["recall_id"], [m["id"] for m in out["memories"][:1]])
+# One line of feedback: the first memory answered it (or name the ones you used: mem.used(out, m)).
+# Recallix learns from this on its own; see "Learning from use" below.
+mem.used(out)
 ```
 
 `status` is `CONSISTENT` (answer found), `ABSTAINED` (none of the matching memories
@@ -208,3 +208,22 @@ accuracy, and from then on `receipt.trust_calibration` says `this deployment`.
 In a simulated deployment (fitted on about a hundred answers from other LongMemEval questions), this
 brought the score back within the calibration bar: eval/results/trust_check_longmemeval_recalibrated.json.
 
+## Learning from use
+
+Each `mem.used(out)` (or `POST /memory/feedback`) records which recalled memories were useful. Once a
+day (`workers.learning_hours`), Recallix refits its ranking from that feedback and **keeps the new fit
+only if it ranks better on feedback it was not fitted on** (`learning` in `config.yaml`):
+
+* nothing happens until 30 recalls have feedback, and then only when 20 new ones have arrived;
+* a fifth of the feedback is set aside; the new fit must put the right memory first at least as often,
+  in the first five at least as often, be strictly better on one of the two, and must not decline
+  answerable questions more often than allowed;
+* the model it replaces is kept, and every attempt is logged.
+
+```bash
+curl -H "X-API-Key: $ADMIN_KEY" localhost:8000/internal/learning             # what it has tried and adopted
+curl -X POST -H "X-API-Key: $ADMIN_KEY" localhost:8000/internal/learning/rollback
+python -m backend.brain.memory_ranking.self_improve --dry-run                # what a refit would do now
+```
+
+It uses only this deployment's own feedback; nothing leaves your server. To turn it off: `learning.enabled: false`.

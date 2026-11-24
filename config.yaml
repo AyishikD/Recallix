@@ -258,6 +258,19 @@ api:
 # ============================================================================
 # Background jobs (run inside the API process)
 # ============================================================================
+# Learning from use (backend/brain/memory_ranking/self_improve.py): every workers.learning_hours the
+# ranker is refitted from the feedback this deployment collected (POST /memory/feedback, mem.used()).
+# A share of the feedback is set aside, and the new fit replaces the model in use only if it ranks
+# better on that share and does not decline answerable questions more often. The replaced model is
+# kept (POST /internal/learning/rollback); every attempt is logged (GET /internal/learning).
+# Nothing happens without feedback, and nothing leaves the server.
+learning:
+  enabled: true
+  min_recalls: 30      # recalls with feedback before the first attempt
+  min_new: 20          # new recalls with feedback before trying again
+  holdout: 0.2         # share set aside to judge a new fit
+  min_holdout: 6       # answerable held-out recalls needed to judge at all
+
 workers:
   enabled: true
   active_user_days: 30           # jobs only process users with memories this recent
@@ -265,6 +278,7 @@ workers:
   prediction_minutes: 30         # Markov next-topic prediction
   replay_hours: 6                # reflections from long-term facts
   forgetting_hours: 24           # memory forgetting policy (below)
+  learning_hours: 24             # refit the ranker from feedback (`learning` below)
   forgetting:
     enabled: true
     delete_max_importance: 3.0   # delete never-recalled memories at or below this importance ...

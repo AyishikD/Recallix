@@ -25,7 +25,7 @@ class ReindexRequest(BaseModel):
 
 
 class JobRequest(BaseModel):
-    job: Literal["state_inference", "prediction", "replay", "forgetting"]
+    job: Literal["state_inference", "prediction", "replay", "forgetting", "learning"]
     user_id: Optional[str] = None
 
 
@@ -51,6 +51,20 @@ def reindex(request: ReindexRequest):
     except EngineError as e:
         raise HTTPException(status_code=503, detail=str(e))
     return envelope(report)
+
+
+@router.get("/learning")
+def learning_status():
+    """What the deployment has learned from feedback: every automatic refit attempt and its outcome."""
+    from backend.brain.memory_ranking import self_improve
+    return envelope({**self_improve.status(), "settings": self_improve.config()})
+
+
+@router.post("/learning/rollback")
+def learning_rollback():
+    """Returns the ranker to the model in use before the last automatic adoption."""
+    from backend.brain.memory_ranking import self_improve
+    return envelope(self_improve.rollback())
 
 
 @router.post("/jobs/run")

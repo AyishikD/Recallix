@@ -35,6 +35,24 @@ class Memory:
         return self.client.request("POST", "/memory/feedback", data={
             "recall_id": recall_id, "relevant_memory_ids": relevant_memory_ids, "user_id": user_id})
 
+    def used(self, recall: Dict[str, Any], *memories: Any, user_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        One-line feedback after a recall, so Recallix learns from use:
+
+            out = mem.recall("Where do I live?")
+            mem.used(out)                       # the first memory answered it
+            mem.used(out, out["memories"][2])   # or name the memories (or ids) your app actually used
+
+        Recallix refits its ranking from this on a schedule and keeps a new fit only if it is better.
+        """
+        chosen = memories or recall.get("memories", [])[:1]
+        ids = [int(m["id"] if isinstance(m, dict) else m) for m in chosen]
+        return self.feedback(recall["recall_id"], ids, user_id=user_id)
+
+    def none_used(self, recall: Dict[str, Any], user_id: Optional[str] = None) -> Dict[str, Any]:
+        """Feedback that nothing in this recall was useful."""
+        return self.feedback(recall["recall_id"], [], user_id=user_id)
+
     def proactive(self, message: str, agent_id: str = "default_agent", limit: int = 5,
                   user_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Memories worth keeping in mind for a new message (no question needed), each with the reason."""

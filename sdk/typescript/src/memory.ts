@@ -49,6 +49,25 @@ export class Memory {
         });
     }
 
+    /**
+     * One-line feedback after a recall, so Recallix learns from use:
+     *
+     *     const out = await mem.recall("Where do I live?");
+     *     await mem.used(out);                    // the first memory answered it
+     *     await mem.used(out, out.memories[2]);   // or name the memories (or ids) your app actually used
+     *
+     * Recallix refits its ranking from this on a schedule and keeps a new fit only if it is better.
+     */
+    used(recall: { recall_id: string; memories?: { id: number }[] }, ...memories: ({ id: number } | number)[]) {
+        const chosen = memories.length ? memories : (recall.memories ?? []).slice(0, 1);
+        return this.feedback(recall.recall_id, chosen.map(m => (typeof m === "number" ? m : m.id)));
+    }
+
+    /** Feedback that nothing in this recall was useful. */
+    noneUsed(recall: { recall_id: string }) {
+        return this.feedback(recall.recall_id, []);
+    }
+
     /** Memories worth keeping in mind for a new message (no question needed), each with the reason. */
     proactive(message: string, opts: { agentId?: string; limit?: number; userId?: string } = {}) {
         return this.client.request("POST", "/memory/proactive", {

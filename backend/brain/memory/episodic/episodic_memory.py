@@ -311,6 +311,36 @@ class EpisodicMemory:
     def get_by_id(self, user_id, memory_id, agent_id=None):
         return self.get_many(user_id, [memory_id], agent_id).get(int(memory_id))
 
+    def neighbours(self, user_id, memory_id, agent_id=None, window=2, max_gap_seconds=3600.0):
+        """
+        The visible ACTIVE memories stored just after and just before `memory_id` in the same
+        conversation: at most `window` on each side, each within `max_gap_seconds` of it.
+        Nearest first (next, previous, second next, second previous). recall.second_pass uses it.
+        """
+        vis = f"AND {_VISIBLE}" if agent_id is not None else ""
+        tail = (agent_id,) if agent_id is not None else ()
+        conn = self._connect()
+        try:
+            row = conn.execute("SELECT timestamp FROM episodic_events WHERE id = ? AND user_id = ?",
+                               (int(memory_id), user_id)).fetchone()
+            if not row or row[0] is None:
+                return []
+            t, mid, gap, w = float(row[0]), int(memory_id), float(max_gap_seconds), int(window)
+            after = [self._row(r) for r in conn.execute(
+                f"SELECT {_SELECT} FROM episodic_events e WHERE e.user_id = ? AND e.status = 'ACTIVE' {vis} "
+                f"AND (e.timestamp > ? OR (e.timestamp = ? AND e.id > ?)) AND e.timestamp <= ? "
+                f"ORDER BY e.timestamp ASC, e.id ASC LIMIT ?", (user_id, *tail, t, t, mid, t + gap, w))]
+            before = [self._row(r) for r in conn.execute(
+                f"SELECT {_SELECT} FROM episodic_events e WHERE e.user_id = ? AND e.status = 'ACTIVE' {vis} "
+                f"AND (e.timestamp < ? OR (e.timestamp = ? AND e.id < ?)) AND e.timestamp >= ? "
+                f"ORDER BY e.timestamp DESC, e.id DESC LIMIT ?", (user_id, *tail, t, t, mid, t - gap, w))]
+        finally:
+            conn.close()
+        out = []
+        for i in range(w):
+            out.extend(side[i] for side in (after, before) if i < len(side))
+        return out
+
     def list_recent(self, user_id, limit=200):
         conn = self._connect()
         try:
