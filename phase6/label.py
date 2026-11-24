@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import DATA, RELATIONS, Teacher, append_jsonl, read_jsonl  # noqa: E402
+from common import DATA, RELATIONS, Teacher, append_jsonl, indexed, items_of, read_jsonl  # noqa: E402
 
 BATCH = 10
 
@@ -55,7 +55,7 @@ def label_batch(teacher, messages):
             return {messages[0][0]: None}  # unlabelled (not "no facts"); skipped in training
         half = len(messages) // 2
         return {**label_batch(teacher, messages[:half]), **label_batch(teacher, messages[half:])}
-    by_index = {int(it.get("i", -1)): it.get("facts", []) for it in res.get("items", []) if isinstance(it, dict)}
+    by_index = indexed(items_of(res, "items"))
     out = {}
     for k, (mid, text) in enumerate(messages):
         facts = []

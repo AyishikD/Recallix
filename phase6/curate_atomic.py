@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from common import DATA, Teacher, append_jsonl, read_jsonl  # noqa: E402
+from common import DATA, Teacher, append_jsonl, items_of, read_jsonl  # noqa: E402
 
 MAX_HEADS = 2500
 PER_REQUEST = 16  # keeps the whole Phase 6 run under the free tier's 1,000 requests/day
@@ -65,7 +65,7 @@ def main():
             effects[e] = items
             lines.append(f"Event {e}: {rules[i]['head']}\n" + "\n".join(f"  {k}. [{rel}] {tail}" for k, (rel, tail) in enumerate(items)))
         res = teacher.chat(SYSTEM, "\n".join(lines), max_tokens=800) or {}
-        keep = {(int(x[0]), int(x[1])) for x in res.get("keep", []) if isinstance(x, list) and len(x) == 2
+        keep = {(int(x[0]), int(x[1])) for x in items_of(res, "keep") if isinstance(x, list) and len(x) == 2
                 and str(x[0]).isdigit() and str(x[1]).isdigit()}
         append_jsonl(out_path, [{"head_index": i, "head": rules[i]["head"],
                                  "kept": [list(effects[e][k]) for k in range(len(effects[e])) if (e, k) in keep],

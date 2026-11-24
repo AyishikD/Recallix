@@ -157,3 +157,26 @@ def labels_path():
         return reviewed
     return first
 
+
+def items_of(res, key):
+    """
+    The list under `key` in a teacher's JSON answer. The model is asked for {key: [...]} but sometimes
+    answers with the bare list, or with something else entirely; anything that is not a list gives [].
+    """
+    found = res.get(key, []) if isinstance(res, dict) else res
+    return found if isinstance(found, list) else []
+
+
+def indexed(items):
+    """{i: facts} from [{"i": .., "facts": [..]}] items; items without a usable index keep their position."""
+    out = {}
+    for pos, it in enumerate(items):
+        if not isinstance(it, dict):
+            continue
+        try:
+            i = int(it.get("i", pos))
+        except (TypeError, ValueError):
+            i = pos
+        facts = it.get("facts", [])
+        out[i] = facts if isinstance(facts, list) else []
+    return out

@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import DATA, append_jsonl, read_jsonl, Teacher  # noqa: E402
+from common import DATA, Teacher, append_jsonl, indexed, items_of, read_jsonl  # noqa: E402
 from label import SYSTEM as LABEL_SYSTEM, RELATIONS  # noqa: E402
 
 BATCH = 10
@@ -42,7 +42,7 @@ def review_batch(teacher, items):
             return {items[0][0]: None}
         half = len(items) // 2
         return {**review_batch(teacher, items[:half]), **review_batch(teacher, items[half:])}
-    by_index = {int(it.get("i", -1)): it.get("facts", []) for it in res.get("items", []) if isinstance(it, dict)}
+    by_index = indexed(items_of(res, "items"))
     out = {}
     for k, (mid, text, old) in enumerate(items):
         if k not in by_index:

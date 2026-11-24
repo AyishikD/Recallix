@@ -12,7 +12,7 @@ import re
 import sys
 
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parent))
-from common import DATA, SOURCES, Teacher, append_jsonl, norm, read_jsonl  # noqa: E402
+from common import DATA, SOURCES, Teacher, append_jsonl, items_of, norm, read_jsonl  # noqa: E402
 
 PER_SOURCE = {"taskmaster": 900, "multiwoz": 500, "sgd": 500}
 SYNTHETIC_BATCHES = 60          # x 25 messages
@@ -60,7 +60,7 @@ def synthetic(teacher, n_batches):
     for b in range(len(done), n_batches):
         topic = TOPICS[b % len(TOPICS)]
         res = teacher.chat(SYNTH_SYSTEM, f"Write 25 different messages about: {topic}.", max_tokens=2500, temperature=1.0) or {}
-        msgs = [m.strip() for m in res.get("messages", []) if isinstance(m, str) and _ok(m)]
+        msgs = [m.strip() for m in items_of(res, "messages") if isinstance(m, str) and _ok(m)]
         append_jsonl(path, [{"batch": b, "topic": topic, "messages": msgs}])
         print(f"  synthetic batch {b + 1}/{n_batches}: {len(msgs)} messages ({topic})", flush=True)
     out = [m for row in read_jsonl(path) for m in row["messages"]]
