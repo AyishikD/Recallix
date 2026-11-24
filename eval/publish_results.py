@@ -63,18 +63,26 @@ def main():
           f"{summary['machine'].get('cpu') or summary['machine']['machine']} ({summary['machine']['system']}). "
           "Regenerate with the commands in `eval/README.md`.\n"]
     md.append("## Memory pipeline (eval harness)\n")
-    md.append("| split | embedder | facts F1 | schema acc | importance AUC / acc@5 | retrieval hit@1 / hit@3 | false abstain | unanswerable declined | gauntlet | retention@1 |")
-    md.append("|---|---|---|---|---|---|---|---|---|---|")
+    md.append("| file | split | embedder | facts F1 | schema acc | importance AUC / acc@5 | retrieval hit@1 / hit@3 | false abstain | unanswerable declined | gauntlet | retention@1 |")
+    md.append("|---|---|---|---|---|---|---|---|---|---|---|")
+
+    def f2(x):  # "–" where a run did not measure something (e.g. retrieval-only runs)
+        return "–" if x is None or (isinstance(x, float) and x != x) else f"{x:.2f}"
     for name, r in evals.items():
+        if not r.get("split"):
+            continue  # not a pipeline eval (trust checks are listed below)
         ret, leg = r.get("retrieval", {}), r.get("legacy", {})
         imp = r.get("importance", {})
-        md.append(f"| {r.get('split')} | {r.get('embedder')} | {r.get('facts', {}).get('f1', float('nan')):.2f} | "
-                  f"{r.get('schemas', {}).get('accuracy', float('nan')):.2f} | "
-                  f"{imp.get('auc', float('nan')):.2f} / {imp.get('accuracy', float('nan')):.2f} | "
-                  f"{ret.get('hit@1', float('nan')):.2f} / {ret.get('hit@3', float('nan')):.2f} | "
-                  f"{ret.get('false_abstain_rate', float('nan')):.2f} | {ret.get('abstain_accuracy', float('nan')):.2f} | "
-                  f"{leg.get('gauntlet_passed', '-')}/{leg.get('gauntlet_total', '-')} | "
-                  f"{leg.get('retention_hits', '-')}/{leg.get('retention_total', '-')} |")
+        md.append(f"| `{name}` | {r.get('split')} | {r.get('embedder')} | {f2(r.get('facts', {}).get('f1'))} | "
+                  f"{f2(r.get('schemas', {}).get('accuracy'))} | {f2(imp.get('auc'))} / {f2(imp.get('accuracy'))} | "
+                  f"{f2(ret.get('hit@1'))} / {f2(ret.get('hit@3'))} | {f2(ret.get('false_abstain_rate'))} | "
+                  f"{f2(ret.get('abstain_accuracy'))} | "
+                  + (f"{leg['gauntlet_passed']}/{leg['gauntlet_total']} | " if "gauntlet_passed" in leg else "– | ")
+                  + (f"{leg['retention_hits']}/{leg['retention_total']} |" if "retention_hits" in leg else "– |"))
+    others = [name for name, r in evals.items() if not r.get("split")]
+    if others:
+        md.append("\n`fresh` rows are retrieval-only runs on the practice batches. Other result files (not pipeline evals): "
+                  + ", ".join(f"`{n}.json`" for n in others) + ".")
     md.append("\n## Vector engine (single thread, recall vs exact search)\n")
     md.append("| impl | n | dim | data | M | efC | efS | recall@10 | search avg ms | p99 ms | build s |")
     md.append("|---|---|---|---|---|---|---|---|---|---|---|")

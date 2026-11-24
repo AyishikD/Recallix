@@ -36,7 +36,8 @@ def config():
             "candidates": int(c.get("candidates", 50)), "keep": int(c.get("keep", 3)),
             "max_length": int(c.get("max_length", 256)), "threads": c.get("threads"), "device": c.get("device"),
             "preload": bool(c.get("preload", True)), "auto": bool(c.get("auto", False)),
-            "context": bool(c.get("context", True)), "context_gap_minutes": float(c.get("context_gap_minutes", 60))}
+            "context": bool(c.get("context", True)), "context_gap_minutes": float(c.get("context_gap_minutes", 60)),
+            "context_max_words": None if c.get("context_max_words") is None else int(c["context_max_words"])}
 
 
 class Reranker:

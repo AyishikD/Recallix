@@ -1,28 +1,27 @@
 # Measured results
 
-Generated 2026-11-24 15:19 UTC from commit `51b68fec + uncommitted changes` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
+Generated 2026-11-24 17:44 UTC from commit `d62eaee8` on Apple M4 (Darwin). Regenerate with the commands in `eval/README.md`.
 
 ## Memory pipeline (eval harness)
 
-| split | embedder | facts F1 | schema acc | importance AUC / acc@5 | retrieval hit@1 / hit@3 | false abstain | unanswerable declined | gauntlet | retention@1 |
-|---|---|---|---|---|---|---|---|---|---|
-| dev | st:sentence-transformers/all-MiniLM-L6-v2 | 0.96 | 0.97 | 1.00 / 0.97 | 0.86 / 0.96 | 0.04 | 0.25 | 7/12 | 7/8 |
-| dev | st:BAAI/bge-small-en-v1.5 | 0.96 | 0.97 | 1.00 / 0.94 | 0.93 / 0.96 | 0.04 | 1.00 | 8/12 | 7/8 |
-| dev | hash | 0.96 | 0.52 | 0.99 / 0.81 | 0.82 / 0.93 | 0.07 | 0.62 | 6/12 | 7/8 |
-| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.92 / 0.92 | 0.08 | 0.90 | -/- | -/- |
-| fresh | st:BAAI/bge-small-en-v1.5 | nan | nan | nan / nan | 0.84 / 0.84 | 0.13 | 0.93 | -/- | -/- |
-| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.76 / 0.88 | 0.08 | 0.90 | -/- | -/- |
-| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.84 | 0.16 | 1.00 | -/- | -/- |
-| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.84 | 0.16 | 0.90 | -/- | -/- |
-| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.96 | 0.04 | 0.80 | -/- | -/- |
-| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.92 | 0.08 | 1.00 | -/- | -/- |
-| fresh | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | 0.80 / 0.92 | 0.08 | 1.00 | -/- | -/- |
-| test | st:sentence-transformers/all-MiniLM-L6-v2 | 0.93 | 0.85 | 1.00 / 0.94 | 0.50 / 0.71 | 0.29 | 0.50 | 7/12 | 7/8 |
-| test | st:BAAI/bge-small-en-v1.5 | 0.93 | 0.85 | 1.00 / 0.94 | 0.86 / 0.93 | 0.07 | 0.75 | 8/12 | 7/8 |
-| test | hash | 0.93 | 0.42 | 0.97 / 0.83 | 0.43 / 0.50 | 0.43 | 0.50 | 6/12 | 7/8 |
-| None | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | nan / nan | nan | nan | -/- | -/- |
-| None | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | nan / nan | nan | nan | -/- | -/- |
-| None | st:sentence-transformers/all-MiniLM-L6-v2 | nan | nan | nan / nan | nan / nan | nan | nan | -/- | -/- |
+| file | split | embedder | facts F1 | schema acc | importance AUC / acc@5 | retrieval hit@1 / hit@3 | false abstain | unanswerable declined | gauntlet | retention@1 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `dev_all-MiniLM-L6-v2` | dev | st:sentence-transformers/all-MiniLM-L6-v2 | 0.96 | 0.97 | 1.00 / 0.97 | 0.86 / 0.96 | 0.04 | 0.25 | 7/12 | 7/8 |
+| `dev_bge-small-en-v1.5` | dev | st:BAAI/bge-small-en-v1.5 | 0.96 | 0.97 | 1.00 / 0.94 | 0.93 / 0.96 | 0.04 | 1.00 | 8/12 | 7/8 |
+| `dev_hash` | dev | hash | 0.96 | 0.52 | 0.99 / 0.81 | 0.82 / 0.93 | 0.07 | 0.62 | 6/12 | 7/8 |
+| `fresh_dev_batches1-2_all-MiniLM-L6-v2` | fresh | st:sentence-transformers/all-MiniLM-L6-v2 | – | – | – / – | 0.92 / 0.92 | 0.08 | 0.90 | – | – |
+| `fresh_dev_batches1-3_bge-small-en-v1.5` | fresh | st:BAAI/bge-small-en-v1.5 | – | – | – / – | 0.84 / 0.84 | 0.13 | 0.93 | – | – |
+| `fresh_gemini1_all-MiniLM-L6-v2` | fresh | st:sentence-transformers/all-MiniLM-L6-v2 | – | – | – / – | 0.76 / 0.88 | 0.08 | 0.90 | – | – |
+| `fresh_gemini2_all-MiniLM-L6-v2` | fresh | st:sentence-transformers/all-MiniLM-L6-v2 | – | – | – / – | 0.80 / 0.84 | 0.16 | 1.00 | – | – |
+| `fresh_gemini2_all-MiniLM-L6-v2_changes_off` | fresh | st:sentence-transformers/all-MiniLM-L6-v2 | – | – | – / – | 0.80 / 0.84 | 0.16 | 0.90 | – | – |
+| `fresh_gemini3_all-MiniLM-L6-v2` | fresh | st:sentence-transformers/all-MiniLM-L6-v2 | – | – | – / – | 0.80 / 0.96 | 0.04 | 0.80 | – | – |
+| `fresh_gemini3_all-MiniLM-L6-v2_all_off` | fresh | st:sentence-transformers/all-MiniLM-L6-v2 | – | – | – / – | 0.80 / 0.92 | 0.08 | 1.00 | – | – |
+| `fresh_gemini3_all-MiniLM-L6-v2_before_reader_fix` | fresh | st:sentence-transformers/all-MiniLM-L6-v2 | – | – | – / – | 0.80 / 0.92 | 0.08 | 1.00 | – | – |
+| `test_all-MiniLM-L6-v2` | test | st:sentence-transformers/all-MiniLM-L6-v2 | 0.93 | 0.85 | 1.00 / 0.94 | 0.50 / 0.71 | 0.29 | 0.50 | 7/12 | 7/8 |
+| `test_bge-small-en-v1.5` | test | st:BAAI/bge-small-en-v1.5 | 0.93 | 0.85 | 1.00 / 0.94 | 0.86 / 0.93 | 0.07 | 0.75 | 8/12 | 7/8 |
+| `test_hash` | test | hash | 0.93 | 0.42 | 0.97 / 0.83 | 0.43 / 0.50 | 0.43 | 0.50 | 6/12 | 7/8 |
+
+`fresh` rows are retrieval-only runs on the practice batches. Other result files (not pipeline evals): `trust_check_locomo_test.json`, `trust_check_longmemeval.json`, `trust_check_longmemeval_recalibrated.json`.
 
 ## Vector engine (single thread, recall vs exact search)
 

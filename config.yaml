@@ -204,6 +204,7 @@ recall:
     keep: 3
     context: true
     context_gap_minutes: 60
+    context_max_words: null    # read with the previous message only messages up to this many words (null: all)
     max_length: 256
     threads: null         # torch CPU threads for this model (null = torch default)
     device: null          # null = GPU if available (cuda / Apple mps), else CPU

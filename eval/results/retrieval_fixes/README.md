@@ -75,6 +75,11 @@ on every question; mean recall 207 → 279 ms (every question deep: 494 ms; Appl
 
 ## Tried and rejected
 
+* **Reading the previous message only for short candidates** (`recall.rerank.context_max_words`, left at
+  `null` = all), LoCoMo dev with deep recall on every question (`locomo_dev_deep_context_*.json`): served
+  recall@10 0.739 (all) -> 0.718 (<= 15 words) / 0.717 (<= 10 words), single-hop 0.840 -> 0.796 / 0.793;
+  median recall 326 -> 247 / 252 ms (Apple GPU). Longer messages gain from the previous message too.
+
 * **Spreading results across sessions** (cap per session): recall@10 0.673 → 0.573-0.667.
 * **Store-time neighbour context** (`recall.neighbour_context`): no gain on conv-44 once the
   second pass exists.

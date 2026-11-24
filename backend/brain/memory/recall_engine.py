@@ -252,7 +252,9 @@ class RecallEngine:
         scores = model.scores(query, texts)
         if cfg["context"] and user_id is not None:
             before = self.episodic.previous_of(user_id, [m["id"] for m in pool], agent_id, cfg["context_gap_minutes"] * 60.0)
-            idx = [i for i, m in enumerate(pool) if m["id"] in before]
+            short = cfg["context_max_words"]  # only short replies need the message before them (None: all)
+            idx = [i for i, m in enumerate(pool) if m["id"] in before
+                   and (short is None or len((m.get("content") or "").split()) <= short)]
             if idx:
                 with_ctx = model.scores(query, [f"{before[pool[i]['id']]}\n{texts[i]}" for i in idx])
                 for i, sc in zip(idx, with_ctx):
