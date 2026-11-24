@@ -6,11 +6,9 @@ app
 components
 lib
 public
-scratch
 eval
 phase6
 tests
-rag_chat_app
 examples
 sdk
 docs

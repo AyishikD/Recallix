@@ -9,7 +9,7 @@ is produced by the commands below. Nothing is entered by hand.
 |---|---|
 | `data/dev/` | Fitting and tuning (importance weights, ranker weights + abstention threshold, rules). |
 | `data/test/` | Held out. Reported, never used to choose patterns, cue words, seeds or weights. |
-| `data/legacy/` | Pre-existing benchmarks ported from the old `scratch/` scripts (adversarial gauntlet v1–v3, 500-turn retention). Never tuned on. |
+| `data/legacy/` | Pre-existing benchmarks ported from the old `scratch/` scripts (since removed; see git history) (adversarial gauntlet v1–v3, 500-turn retention). Never tuned on. |
 
 Tasks: `facts` (slot extraction P/R/F1), `schemas` (top-1 accuracy), `importance` (ROC AUC,
 accuracy at 5.0 over an ordered conversation), `retrieval` (hit@1/hit@3 on answerable

@@ -149,8 +149,7 @@ CI (`.github/workflows/backend.yml`) builds the engine on Linux (AVX2) and macOS
 the C++ tests under ThreadSanitizer, the API/integration tests against the real engine binary,
 and an eval regression gate.
 
-`scratch/` holds legacy scripts written for the previous API, kept for reference;
-`examples/multi_agent_handover.py` is the maintained multi-agent demo (the agents use an LLM;
+`examples/multi_agent_handover.py` is the multi-agent demo (the agents use an LLM;
 Recallix does not).
 
 ## License

@@ -20,7 +20,7 @@
 models:
   # The memory pipeline (store/recall/workers) makes NO LLM calls; it only needs
   # embeddings. `provider` is used only by scripts that drive LLM agents
-  # (e.g. scratch/multi_agent_benchmark.py).
+  # (e.g. examples/multi_agent_handover.py).
   # Which provider to use: "ollama", "openai", "anthropic", "groq", "nvidia", or "custom"
   provider: "nvidia"
   # Embeddings: "local" (in-process sentence-transformers, fully offline; needs requirements-local.txt),

@@ -43,26 +43,3 @@ def test_python_sdk_roundtrip(live_server, api_keys):
         mem.recall("x", user_id="bob")  # user key may not act for another user
     assert e.value.status == 403
 
-
-def test_rag_app_passwords_are_salted_and_legacy_rows_upgrade(tmp_path, monkeypatch):
-    sys.path.insert(0, str(ROOT / "rag_chat_app"))
-    import hashlib
-    import sqlite3
-    import database
-    monkeypatch.setattr(database, "DB_PATH", str(tmp_path / "app.db"))
-    database.init_db()
-    assert database.register_user("ana", "pw1")
-    h1 = sqlite3.connect(database.DB_PATH).execute("SELECT password_hash FROM users").fetchone()[0]
-    assert h1.startswith("pbkdf2$") and "pw1" not in h1
-    assert database.register_user("ben", "pw1")
-    h2 = sqlite3.connect(database.DB_PATH).execute("SELECT password_hash FROM users WHERE username='ben'").fetchone()[0]
-    assert h1 != h2  # salted
-    assert database.login_user("ana", "pw1")[1] == "ana"
-    assert database.login_user("ana", "wrong") is None
-
-    conn = sqlite3.connect(database.DB_PATH)
-    conn.execute("INSERT INTO users (username, password_hash) VALUES ('old', ?)", (hashlib.sha256(b"pw").hexdigest(),))
-    conn.commit()
-    assert database.login_user("old", "pw") is not None
-    upgraded = conn.execute("SELECT password_hash FROM users WHERE username='old'").fetchone()[0]
-    assert upgraded.startswith("pbkdf2$")
