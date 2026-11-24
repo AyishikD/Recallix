@@ -103,6 +103,7 @@ class AnswerChecker:
     def threshold(self):
         """
         Resolution order: config override > this deployment's certified threshold >
+        the threshold learned from this deployment's feedback (answer_check_learning.py) >
         the dev-fitted default for this model > the model's native boundary (0).
         A certificate without enough data means "never decline": -inf.
         """
@@ -112,6 +113,10 @@ class AnswerChecker:
         cert = self.certificate()
         if cert is not None:
             return float(cert["threshold"]) if cert.get("certified") else float("-inf")
+        from .answer_check_learning import load as learned
+        t = learned(self.model_name)
+        if t is not None:
+            return t
         try:
             with open(DEFAULT_PATH) as f:
                 fitted = json.load(f)

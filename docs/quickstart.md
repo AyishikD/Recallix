@@ -238,3 +238,18 @@ python -m backend.brain.memory_ranking.self_improve --dry-run                # w
 ```
 
 It uses only this deployment's own feedback; nothing leaves your server. To turn it off: `learning.enabled: false`.
+
+**Optional: learn when to say "I don't know"** (`learning.answer_check.enabled: true`, off by default).
+The answer check declines below a threshold, and the right threshold depends on your users' questions:
+where nearly everything asked has an answer in memory it should decline less, where many questions ask
+about things never said it should decline more. With this on, the same nightly run also picks the
+threshold from feedback: recalls where a memory was used count as answerable, `mem.none_used(out)` as
+not answerable, and a wrong answer counts as 3 refusals (`wrong_answer_cost`). A new threshold is kept
+only if it scores better on held-out feedback, and needs 50 answerable and 20 not-answerable recalls first.
+To let it learn from wrongly declined questions too, recall with `keep_on_decline=True` and give feedback
+on declined recalls as well.
+
+```bash
+curl -X POST -H "X-API-Key: $ADMIN_KEY" "localhost:8000/internal/learning/rollback?target=answer_check"
+python -m backend.brain.features.answer_check_learning --dry-run   # what it would choose now
+```

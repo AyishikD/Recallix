@@ -35,7 +35,7 @@ from ..features import dates as date_resolution
 from .updates import CONTEXT_KEY, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
-                  "symbolic_match", "pool", "_answer_ok")
+                  "symbolic_match", "pool", "_answer_ok", "_counts")
 
 
 class RecallEngine:
@@ -404,6 +404,8 @@ class RecallEngine:
             cert = checker.certificate() if hasattr(checker, "certificate") else None  # custom checkers may omit it
             answer_check = {"model": checker.model_name, "threshold": t, "best_margin": round(best, 3),
                             "read": len(read), "guarantee": cert["statement"] if cert else None,
+                            # best margin among answers the rules accept (-100: none): what the threshold acts on
+                            "counted_margin": round(max((m["answer_margin"] for m in read if m.get("_counts")), default=-100.0), 3),
                             "subject": subject,
                             "rejected_as_about_someone_else": [m["id"] for m in read if not m.get("_answer_ok") and
                                                                m.get("subject_contrast") is not None]}
@@ -442,7 +444,7 @@ class RecallEngine:
         self.recall_log.log(recall_id, user_id, all_scored)
         self.recall_log.log_query(recall_id, user_id, agent_id, asked)
         if answer_check is not None:
-            self.recall_log.log_answer_check(recall_id, user_id, answer_check["model"], answer_check["best_margin"],
+            self.recall_log.log_answer_check(recall_id, user_id, answer_check["model"], answer_check["counted_margin"],
                                              [m["id"] for m in read])
         self._reinforce(final if status == "CONSISTENT" else [])  # kept-on-decline results were not used
 
@@ -724,11 +726,20 @@ class RecallEngine:
                 best = max(best, c["margin"])
             reject = (settings.get("recall.answer_check", {}) or {}).get("reject_non_statements", False)
             for m, ctx in zip(batch, ctxs):
-                if m["answer_margin"] >= threshold and reject and (RecallEngine._answer_says_nothing(m["answer"], ctx, speakers, subject)
-                                                                    or RecallEngine._about_the_listener(m, subject)):
-                    m["answer_not_a_statement"] = True
+                # `_counts`: the rules would accept this memory's answer, whatever the threshold. The cheap
+                # rules are checked for every memory; the subject-contrast check (another reader pass) only
+                # where the threshold is met, as before. Its margin is what the threshold acts on
+                # (counted_margin, logged for learning the threshold: answer_check_learning.py).
+                if reject and (RecallEngine._answer_says_nothing(m["answer"], ctx, speakers, subject)
+                               or RecallEngine._about_the_listener(m, subject)):
+                    if m["answer_margin"] >= threshold:
+                        m["answer_not_a_statement"] = True
                     continue
-                if m["answer_margin"] >= threshold and (accept is None or accept(m, ctx)):
+                m["_counts"] = True
+                if m["answer_margin"] >= threshold:
+                    if accept is not None and not accept(m, ctx):
+                        m["_counts"] = False
+                        continue
                     m["_answer_ok"] = True
                     answered = True
             read.extend(batch)

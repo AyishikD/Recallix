@@ -172,7 +172,8 @@ def main():
         if args.rows is not None:
             rows.append({"qid": item["question_id"], "type": item["question_type"], "unanswerable": unanswerable,
                          "status": out["status"], "declined": declined,
-                         "margin": chk["best_margin"] if chk else None, "threshold": chk["threshold"] if chk else None,
+                         "margin": chk["counted_margin"] if chk else None, "raw_margin": chk["best_margin"] if chk else None,
+                         "threshold": chk["threshold"] if chk else None,
                          "read": chk["read"] if chk else None,
                          # evidence among the results returned (with --keep-on-decline: also on a decline)
                          "evidence_returned": bool(evidence & set(served)), "evidence_ranked10": bool(evidence & set(ranked[:kmax]))})

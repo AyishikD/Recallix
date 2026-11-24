@@ -343,6 +343,15 @@ learning:
   min_new: 20          # new recalls with feedback before trying again
   holdout: 0.2         # share set aside to judge a new fit
   min_holdout: 6       # answerable held-out recalls needed to judge at all
+  # The answer check's decline threshold, learned from feedback (backend/brain/features/answer_check_learning.py).
+  # Off by default: where most questions are answerable it answers more of them, which also answers some
+  # questions that should have been declined. Feedback on declined recalls needs keep_on_decline.
+  answer_check:
+    enabled: false
+    wrong_answer_cost: 3       # a wrong answer counts as this many refusals
+    min_answerable: 50         # recalls whose feedback used a memory the answer check read
+    min_unanswerable: 20       # recalls whose feedback used nothing ("none_used")
+    min_new: 20                # new labelled recalls before trying again
 
 workers:
   enabled: true

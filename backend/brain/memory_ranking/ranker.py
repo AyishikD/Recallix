@@ -235,6 +235,14 @@ class RecallLog:
                 checked_ids TEXT, timestamp REAL
             )
         ''')
+        # What each feedback call said, verbatim: the memories marked used ([] = none was).
+        # Learning the answer-check threshold needs "none used" as a signal of its own
+        # (backend/brain/features/answer_check_learning.py).
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS recall_feedback (
+                recall_id TEXT PRIMARY KEY, user_id TEXT, used_ids TEXT, timestamp REAL
+            )
+        ''')
         conn.commit()
         conn.close()
 
@@ -324,6 +332,26 @@ class RecallLog:
         conn.close()
         return [(q, np.frombuffer(b, dtype=np.float32), mid) for q, b, mid in rows]
 
+    def answer_check_feedback(self, model):
+        """
+        [(recall_id, margin, answerable)] for recalls that received feedback, from what the feedback said:
+        answerable = a memory the answer check read was marked used; not answerable = none was used.
+        Recalls where only a memory the check did not read was used are left out (a ranking miss,
+        not a decision of the answer check).
+        """
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        rows = conn.execute("SELECT a.recall_id, a.best_margin, a.checked_ids, f.used_ids FROM recall_answer_check a "
+                            "JOIN recall_feedback f ON f.recall_id = a.recall_id WHERE a.model = ?", (model,)).fetchall()
+        conn.close()
+        out = []
+        for rid, margin, checked, used in rows:
+            used, checked = set(json.loads(used or "[]")), set(json.loads(checked or "[]"))
+            if not used:
+                out.append((rid, float(margin), False))
+            elif used & checked:
+                out.append((rid, float(margin), True))
+        return out
+
     def answerable_margins(self, model):
         """
         Margins of recalls where feedback marked one of the checked memories relevant: the
@@ -349,6 +377,9 @@ class RecallLog:
         with conn:
             rows = conn.execute("SELECT memory_id FROM recall_candidates WHERE recall_id = ? AND user_id = ?",
                                 (recall_id, user_id)).fetchall()
+            if rows:  # only for this user's own recalls
+                conn.execute("INSERT OR REPLACE INTO recall_feedback VALUES (?, ?, ?, ?)",
+                             (recall_id, user_id, json.dumps(sorted(relevant)), time.time()))
             for (mid,) in rows:
                 conn.execute("UPDATE recall_candidates SET label = ? WHERE recall_id = ? AND memory_id = ?",
                              (1 if mid in relevant else 0, recall_id, mid))

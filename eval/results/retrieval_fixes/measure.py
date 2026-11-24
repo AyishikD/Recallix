@@ -37,7 +37,7 @@ for sample in samples:
                      "declined": out["status"] in ("ABSTAINED", "NO_MATCH"), "n_ev": len(ev),
                      "served10": (len(set(served) & ev) / len(ev)) if ev else None,
                      "ranked10": (len(set(ranked[:10]) & ev) / len(ev)) if ev else None,
-                     "first_ev_rank": first, "n_cands": len(cands), "margin": chk.get("best_margin"),
+                     "first_ev_rank": first, "n_cands": len(cands), "margin": chk.get("best_margin"), "counted_margin": chk.get("counted_margin"),
                      "threshold": chk.get("threshold"), "outsider": bool(out["receipt"].get("unknown_person")) if isinstance(out.get("receipt"), dict) else None,
                      "question": qa["question"], "latency_ms": out["latency_ms"]})
 ans = [r for r in rows if r["cat"] != 5 and r["n_ev"]]; adv = [r for r in rows if r["cat"] == 5]

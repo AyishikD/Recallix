@@ -51,9 +51,11 @@ class Scheduler:
         users = [user_id] if user_id else None
         if job == "forgetting":
             result = self.forgetting.run_cleanup(user_id=user_id)
-        elif job == "learning":  # deployment-wide: one ranker for all users
+        elif job == "learning":  # deployment-wide: one ranker and one answer-check threshold for all users
+            from backend.brain.features import answer_check_learning
             from backend.brain.memory_ranking import self_improve
             result = self_improve.run()
+            result["answer_check"] = answer_check_learning.run()
         else:
             users = users or self.active_users()
             result = {}

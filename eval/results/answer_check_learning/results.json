@@ -1,0 +1,38 @@
+{
+ "wrong_answer_cost": 3.0,
+ "splits": 20,
+ "longmemeval": {
+  "shipped_threshold": -2.721,
+  "adopted_in_splits": "15/20",
+  "learned_threshold_median": -5.019,
+  "answerable_with_evidence_answered": {
+   "before": 0.851,
+   "after": 0.941
+  },
+  "trap_or_unanswerable_answered": {
+   "before": 0.448,
+   "after": 0.714
+  },
+  "score_per_half": {
+   "before": 162.2,
+   "after": 168.2
+  }
+ },
+ "locomo_dev": {
+  "shipped_threshold": -2.721,
+  "adopted_in_splits": "20/20",
+  "learned_threshold_median": 2.364,
+  "answerable_with_evidence_answered": {
+   "before": 0.961,
+   "after": 0.736
+  },
+  "trap_or_unanswerable_answered": {
+   "before": 0.674,
+   "after": 0.262
+  },
+  "score_per_half": {
+   "before": 26.0,
+   "after": 111.2
+  }
+ }
+}

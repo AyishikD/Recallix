@@ -56,13 +56,22 @@ def reindex(request: ReindexRequest):
 @router.get("/learning")
 def learning_status():
     """What the deployment has learned from feedback: every automatic refit attempt and its outcome."""
+    from backend.brain.features import answer_check_learning
     from backend.brain.memory_ranking import self_improve
-    return envelope({**self_improve.status(), "settings": self_improve.config()})
+    return envelope({**self_improve.status(), "settings": {**self_improve.config(), "answer_check": answer_check_learning.config()}})
 
 
 @router.post("/learning/rollback")
-def learning_rollback():
-    """Returns the ranker to the model in use before the last automatic adoption."""
+def learning_rollback(target: str = "ranker"):
+    """
+    Undoes the last automatic adoption: `target=ranker` (default) returns the ranker to the previous model,
+    `target=answer_check` the answer check to its previous threshold.
+    """
+    if target == "answer_check":
+        from backend.brain.features import answer_check_learning
+        return envelope(answer_check_learning.rollback())
+    if target != "ranker":
+        raise HTTPException(status_code=422, detail="target must be 'ranker' or 'answer_check'")
     from backend.brain.memory_ranking import self_improve
     return envelope(self_improve.rollback())
 
