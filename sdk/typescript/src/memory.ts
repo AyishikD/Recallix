@@ -7,7 +7,7 @@ export interface StoreOptions {
     memoryType?: MemoryType;
     /** Only honoured for service/admin keys. */
     userId?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 
 export interface RecallOptions {

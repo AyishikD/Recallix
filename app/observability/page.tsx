@@ -36,16 +36,17 @@ export default function DashboardPage() {
 
     const load = useCallback(async () => {
         const [s, y, i] = await Promise.all([memoryApi.stats(), memoryApi.systemStats(), memoryApi.insights()]);
-        setReachable(Boolean(s?.data));
-        if (s?.data) {
-            setStats(s.data);
+        const st = s.data;
+        setReachable(Boolean(st));
+        if (st) {
+            setStats(st);
             setHistory(prev => [...prev, {
                 time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-                memories: s.data.episodic_memories ?? 0, timeline: s.data.timeline_events ?? 0,
+                memories: st.episodic_memories ?? 0, timeline: st.timeline_events ?? 0,
             }].slice(-HISTORY));
         }
-        if (y?.data) setSys({ ...(y.data.user_index || {}), engine: y.data.engine });
-        if (i?.data) setInsights(Array.isArray(i.data) ? i.data : []);
+        if (y.data) setSys({ ...(y.data.user_index || {}), engine: y.data.engine ?? undefined });
+        if (i.data) setInsights(Array.isArray(i.data) ? i.data : []);
     }, []);
 
     useEffect(() => {

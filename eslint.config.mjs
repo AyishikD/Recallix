@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // not source: CMake writes "compiler_depend.ts" timestamp files; SDK build output
+    "backend/infra_cpp/build/**",
+    "sdk/typescript/dist/**",
   ]),
 ]);
 
