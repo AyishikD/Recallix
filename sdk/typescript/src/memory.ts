@@ -15,6 +15,8 @@ export interface RecallOptions {
     agentId?: string;
     /** Only honoured for service/admin keys. */
     userId?: string;
+    /** Re-read the candidates with a re-ranker: better when the answer is spread over several memories, slower. */
+    deep?: boolean;
 }
 
 const q = (params: Record<string, string | number | undefined>) => {
@@ -39,6 +41,7 @@ export class Memory {
     recall(query: string, opts: RecallOptions = {}) {
         return this.client.request("POST", "/memory/recall", {
             query, limit: opts.limit ?? 10, agent_id: opts.agentId ?? "default_agent", user_id: opts.userId,
+            deep: opts.deep,
         });
     }
 

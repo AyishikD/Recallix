@@ -26,9 +26,15 @@ class Memory:
             "user_id": user_id, "metadata": metadata})
 
     def recall(self, query: str, limit: int = 10, agent_id: str = "default_agent",
-               user_id: Optional[str] = None) -> Dict[str, Any]:
-        return self.client.request("POST", "/memory/recall", data={
-            "query": query, "limit": limit, "agent_id": agent_id, "user_id": user_id})
+               user_id: Optional[str] = None, deep: Optional[bool] = None) -> Dict[str, Any]:
+        """
+        deep=True re-reads the candidates with a re-ranker: better when the answer is spread over
+        several memories ("what activities has she done with her kids?"), but slower. Default: server setting.
+        """
+        data = {"query": query, "limit": limit, "agent_id": agent_id, "user_id": user_id}
+        if deep is not None:
+            data["deep"] = deep
+        return self.client.request("POST", "/memory/recall", data=data)
 
     def feedback(self, recall_id: str, relevant_memory_ids: List[int], user_id: Optional[str] = None) -> Dict[str, Any]:
         """Tell Recallix which recalled memories were useful (trains the ranker)."""

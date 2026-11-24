@@ -43,7 +43,10 @@ TOOLS = [
                     "answer, and the reason for the decision.",
      "inputSchema": {"type": "object", "properties": {
          "query": {"type": "string", "description": "The question, in natural language."},
-         "limit": {"type": "integer", "minimum": 1, "maximum": 20, "default": 5}},
+         "limit": {"type": "integer", "minimum": 1, "maximum": 20, "default": 5},
+         "deep": {"type": "boolean", "default": False,
+                  "description": "Read the candidates more carefully (slower). Use when the answer is spread over "
+                                 "several things the user said, e.g. 'what are all the places I've visited?'."}},
          "required": ["query"]}},
     {"name": "store_memory",
      "description": "Remember something the user said: a fact, preference, plan or decision. Write it as the "
@@ -83,8 +86,8 @@ class RecallixMCP:
         self.memory, self.agent_id = memory, agent_id
 
     # -- tools ------------------------------------------------------------
-    def _recall(self, query, limit=5):
-        out = self.memory.recall(query, limit=int(limit), agent_id=self.agent_id)
+    def _recall(self, query, limit=5, deep=False):
+        out = self.memory.recall(query, limit=int(limit), agent_id=self.agent_id, **({"deep": True} if deep else {}))
         lines = [f"status: {out.get('status')}", f"reason: {(out.get('receipt') or {}).get('reason', '')}",
                  f"recall_id: {out.get('recall_id')}"]
         for m in out.get("memories", []):
