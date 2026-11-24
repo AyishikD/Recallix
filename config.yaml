@@ -158,6 +158,15 @@ recall:
     # wrongly declined 52 -> 49 of 760 on LoCoMo dev and 9 -> 5 of 123 on conv-44; trap questions
     # declined unchanged on LoCoMo dev (56/237), the Gemini batches (28/30) and our dev set (8/8).
     calculation_questions: true
+    # Answers that are not statements about the asked person: the reader's span lies only inside a
+    # question ("Wow, that looks amazing! What inspired it?"), or is a speaker's name used to address
+    # them ("Thanks, Melanie!"), or comes from the asked person's own message that speaks only to the
+    # listener ("you/your", no "I/my": it is about the listener). Such a memory does not count as
+    # answering; the reader moves on to the next one. Measured on LoCoMo dev
+    # (eval/results/retrieval_fixes): trap questions declined 56 -> 77 of 237; answerable questions
+    # declined 49 -> 60 of 760, of which 9 had accepted a non-answer ("Melanie", "reach a goal") and
+    # 2 lost a right one; our dev set and the Gemini batches unchanged.
+    reject_non_statements: true
     # Read each memory without clauses whose subject is another person the question does not ask
     # about ("roommate liam failed his organic chemistry midterm" cannot answer "What is my major?").
     # A memory entirely about someone else then cannot answer (memory/updates.py without_other_people).
@@ -178,14 +187,32 @@ recall:
   # few extractable facts. Off by default; may help fact-heavy deployments (verify with memtest).
   question_keys:
     enabled: false
-  # Neighbour context: a short message (<= max_words) also gets a search key made of the `previous`
-  # message(s) before it plus itself, so "saw doc miller" can be found by a question about the
-  # shoulder injury mentioned just before. One extra embedding per short message; the memory's own
-  # text and vector are unchanged (memory/manager.py _context_before).
-  # Measured on dev data (bge-small): every message with the 2 before it -> LoCoMo dev recall@10
-  # 0.648 -> 0.665, answerable wrongly declined 7.0% -> 6.6%, Gemini batches hit@1 0.84 -> 0.83,
-  # their traps declined 28/30 -> 30/30. Short messages only / 1 before: no change. Off by default
-  # (one extra embedding per stored message); to try it: enabled: true, max_words: 100000, previous: 2.
+  # Re-ranker / deep recall (features/reranker.py): a small cross-encoder (22M parameters, not an
+  # LLM) reads the question and each of the `candidates` memories after the first `keep` together and
+  # reorders them; `context` also reads each memory after the message before it (the better score
+  # counts). It runs after recall has decided to answer, so it cannot change an answer into a decline.
+  # Measured on LoCoMo dev (eval/results/retrieval_fixes), with the second pass: served evidence
+  # recall@10 0.706 -> 0.748, multi-hop 0.376 -> 0.458, temporal 0.817 -> 0.865, single-hop
+  # 0.821 -> 0.852, open-domain 0.280 -> 0.286; declines and traps unchanged; our dev set and the
+  # Gemini batches unchanged. Cost (Apple M4 CPU, conv-44): median recall 140 ms -> ~610 ms
+  # (~450 ms on the Mac GPU). So by default it runs only for recalls that ask for it (`deep: true`
+  # in /memory/recall, `mem.recall(..., deep=True)`); `enabled: true` runs it on every recall.
+  rerank:
+    enabled: false
+    model: cross-encoder/ms-marco-MiniLM-L-6-v2
+    candidates: 50
+    keep: 3
+    context: true
+    context_gap_minutes: 60
+    max_length: 256
+    threads: null         # torch CPU threads for this model (null = torch default)
+    device: null          # null = GPU if available (cuda / Apple mps), else CPU
+    preload: true         # load at startup (one ~90 MB download on first start) so deep recalls are not slow
+    # auto: deep recall without being asked for questions that look spread out ("what kinds of...",
+    # "what has she done...", "X and Y", "in common"). LoCoMo dev: multi-hop 0.375 -> 0.400 (deep on
+    # every recall: 0.444), mean recall 207 -> 279 ms. Off: the pattern misses most such questions.
+    auto: false
+
   # Second pass: the first `keep` results stay exactly as ranked (so does any later one the reader
   # found the answer in). Of the places after them, `search` go to the memories closest in meaning to
   # the question and the top results together (finds a second fact that shares few words with the
@@ -205,6 +232,14 @@ recall:
     weight: 0.5           # how much they count next to the question
     neighbours: 2
     max_gap_minutes: 60
+  # Neighbour context: a short message (<= max_words) also gets a search key made of the `previous`
+  # message(s) before it plus itself, so "saw doc miller" can be found by a question about the
+  # shoulder injury mentioned just before. One extra embedding per short message; the memory's own
+  # text and vector are unchanged (memory/manager.py _context_before).
+  # Measured on dev data (bge-small): every message with the 2 before it -> LoCoMo dev recall@10
+  # 0.648 -> 0.665, answerable wrongly declined 7.0% -> 6.6%, Gemini batches hit@1 0.84 -> 0.83,
+  # their traps declined 28/30 -> 30/30. Short messages only / 1 before: no change. Off by default
+  # (one extra embedding per stored message); to try it: enabled: true, max_words: 100000, previous: 2.
   neighbour_context:
     enabled: false
     max_words: 12
@@ -250,6 +285,11 @@ recall:
   answer_conflicts:
     enabled: true
     read: 3
+    # The recall's top-level `answer`: "confidence" = the reader's most confident accepted span (a
+    # later, different answer found by this check is added as answer.later_answer); "conflict" = the
+    # later answer. LoCoMo dev answer token-F1 0.339 (conflict) -> 0.375 (confidence); dev set and
+    # Gemini batches identical either way (eval/results/retrieval_fixes).
+    best_answer: confidence
   # Fact half-lives: every fact in a recall receipt carries the probability it is still true,
   # from how often this user's facts of the same kind were replaced (exponential survival model,
   # Gamma prior: prior_events replacements per prior_days; see backend/brain/memory/freshness.py).

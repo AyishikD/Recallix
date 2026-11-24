@@ -118,3 +118,41 @@ def test_the_reader_does_not_see_other_peoples_clauses_unless_asked_about_them()
     own = "told priya no chance, taking mom to shankara nethralaya for her followup"
     assert w(own, "Where did I go that morning?") == own   # mom is not the subject
     assert w("Melanie: I went to the park with my kids.", "What did Melanie do?") == "Melanie: I went to the park with my kids."
+
+
+def test_answers_that_are_not_statements_do_not_count():
+    from backend.brain.memory.recall_engine import RecallEngine
+    says_nothing = RecallEngine._answer_says_nothing
+    people = ["Caroline", "Melanie"]
+    assert says_nothing("Melanie", "[3 May] Caroline: Thanks, Melanie! You play any instruments?", people)  # greeting
+    assert says_nothing("Caroline", "Melanie: Wow, Caroline, that looks amazing! What inspired it?", people)
+    assert says_nothing("Did you make it", "Caroline: That bowl is gorgeous! Did you make it?", people, "Caroline")
+    # an assistant's suggestion phrased as a question is an answer when no person is asked about
+    assert not says_nothing("Kyoto", "Assistant: Have you considered Kyoto in spring?", ["User", "Assistant"])
+    assert not says_nothing("Melanie", "Caroline: I went hiking with Melanie last week.", people)
+    assert not says_nothing("pottery", "Melanie: I took a pottery class last Friday.", people)
+    assert not says_nothing("looks great", "Melanie: Wow, that agency looks great! What made you pick it?", people)
+    assert not says_nothing("blume", "term sheet signed with blume", [])  # texting without punctuation
+
+
+def test_the_asked_persons_message_to_the_listener_is_about_the_listener(monkeypatch):
+    from backend.brain.memory import recall_engine
+    monkeypatch.setattr(recall_engine, "memory_speaker", lambda m: m["speaker"])
+    about = recall_engine.RecallEngine._about_the_listener
+    reaction = {"speaker": "Caroline", "content": "Caroline: Your charity race sounds great! Raising awareness for mental health is huge."}
+    assert about(reaction, "Caroline")                                   # asked about Caroline: this is about Mel
+    assert not about(reaction, "Melanie")                                # asked about Mel: "your" is Mel
+    assert not about({"speaker": "Caroline", "content": "Caroline: I ran it for mental health, you'd love it"}, "Caroline")
+    assert not about(reaction, None)                                     # no single person named in the question
+
+
+def test_best_answer_is_the_most_confident_and_reports_a_later_one():
+    from backend.brain.memory.recall_engine import RecallEngine
+    final = [{"_answer_ok": True, "answer": "Mumbai", "answer_margin": 2.0, "answer_conflict_with": [1]},
+             {"_answer_ok": True, "answer": "Pune", "answer_margin": 6.0},
+             {"_answer_ok": False, "answer": "Goa", "answer_margin": 9.0}]
+    out = [{"id": 2}, {"id": 1}, {"id": 3}]
+    best = RecallEngine._best_answer(final, out)
+    assert best["text"] == "Pune" and best["memory_id"] == 1               # not the rejected "Goa"
+    assert best["later_answer"] == "Mumbai" and best["later_memory_id"] == 2
+    assert RecallEngine._best_answer([{"_answer_ok": False, "answer": "x"}], [{"id": 1}]) is None

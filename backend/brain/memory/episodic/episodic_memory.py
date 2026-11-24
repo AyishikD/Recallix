@@ -311,6 +311,29 @@ class EpisodicMemory:
     def get_by_id(self, user_id, memory_id, agent_id=None):
         return self.get_many(user_id, [memory_id], agent_id).get(int(memory_id))
 
+    def previous_of(self, user_id, memory_ids, agent_id=None, max_gap_seconds=3600.0):
+        """{memory_id: the visible ACTIVE message stored just before it (within max_gap_seconds)}."""
+        vis = f"AND {_VISIBLE}" if agent_id is not None else ""
+        tail = (agent_id,) if agent_id is not None else ()
+        out = {}
+        conn = self._connect()
+        try:
+            for mid in memory_ids:
+                row = conn.execute("SELECT timestamp FROM episodic_events WHERE id = ? AND user_id = ?",
+                                   (int(mid), user_id)).fetchone()
+                if not row or row[0] is None:
+                    continue
+                t = float(row[0])
+                prev = conn.execute(
+                    f"SELECT e.content FROM episodic_events e WHERE e.user_id = ? AND e.status = 'ACTIVE' {vis} "
+                    f"AND (e.timestamp < ? OR (e.timestamp = ? AND e.id < ?)) AND e.timestamp >= ? "
+                    f"ORDER BY e.timestamp DESC, e.id DESC LIMIT 1", (user_id, *tail, t, t, int(mid), t - float(max_gap_seconds))).fetchone()
+                if prev:
+                    out[mid] = prev[0]
+        finally:
+            conn.close()
+        return out
+
     def neighbours(self, user_id, memory_id, agent_id=None, window=2, max_gap_seconds=3600.0):
         """
         The visible ACTIVE memories stored just after and just before `memory_id` in the same

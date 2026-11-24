@@ -21,12 +21,16 @@ if not keys.list_keys():
 PY
 
 # download (first start only, into /data/models) and load the models before taking requests
-echo "Preparing models (first start downloads ~600 MB into the data volume)..."
+echo "Preparing models (first start downloads ~700 MB into the data volume)..."
 python - <<'PY'
 from backend.brain.models.model_router import ModelRouter
 from backend.brain.features.answer_check import AnswerChecker
+from backend.brain.features.reranker import Reranker
 assert ModelRouter().get_embedding("warm up"), "embedding model failed to load"
 AnswerChecker.from_config()
+from backend.brain.features.reranker import config as rerank_config
+if rerank_config()["preload"]:
+    Reranker.from_config(force=True)   # deep recall (recall.rerank)
 print("models ready", flush=True)
 PY
 

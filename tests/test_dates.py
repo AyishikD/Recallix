@@ -44,3 +44,11 @@ def test_recall_shows_resolved_dates_to_the_reader_and_the_caller():
         assert top["content"] == "I went to the support group yesterday, it was great"   # own text unchanged
         assert top["content_resolved"] == "I went to the support group yesterday [7 May 2023], it was great"
         assert top["metadata"]["dates"][0]["value"] == "7 May 2023"
+
+
+def test_a_relative_date_answer_is_given_as_the_resolved_date():
+    from backend.brain.memory.recall_engine import RecallEngine
+    ctx = "Mel: Last weekend [the weekend before 17 July 2023] we went camping"
+    assert RecallEngine._with_resolved_date("Last weekend", ctx) == "the weekend before 17 July 2023"
+    assert RecallEngine._with_resolved_date("camping", ctx) == "camping"
+    assert RecallEngine._with_resolved_date("Last weekend", "Mel: Last weekend we went camping") == "Last weekend"

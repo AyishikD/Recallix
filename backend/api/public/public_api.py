@@ -38,6 +38,9 @@ class RecallRequest(BaseModel):
     user_id: Optional[str] = None
     agent_id: str = "default_agent"
     limit: int = Field(default=10, ge=1, le=100)
+    # Deep recall: re-read the candidates with the re-ranker (recall.rerank). Better when the answer is
+    # spread over several memories ("what activities has she done with her kids?"); slower. None = config.
+    deep: Optional[bool] = None
 
 
 class ProactiveRequest(BaseModel):
@@ -66,7 +69,8 @@ def store_memory(request: StoreRequest, auth=Depends(verify_api_key)):
 @router.post("/recall")
 def recall_memory(request: RecallRequest, auth=Depends(verify_api_key)):
     user_id = acting_user(auth, request.user_id)
-    return envelope(get_memory_manager().retrieve(user_id, request.query, agent_id=request.agent_id, limit=request.limit))
+    return envelope(get_memory_manager().retrieve(user_id, request.query, agent_id=request.agent_id, limit=request.limit,
+                                                  deep=request.deep))
 
 
 @router.post("/proactive")

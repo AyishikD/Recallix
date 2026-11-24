@@ -90,3 +90,85 @@ def test_calculation_questions_are_recognised_only_when_enabled(override):
     for q in ("Where did Audrey get Pixie from?", "Who knows how to bake?", "What is my dog's name?",
               "How many total employees work at the rescue shelter?", "How much rent does she pay?"):   # single facts
         assert not asks(q), q
+
+
+class _WordOverlap:
+    """Stand-in cross-encoder: scores a memory by the question words it contains."""
+    model_name = "test"
+
+    def scores(self, query, texts):
+        q = {w.strip("?.,").lower() for w in query.split() if len(w) > 3}
+        return [float(len(q & {w.strip("?.,").lower() for w in t.split()})) for t in texts]
+
+
+def test_rerank_reorders_only_after_the_kept_results(override, monkeypatch):
+    from backend.brain.features.reranker import Reranker
+    question = "Which balcony plants need more sun?"
+    with _box() as box:
+        with box.silenced():
+            for i, text in enumerate(CHAT):
+                box.mm.store("u", text, timestamp=T0 + i * 7200)        # hours apart: no neighbours
+            override({"recall.second_pass": {"enabled": False}, "recall.rerank": {"enabled": False}})
+            before = box.mm.retrieve("u", question, limit=8)["memories"]
+            monkeypatch.setattr(Reranker, "from_config", classmethod(lambda cls, force=False: _WordOverlap()))
+            override({"recall.second_pass": {"enabled": False},
+                      "recall.rerank": {"enabled": True, "keep": 2, "candidates": 50}})
+            after = box.mm.retrieve("u", question, limit=8)["memories"]
+    assert [m["id"] for m in after[:2]] == [m["id"] for m in before[:2]]
+    rest = [m["rerank_score"] for m in after[2:]]
+    assert rest == sorted(rest, reverse=True) and all("rerank_score" not in m for m in after[:2])
+
+
+def test_rerank_is_off_by_default_and_a_missing_model_changes_nothing(override, monkeypatch):
+    from backend.brain.features import reranker
+    assert reranker.config()["enabled"] is False
+    monkeypatch.setattr(reranker.Reranker, "from_config", classmethod(lambda cls, force=False: None))   # e.g. no download possible
+    with _box() as box:
+        with box.silenced():
+            for i, text in enumerate(CHAT):
+                box.mm.store("u", text, timestamp=T0 + i * 7200)
+            override({"recall.second_pass": {"enabled": False}, "recall.rerank": {"enabled": False}})
+            plain = [m["id"] for m in box.mm.retrieve("u", "Which balcony plants need more sun?", limit=8)["memories"]]
+            override({"recall.second_pass": {"enabled": False}, "recall.rerank": {"enabled": True, "keep": 2}})
+            same = [m["id"] for m in box.mm.retrieve("u", "Which balcony plants need more sun?", limit=8)["memories"]]
+    assert plain == same
+
+
+def test_deep_recall_runs_the_reranker_only_when_asked(override, monkeypatch):
+    from backend.brain.features.reranker import Reranker
+    monkeypatch.setattr(Reranker, "from_config", classmethod(lambda cls, force=False: _WordOverlap()))
+    question = "Which balcony plants need more sun?"
+    with _box() as box:
+        with box.silenced():
+            for i, text in enumerate(CHAT):
+                box.mm.store("u", text, timestamp=T0 + i * 7200)
+            override({"recall.second_pass": {"enabled": False}, "recall.rerank": {"enabled": False, "keep": 2}})
+            plain = box.mm.retrieve("u", question, limit=8)["memories"]
+            deep = box.mm.retrieve("u", question, limit=8, deep=True)["memories"]
+            override({"recall.second_pass": {"enabled": False}, "recall.rerank": {"enabled": True, "keep": 2}})
+            not_deep = box.mm.retrieve("u", question, limit=8, deep=False)["memories"]
+    assert not any("rerank_score" in m for m in plain + not_deep)       # off by config, or switched off for this recall
+    assert any("rerank_score" in m for m in deep)
+    assert [m["id"] for m in deep[:2]] == [m["id"] for m in plain[:2]]
+
+
+def test_deep_flag_reaches_the_engine_through_the_api(monkeypatch):
+    from backend.api.public import public_api
+    seen = {}
+
+    class FakeManager:
+        def retrieve(self, user_id, query, agent_id="default_agent", limit=5, return_candidates=False, deep=None):
+            seen["deep"] = deep
+            return {"status": "NO_MATCH", "memories": []}
+    monkeypatch.setattr(public_api, "get_memory_manager", lambda: FakeManager())
+    public_api.recall_memory(public_api.RecallRequest(query="q", deep=True), auth={"user_id": "u", "role": "user"})
+    assert seen["deep"] is True
+
+
+def test_spread_out_questions_are_recognised_for_automatic_deep_recall():
+    needs = RecallEngine._needs_deep
+    assert needs("What kinds of classes has Audrey joined?")
+    assert needs("What activities has Melanie done with her kids?")
+    assert needs("What do Audrey and Andrew have in common?")
+    assert not needs("Where do I live?")
+    assert not needs("When did she move to Pune?")

@@ -25,6 +25,8 @@ from ..features.query import (analyze_query, capitalised_entities, norm_id, enti
 from ..memory_ranking.ranker import Ranker, RecallLog, candidate_features, memory_slots, memory_speaker
 from ..memory_ranking.reinforcement_learning import MemoryRL
 from ..features.answer_check import AnswerChecker
+from ..features import reranker as rerank_cfg
+from ..features.reranker import Reranker
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
@@ -207,31 +209,74 @@ class RecallEngine:
             sim = self.semantic.cosine(q_vec, vec)
             c["semantic_score"] = 0.0 if sim is None else sim
 
-    def _second_pass(self, user_id, agent_id, final, resolved, seen_ids, q_vec, analysis, top_k):
+    def _after_decision(self, user_id, agent_id, query, final, resolved, seen_ids, q_vec, analysis, top_k, deep=None):
         """
-        recall.second_pass: the first `keep` results stay exactly as served, and so does any later
-        result in which the reader found the answer. The remaining places go to memories a first
-        search under-ranks:
-          * `search` places to the memories closest in meaning to the question and the top results
-            together (the question alone misses a second fact that shares few words with it);
-          * then the messages stored right around the top result (the answer is often one line away
-            from the best match);
-          * then the rest, in the second search's order.
-        It runs after recall has decided to answer, on the results already chosen (`final`) and the
-        rest of the ranking (`resolved`): it never turns a decline into an answer or the reverse.
+        Refills the places after the first results once recall has decided to answer:
+        recall.second_pass proposes memories the first ranking under-ranks (a second search and the
+        messages around the best result), then recall.rerank (when `deep`, or on by config) reorders those places by
+        reading each memory with the question. The first `keep` results, and any later one the reader
+        found the answer in, stay where they are.
         """
-        cfg = settings.get("recall.second_pass", {}) or {}
-        keep = int(cfg.get("keep", 5))
-        if not cfg.get("enabled", False) or q_vec is None or top_k <= keep or len(final) <= keep:
+        sp = settings.get("recall.second_pass", {}) or {}
+        rr = rerank_cfg.config()
+        rerank_after = (rr["enabled"] or (rr["auto"] and self._needs_deep(query))) if deep is None else bool(deep)
+        keep = rr["keep"] if rerank_after else int(sp.get("keep", 5))
+        if top_k <= keep or not (sp.get("enabled", False) or rerank_after):
             return final
-        import numpy as np
-        unit = lambda v: v / (float(np.linalg.norm(v)) or 1.0)  # noqa: E731
         head = final[:keep] + [m for m in final[keep:] if m.get("_answer_ok")]
         kept = {m["id"] for m in head}
-        tail = [m for m in final[keep:] if m["id"] not in kept]
-        tail += [m for m in resolved if m["id"] not in kept and m["id"] not in {t["id"] for t in tail}]
-        resolved = head + tail
-        vecs = self.episodic.get_embeddings([m["id"] for m in resolved], self.semantic.model_name)
+        rest = [m for m in final[keep:] if m["id"] not in kept]
+        rest += [m for m in resolved if m["id"] not in kept and m["id"] not in {r["id"] for r in rest}]
+        ordered = head + rest
+        if sp.get("enabled", False) and q_vec is not None:
+            ordered = self._second_pass(user_id, agent_id, ordered, len(head), seen_ids, q_vec, analysis)
+        if rerank_after:
+            ordered = self._rerank(query, ordered, len(head), user_id, agent_id)
+        return ordered[:top_k]
+
+    def _rerank(self, query, ordered, n_head, user_id=None, agent_id=None):
+        """
+        recall.rerank: the `candidates` memories after the first `n_head` are reordered by a
+        cross-encoder that reads each together with the question (features/reranker.py); the first
+        `n_head` and everything after the re-read ones keep their places. With `context`, each
+        memory is also read after the message stored just before it, and the better of the two
+        scores counts: a short reply ("yes, last week!") only answers next to what it replies to.
+        """
+        model = Reranker.from_config(force=True)
+        if model is None or len(ordered) <= n_head + 1:
+            return ordered
+        cfg = rerank_cfg.config()
+        n = cfg["candidates"]
+        head, pool, tail = ordered[:n_head], ordered[n_head:n_head + n], ordered[n_head + n:]
+        texts = [self._with_dates(m) for m in pool]
+        scores = model.scores(query, texts)
+        if cfg["context"] and user_id is not None:
+            before = self.episodic.previous_of(user_id, [m["id"] for m in pool], agent_id, cfg["context_gap_minutes"] * 60.0)
+            idx = [i for i, m in enumerate(pool) if m["id"] in before]
+            if idx:
+                with_ctx = model.scores(query, [f"{before[pool[i]['id']]}\n{texts[i]}" for i in idx])
+                for i, sc in zip(idx, with_ctx):
+                    scores[i] = max(scores[i], sc)
+        for m, sc in zip(pool, scores):
+            m["rerank_score"] = round(sc, 3)
+        pool = [m for _, m in sorted(zip(scores, pool), key=lambda t: -t[0])]  # sorted() is stable on ties
+        return head + pool + tail
+
+    def _second_pass(self, user_id, agent_id, ordered, n_head, seen_ids, q_vec, analysis):
+        """
+        recall.second_pass: of the places after the first `n_head`, `search` go to the memories
+        closest in meaning to the question and the top results together (the question alone
+        misses a second fact that shares few words with it); then come the messages stored right
+        around the best-ranked result (the answer is often one line away from the best match);
+        then the rest, in the second search's order. Returns the whole list, head unchanged.
+        """
+        cfg = settings.get("recall.second_pass", {}) or {}
+        import numpy as np
+        unit = lambda v: v / (float(np.linalg.norm(v)) or 1.0)  # noqa: E731
+        head, tail = ordered[:n_head], ordered[n_head:]
+        if not head or not tail:
+            return ordered
+        vecs = self.episodic.get_embeddings([m["id"] for m in ordered], self.semantic.model_name)
         # anchored on the best-ranked results: the reader may have moved an answering memory to the front
         by_rank = sorted(head, key=lambda m: -m["relevance"])
         seeds = [vecs[m["id"]] for m in by_rank[:int(cfg.get("seeds", 3))] if m["id"] in vecs]
@@ -239,8 +284,7 @@ class RecallEngine:
             q2 = unit(unit(np.asarray(q_vec, dtype=np.float32)) + float(cfg.get("weight", 0.5)) * unit(np.mean(seeds, axis=0)))
             sim = {m["id"]: float(np.dot(vecs[m["id"]], q2)) if m["id"] in vecs else -1.0 for m in tail}
             tail = sorted(tail, key=lambda m: -sim[m["id"]])  # stable: ties keep the first ranking
-        n_search = int(cfg.get("search", 2))
-        picked = tail[:n_search] if seeds else []
+        picked = tail[:int(cfg.get("search", 2))] if seeds else []
         for m in picked:
             m["found_by"] = "second_search"
         taken = {m["id"] for m in head} | {m["id"] for m in picked}
@@ -262,7 +306,7 @@ class RecallEngine:
                     m["found_by"], m["neighbour_of"] = "neighbour", by_rank[0]["id"]
                     near.append(m)
                     taken.add(m["id"])
-        return (head + picked + near + [m for m in tail if m["id"] not in taken])[:top_k]
+        return head + picked + near + [m for m in tail if m["id"] not in taken]
 
     def _score(self, candidates, analysis, agent_id, alias_sources=()):
         candidate_features(candidates, analysis, agent_id, alias_sources)
@@ -276,7 +320,11 @@ class RecallEngine:
         return candidates
 
     # ------------------------------------------------------------------
-    def multi_stage_recall(self, user_id, query, agent_id="default_agent", top_k=5, return_candidates=False):
+    def multi_stage_recall(self, user_id, query, agent_id="default_agent", top_k=5, return_candidates=False, deep=None):
+        """
+        deep: True reads the candidates with the re-ranker (recall.rerank: better on questions whose
+        answer is spread over several memories, slower); False never; None follows the config.
+        """
         from .reasoning_engine import ReasoningEngine
         from .truth_engine import TruthEngine
         t0 = time.time()
@@ -342,13 +390,16 @@ class RecallEngine:
             accept, subject = self._subject_contrast(checker, asked, all_scored)
             conflicts = (settings.get("recall.answer_conflicts", {}) or {})
             min_read = int(conflicts.get("read", 3)) if conflicts.get("enabled", True) else 1
-            read, best, answered = self._read_until_answer(checker, asked, final, t, accept, min_read)  # the reader keeps the question as asked
+            speakers = list(dict.fromkeys(sp for sp in (memory_speaker(m) for m in all_scored[:200]) if sp))
+            named = [sp for sp in speakers if re.search(rf"\b{re.escape(sp)}\b", asked, re.I)]
+            person = named[0] if len(named) == 1 and len(speakers) > 1 and named[0].lower() not in self._ROLE_NAMES else None
+            read, best, answered = self._read_until_answer(checker, asked, final, t, accept, min_read, speakers, person)  # the reader keeps the question as asked
             cert = checker.certificate() if hasattr(checker, "certificate") else None  # custom checkers may omit it
             answer_check = {"model": checker.model_name, "threshold": t, "best_margin": round(best, 3),
                             "read": len(read), "guarantee": cert["statement"] if cert else None,
                             "subject": subject,
-                            "rejected_as_about_someone_else": [m["id"] for m in read if m.get("subject_contrast") is not None
-                                                               and not m.get("_answer_ok")]}
+                            "rejected_as_about_someone_else": [m["id"] for m in read if not m.get("_answer_ok") and
+                                                               m.get("subject_contrast") is not None]}
             status = "CONSISTENT" if answered else "ABSTAINED"
             if status == "ABSTAINED":
                 inferred = self._answer_by_inference(checker, asked, resolved[:3], t)
@@ -375,8 +426,10 @@ class RecallEngine:
             status, final = "CONSISTENT", resolved[:top_k]
 
         if status == "CONSISTENT":
-            # recall.second_pass: applied after the answer-or-decline decision, so it cannot change it
-            final = self._second_pass(user_id, agent_id, final, resolved, {r["id"] for r in ranked}, q_vec, analysis, top_k)
+            # recall.second_pass and recall.rerank: applied after the answer-or-decline
+            # decision, so they cannot change it
+            final = self._after_decision(user_id, agent_id, asked, final, resolved, {r["id"] for r in ranked},
+                                         q_vec, analysis, top_k, deep)
 
         recall_id = uuid.uuid4().hex
         self.recall_log.log(recall_id, user_id, all_scored)
@@ -413,6 +466,7 @@ class RecallEngine:
             "recall_id": recall_id,
             "intent": self.classify_query(analysis),
             "status": status,
+            "answer": self._best_answer(final, memories) if status == "CONSISTENT" else None,
             "memories": memories,
             "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check, outsider),
             "debug": {
@@ -451,6 +505,18 @@ class RecallEngine:
         r"\bhow many times\b"
         r"|\bhow many (?:days|weeks|months|years) (?:passed|have passed|between|since|ago|apart|has it been)\b"
         r"|\bhow long (?:ago|has it been|since|passed|between)\b", re.I)
+
+    # Questions whose answer is usually spread over several memories: lists, kinds, "what has X done",
+    # two people, "in common". recall.rerank.auto makes these deep recalls.
+    _SPREAD_OUT = re.compile(
+        r"\bwhat (?:kinds?|types?|sorts?|activities|things|are some|events|hobbies|sports|books|places|countries|cities|"
+        r"pets|items|ways|games|foods|songs|movies|shows|instruments|classes|plans)\b"
+        r"|\b(?:what|which) .*\b(?:has|have|did) .* (?:done|tried|pursued|made|visited|attended|participated|bought|read|"
+        r"watched|played|taken|learned|joined)\b|\bboth\b|\bin common\b|\b[A-Z][a-z]+ and [A-Z][a-z]+\b", re.I)
+
+    @classmethod
+    def _needs_deep(cls, query):
+        return bool(cls._SPREAD_OUT.search(str(query or "")))
 
     @classmethod
     def _needs_calculation(cls, query):
@@ -539,8 +605,89 @@ class RecallEngine:
             return memory["subject_contrast"] > min_contrast
         return accept, subject
 
+    _VOCATIVE_CUE = r"(?:hey|hi|hello|thanks|thank you|congrats|congratulations|wow|yeah|yes|oh|aw+|omg|sorry|good luck)"
+
+    _SECOND_PERSON = re.compile(r"\b(?:you|your|you're|you've|you'll|yours|yourself)\b", re.I)
+    _FIRST_PERSON = re.compile(r"\b(?:i|i'm|i've|i'd|i'll|my|me|mine|myself|we|our|us|we're|we've)\b", re.I)
+
+    @classmethod
+    def _about_the_listener(cls, memory, subject):
+        """
+        The asked person's own message that speaks only to the listener ("That charity race sounds
+        great, Mel! Making a difference for mental health is huge.") is about the listener, not
+        about them. Checked on the stored text (before "I" is rewritten to the speaker's name).
+        """
+        if not subject or memory_speaker(memory) != subject:  # (role names never reach here: see the caller)
+            return False
+        body = re.sub(r"^\s*(?:\[[^\]]*\]\s*)?[^:\n]{1,40}:\s*", "", memory.get("content", ""))
+        return bool(cls._SECOND_PERSON.search(body)) and not cls._FIRST_PERSON.search(body)
+
+    _ROLE_NAMES = {"user", "assistant", "ai", "bot", "system", "agent", "human", "me", "you"}
+
+    @classmethod
+    def _answer_says_nothing(cls, answer, context, speakers, subject=None):
+        """
+        recall.answer_check.reject_non_statements: spans a SQuAD reader takes from text that states no
+        fact, measured on LoCoMo dev to be (almost) never the right answer:
+          * the answer lies only inside questions ("Wow, that looks amazing! What inspired it?"): the
+            speaker is asking, so the fact (if any) belongs to someone else;
+          * the answer is a speaker's name used to address them ("Thanks, Melanie!", "Hey Caroline,").
+        (_about_the_listener is the third case.)
+        """
+        a = (answer or "").strip(" .,!?;:'\"")
+        if not a:
+            return False
+        body = re.sub(r"^\s*(?:\[[^\]]*\]\s*)?[^:\n]{1,40}:\s*", "", context or "")
+        hits = [x for x in re.split(r"(?<=[.!?])\s+", body) if a.lower() in x.lower()]
+        # Only for questions about a named participant of a conversation between people: an assistant
+        # often suggests things as questions ("Have you tried Kyoto?"), and then that is the answer.
+        if subject and hits and all(x.rstrip().endswith("?") for x in hits):
+            return True
+        if any(a.lower() == sp.lower() for sp in speakers):
+            name = re.escape(a)
+            if re.search(rf"\b{cls._VOCATIVE_CUE}\b[\s,]*{name}\b|\b{name}\s*[!?]|,\s*{name}\s*[,.!?]|^\s*{name}\s*,", body, re.I):
+                return True
+        return False
+
     @staticmethod
-    def _read_until_answer(checker, query, memories, threshold, accept=None, min_read=1):
+    def _best_answer(final, memories):
+        """
+        The answer to show: the span the reader was most confident in among the memories it accepted.
+        Measured on LoCoMo dev (eval/results/retrieval_fixes): answer token-F1 0.339 -> 0.375 and
+        time questions answered with the gold date 59 -> 68 of 156 over preferring the
+        recall.answer_conflicts pick; our dev set and the Gemini batches unchanged. When that check
+        found a later, different answer (a possible update without a cue word), it is reported as
+        `later_answer` (and its memory stays first in `memories`); best_answer: "conflict" restores
+        the old choice. {"text", "memory_id", "margin"[, "later_answer", "later_memory_id"]} or None.
+        """
+        accepted = [(m, out) for m, out in zip(final, memories) if m.get("_answer_ok") and m.get("answer")]
+        if not accepted:
+            return None
+        conflict = next((p for p in accepted if p[0].get("answer_conflict_with")), None)
+        policy = (settings.get("recall.answer_conflicts", {}) or {}).get("best_answer", "confidence")
+        m, out = conflict if conflict and policy == "conflict" else max(
+            accepted, key=lambda p: p[0].get("answer_margin", float("-inf")))
+        best = {"text": m["answer"], "memory_id": out.get("id"), "margin": m.get("answer_margin")}
+        if conflict and conflict[1].get("id") != best["memory_id"]:
+            best["later_answer"], best["later_memory_id"] = conflict[0]["answer"], conflict[1].get("id")
+        return best
+
+    @staticmethod
+    def _with_resolved_date(answer, context):
+        """
+        memory.resolve_dates writes "last weekend [the weekend before 17 July 2023]". A reader span
+        that ends right before such a bracket ("last weekend") is answered with the resolved date.
+        """
+        if not answer or not context:
+            return answer
+        i = context.find(answer)
+        if i < 0:
+            return answer
+        m = re.match(r"\s*\[([^\[\]]{3,80})\]", context[i + len(answer):])
+        return m.group(1) if m else answer
+
+    @staticmethod
+    def _read_until_answer(checker, query, memories, threshold, accept=None, min_read=1, speakers=(), subject=None):
         """
         Reads memories in rank order — 1, then 2 at a time — and stops at the first batch in
         which one contains an answer (margin >= threshold). The decision ("does any served
@@ -566,9 +713,14 @@ class RecallEngine:
                 if not ctx:  # entirely about someone else the question does not ask about
                     c = {"margin": -100.0, "answer": ""}
                     m["about_someone_else"] = True
-                m["answer"], m["answer_margin"] = c["answer"], round(c["margin"], 3)
+                m["answer"], m["answer_margin"] = RecallEngine._with_resolved_date(c["answer"], ctx), round(c["margin"], 3)
                 best = max(best, c["margin"])
+            reject = (settings.get("recall.answer_check", {}) or {}).get("reject_non_statements", False)
             for m, ctx in zip(batch, ctxs):
+                if m["answer_margin"] >= threshold and reject and (RecallEngine._answer_says_nothing(m["answer"], ctx, speakers, subject)
+                                                                    or RecallEngine._about_the_listener(m, subject)):
+                    m["answer_not_a_statement"] = True
+                    continue
                 if m["answer_margin"] >= threshold and (accept is None or accept(m, ctx)):
                     m["_answer_ok"] = True
                     answered = True
