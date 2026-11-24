@@ -39,7 +39,19 @@ def _cfg():
         enabled = env.strip() not in ("0", "false", "no", "")
     return {"enabled": enabled, "model": c.get("model"),
             "max_length": int(c.get("max_length", 384)), "stride": int(c.get("stride", 128)),
-            "max_answer_tokens": int(c.get("max_answer_tokens", 30)), "threshold": c.get("threshold")}
+            "max_answer_tokens": int(c.get("max_answer_tokens", 30)), "threshold": c.get("threshold"),
+            "device": c.get("device")}
+
+
+def _pick_device(device):
+    """null: a GPU if there is one (CUDA, then Apple), else the CPU."""
+    if device:
+        return device
+    import torch
+    if torch.cuda.is_available():
+        return "cuda"
+    mps = getattr(torch.backends, "mps", None)
+    return "mps" if mps is not None and mps.is_available() else "cpu"
 
 
 def restore_case(text):
@@ -70,11 +82,13 @@ class AnswerChecker:
     _instances = {}
     _lock = threading.Lock()
 
-    def __init__(self, model_name, max_length=384, stride=128, max_answer_tokens=30):
+    def __init__(self, model_name, max_length=384, stride=128, max_answer_tokens=30, device=None):
         from transformers import AutoModelForQuestionAnswering, AutoTokenizer
         self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+        self.device = _pick_device(device)
+        self.model.to(self.device)
         self.model.eval()
         self.max_length, self.stride, self.max_answer_tokens = max_length, stride, max_answer_tokens
         self._infer_lock = threading.Lock()
@@ -85,11 +99,12 @@ class AnswerChecker:
         cfg = _cfg()
         if not cfg["enabled"] or not cfg["model"]:
             return None
-        key = (cfg["model"], cfg["max_length"], cfg["stride"], cfg["max_answer_tokens"])
+        key = (cfg["model"], cfg["max_length"], cfg["stride"], cfg["max_answer_tokens"], cfg["device"])
         with cls._lock:
             if key not in cls._instances:
                 try:
-                    cls._instances[key] = cls(cfg["model"], cfg["max_length"], cfg["stride"], cfg["max_answer_tokens"])
+                    cls._instances[key] = cls(cfg["model"], cfg["max_length"], cfg["stride"], cfg["max_answer_tokens"],
+                                              cfg["device"])
                 except Exception as e:  # missing transformers/torch, no network for the first download, ...
                     print(f"[AnswerChecker] disabled: cannot load {cfg['model']}: {e}")
                     cls._instances[key] = None
@@ -140,8 +155,9 @@ class AnswerChecker:
         sample_map = enc.pop("overflow_to_sample_mapping").tolist()
         offsets = enc.pop("offset_mapping").tolist()
         with self._infer_lock, torch.no_grad():
-            out = self.model(**{k: v for k, v in enc.items() if k in ("input_ids", "attention_mask", "token_type_ids")})
-        starts, ends = out.start_logits.numpy(), out.end_logits.numpy()
+            out = self.model(**{k: v.to(self.device) for k, v in enc.items()
+                                if k in ("input_ids", "attention_mask", "token_type_ids")})
+        starts, ends = out.start_logits.float().cpu().numpy(), out.end_logits.float().cpu().numpy()
         results = [{"margin": -np.inf, "answer": ""} for _ in contexts]
         for w in range(len(sample_map)):
             seq_ids = enc.sequence_ids(w)

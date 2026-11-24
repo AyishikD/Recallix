@@ -141,6 +141,7 @@ recall:
     model: "deepset/roberta-base-squad2"   # chosen on dev data (eval/run_eval.py --fit-answer-check); must match answer_check.default.json
     max_length: 384
     stride: 128
+    device: null           # null: a GPU if there is one (CUDA, then Apple), else the CPU; or "cpu" / "cuda" / "mps"
     max_answer_tokens: 30
     threshold: null
     rerank: true       # serve memories in which an answer was found first (dev: LoCoMo hit@1 0.29 -> 0.37)
