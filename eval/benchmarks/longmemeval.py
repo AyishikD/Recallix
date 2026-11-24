@@ -77,6 +77,9 @@ def main():
     ap.add_argument("--reuse", action="store_true",
                     help="recall only, from memories a previous run kept with --storage (store settings must match)")
     ap.add_argument("--deep", action="store_true", help="deep recall (recall.rerank) for every question")
+    ap.add_argument("--rows", default=None,
+                    help="also write one row per question here (status, answer-check margin, whether the evidence was "
+                         "among the results), for offline analysis such as threshold calibration")
     ap.add_argument("--keep-on-decline", action="store_true",
                     help="keep_on_decline=True on every recall (a decline still returns its results)")
     ap.add_argument("--baselines-from", default=None,
@@ -113,6 +116,7 @@ def main():
     per_type = {s: defaultdict(lambda: defaultdict(list)) for s in systems}
     abstain = {"answerable": [], "unanswerable": []}
     decision = []  # (top_relevance, best answer margin or None, unanswerable)
+    rows = []
     timing = defaultdict(float)
     n_turns = 0
 
@@ -165,6 +169,13 @@ def main():
             timing["bm25_s"] += time.time() - t0
 
         (abstain["unanswerable"] if unanswerable else abstain["answerable"]).append(declined)
+        if args.rows is not None:
+            rows.append({"qid": item["question_id"], "type": item["question_type"], "unanswerable": unanswerable,
+                         "status": out["status"], "declined": declined,
+                         "margin": chk["best_margin"] if chk else None, "threshold": chk["threshold"] if chk else None,
+                         "read": chk["read"] if chk else None,
+                         # evidence among the results returned (with --keep-on-decline: also on a decline)
+                         "evidence_returned": bool(evidence & set(served)), "evidence_ranked10": bool(evidence & set(ranked[:kmax]))})
         if not unanswerable and evidence:
             for name, ids in (("recallix", served), ("recallix_ranked", ranked), ("dense", dense), ("bm25", lexical)):
                 if ids is None:
@@ -230,6 +241,10 @@ def main():
         with open(args.json, "w") as f:
             json.dump(results, f, indent=2)
         print("wrote", args.json)
+    if args.rows:
+        with open(args.rows, "w") as f:
+            json.dump({"rows": rows}, f)
+        print("wrote", args.rows)
 
 
 if __name__ == "__main__":
