@@ -52,3 +52,13 @@ def test_alias_rewrite():
     assert RecallEngine._replace_alias("What OS does Falcon run?", "falcon", "staging server") == \
         "What OS does staging server run?"
     assert RecallEngine._replace_alias("Nothing here", "falcon", "x") is None
+
+
+def test_texting_drops_the_subject_but_it_is_still_about_the_user():
+    assert slots("update: moved to pune last month for the new job") == {"user::location": "pune"}
+    assert slots("uff moved to pune last month, new job at infosys hinjewadi")["user::location"] == "pune"
+    assert slots("allergic to penicillin, found out the hard way lol") == {"user::allergy": "penicillin"}
+    assert slots("working at infosys since june") == {"user::employer": "infosys"}
+    assert slots("I moved to Pune last month.") == {"user::location": "Pune"}       # time words are not the place
+    assert "user::location" not in slots("Priya moved to Pune")                     # third person stays third person
+    assert "user::location" not in slots("moved the couch to the bedroom")

@@ -101,6 +101,33 @@ _FIRST_PERSON = [
     (re.compile(rf"\bI\s+was\s+born\s+(?:on|in)\s+{_VALUE}", re.I), "birth"),
 ]
 
+# Texting drops the subject: "moved to pune last month", "update: allergic to penicillin lol". A message
+# that STARTS with one of these verbs (after an optional filler such as "update:" or "uff") is read as
+# first person. Anchored at the sentence start, so "Priya moved to Pune" never matches (third person).
+_LEAD_FILLER = r"^(?:(?:update|uff|ugh|btw|fyi|so|ok|okay|finally|just|also|news)\b\W*\s*)*"
+_IMPLIED_FIRST_PERSON = [
+    (re.compile(rf"{_LEAD_FILLER}(?:moved|shifted|relocated|now\s+living|living|staying)\s+(?:in|to)\s+{_VALUE}", re.I), "location"),
+    (re.compile(rf"{_LEAD_FILLER}(?:now\s+working|working|started\s+working|started)\s+(?:at|for)\s+{_VALUE}", re.I), "employer"),
+    (re.compile(rf"{_LEAD_FILLER}allergic\s+to\s+{_VALUE}", re.I), "allergy"),
+]
+
+# For first-person location / employer / allergy values: when and why are not part of the value
+# ("Pune last month for the new job" -> "Pune"). Event times keep theirs (different rule).
+_TRAILING_TIME = re.compile(r"\s+(?:(?:last|this|next)\s+(?:week|weekend|month|year|summer|winter)|yesterday|today|tonight|"
+                            r"now|nowadays|these\s+days|since|recently|lately|"
+                            r"(?:\d+|a|a\s+few|few|couple\s+of)\s+(?:days?|weeks?|months?|years?)\s+ago)\b.*$", re.I)
+_LOCATION_TAIL = re.compile(r"\s+(?:for|with|because|since|after)\s+.*$", re.I)
+
+
+def _trim_first_person(rel, val):
+    val = _TRAILING_TIME.sub("", val).strip()
+    if rel == "location":
+        val = _LOCATION_TAIL.sub("", val).strip()
+    if rel == "allergy":  # "penicillin, found out the hard way": what follows the comma is commentary
+        val = val.split(",")[0]
+    return val.rstrip(",").strip()
+
+
 _CARRY = re.compile(rf"^(?P<rel>[A-Za-z][a-z]+(?:\s+[a-z]+){{0,2}})\s+(?i:{_VERB})\s+{_VALUE}")
 
 _THIRD_PERSON = [
@@ -251,7 +278,12 @@ def extract_triads(message):
         for pattern, rel in _FIRST_PERSON:
             m = pattern.search(sentence)
             if m and not overlaps(m):
-                add(m, "user", rel, _clean_value(m.group("val")), guard=False, rule="first_person")
+                add(m, "user", rel, _trim_first_person(rel, _clean_value(m.group("val"))), guard=False, rule="first_person")
+        for pattern, rel in _IMPLIED_FIRST_PERSON:
+            m = pattern.search(sentence)
+            if m and not overlaps(m):
+                add(m, "user", rel, _trim_first_person(rel, _clean_value(m.group("val"))), guard=False,
+                    rule="first_person_implied")
         for pattern, rel in _THIRD_PERSON:
             m = pattern.search(sentence)
             if m and not overlaps(m):
