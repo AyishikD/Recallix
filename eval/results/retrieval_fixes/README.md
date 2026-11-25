@@ -75,6 +75,13 @@ on every question; mean recall 207 → 279 ms (every question deep: 494 ms; Appl
 
 ## Tried and rejected
 
+* **Serving each memory with the message before it, for the answering model** (LoCoMo conv-44, already
+  development data; same gpt-4o-mini answer model and judge as the Mem0 comparison, Mem0's saved answers
+  reused; `eval/mem0_comparison/run_recallix.py --context-out`): overall 67.7% either way, trick questions
+  declined 31 -> 30 of 35, multi-hop +1 question. The trick questions Recallix still answers swap who owns or did
+  something ("Audrey and Buddy" when Buddy is Andrew's dog); Mem0 stores self-contained facts ("Andrew's dog
+  Buddy"), so its answering model notices. Next: ownership-aware facts (Phase 6 extractor; an ownership rule).
+
 * **Reading the previous message only for short candidates** (`recall.rerank.context_max_words`, left at
   `null` = all), LoCoMo dev with deep recall on every question (`locomo_dev_deep_context_*.json`): served
   recall@10 0.739 (all) -> 0.718 (<= 15 words) / 0.717 (<= 10 words), single-hop 0.840 -> 0.796 / 0.793;
