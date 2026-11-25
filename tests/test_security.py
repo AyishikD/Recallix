@@ -91,3 +91,67 @@ def test_rate_limit(client, api_keys, monkeypatch):
     codes = [client.post("/memory/store", json={"content": f"note number {i}"}, headers=api_keys["alice"]).status_code
              for i in range(5)]
     assert codes[:3] == [200, 200, 200] and 429 in codes[3:]
+
+
+def _setting(monkeypatch, overrides):
+    from backend import settings
+    real = settings.get
+    monkeypatch.setattr(settings, "get", lambda path, default=None: overrides[path] if path in overrides else real(path, default))
+
+
+def test_oversized_requests_are_refused(client, api_keys, monkeypatch):
+    h = api_keys["alice"]
+    _setting(monkeypatch, {"api.max_request_bytes": 2000, "api.max_metadata_bytes": 100, "api.max_import_items": 2})
+    r = client.post("/memory/store", content=b'{"content": "' + b"x" * 5000 + b'"}',
+                    headers={**h, "Content-Type": "application/json"})
+    assert r.status_code == 413
+    r = client.post("/memory/store", json={"content": "hello", "metadata": {"blob": "y" * 500}}, headers=h)
+    assert r.status_code == 422 and "metadata" in r.text
+    r = client.post("/memory/import", json={"format": "text", "data": "one\ntwo\nthree"}, headers=h)
+    assert r.status_code == 413
+
+
+def test_recalls_are_rate_limited_and_deep_recall_costs_more(client, api_keys, monkeypatch):
+    h = api_keys["alice"]
+    _setting(monkeypatch, {"api.reads_per_second_per_user": 3})
+    assert client.post("/memory/recall", json={"query": "x", "deep": True}, headers=h).status_code == 429  # costs 4 > 3
+    codes = [client.post("/memory/recall", json={"query": "x"}, headers=h).status_code for _ in range(4)]
+    assert codes[:3] == [200, 200, 200] and codes[3] == 429
+
+
+def test_user_and_agent_ids_are_bounded(client, api_keys):
+    s = api_keys["service"]
+    for bad in ("a" * 129, "eve\nadmin", "x\x00y"):
+        assert client.post("/memory/store", json={"content": "hi", "user_id": bad}, headers=s).status_code == 422
+        assert client.get("/memory/stats", params={"user_id": bad}, headers=s).status_code == 422
+    assert client.post("/memory/store", json={"content": "hi", "agent_id": "a" * 129}, headers=api_keys["alice"]).status_code == 422
+    from backend.api import keys
+    import pytest
+    with pytest.raises(ValueError):
+        keys.create("bad\nuser")
+
+
+def test_agent_list_and_system_stats_show_only_your_own(client, api_keys):
+    a, b = api_keys["alice"], api_keys["bob"]
+    client.post("/agents/store", json={"content": "Alice planner note", "agent_id": "alice-planner"}, headers=a)
+    client.post("/agents/store", json={"content": "Bob coder note", "agent_id": "bob-coder"}, headers=b)
+    mine = client.get("/agents/list", headers=a).json()["data"]
+    assert [x["agent_id"] for x in mine] == ["alice-planner"] and mine[0]["memories"] == 1
+    engine = client.get("/memory/system/stats", headers=a).json()["data"]["engine"]
+    assert "namespaces" not in engine and engine.get("status")              # no engine-wide counts for users
+    assert "namespaces" in client.get("/memory/system/stats", headers=api_keys["admin"]).json()["data"]["engine"]
+
+
+def test_one_import_at_a_time_per_user():
+    from fastapi import HTTPException
+    import pytest
+    from backend.api.middleware.auth import one_import_at_a_time
+    with one_import_at_a_time("u1"):
+        with pytest.raises(HTTPException) as e:
+            with one_import_at_a_time("u1"):
+                pass
+        assert e.value.status_code == 429
+        with one_import_at_a_time("u2"):   # other users are not blocked
+            pass
+    with one_import_at_a_time("u1"):       # released afterwards
+        pass

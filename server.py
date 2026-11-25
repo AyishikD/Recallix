@@ -19,6 +19,7 @@ from backend import settings
 from backend.api.agents.router import router as agents_router
 from backend.api.deps import get_memory_manager, get_scheduler
 from backend.api.internal.internal_api import router as internal_router
+from backend.api.middleware.body_limit import BodySizeLimit
 from backend.api.public.public_api import router as public_router
 from backend.brain.memory import index_sync
 from backend.utils.internal_client import EngineError
@@ -47,6 +48,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(BodySizeLimit)  # api.max_request_bytes / api.max_import_bytes
 app.include_router(public_router)
 app.include_router(agents_router)
 app.include_router(internal_router)

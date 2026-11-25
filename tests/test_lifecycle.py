@@ -193,7 +193,7 @@ def test_concurrent_stores_and_recalls(client, api_keys, engine):
                 r = client.post("/memory/store", json={"content": f"Worker {i} fact {j}: item code W{i}-{j}"}, headers=h)
                 assert r.status_code in (200, 429), r.text
                 r = client.post("/memory/recall", json={"query": f"item code W{i}-{j}"}, headers=h)
-                assert r.status_code == 200, r.text
+                assert r.status_code in (200, 429), r.text  # api.reads_per_second_per_user
             # identical content raced from many threads must be stored once
             client.post("/memory/store", json={"content": "Shared duplicate note"}, headers=h)
         except Exception as e:  # pragma: no cover - reported below

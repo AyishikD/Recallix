@@ -165,8 +165,14 @@ All settings live in [`config.yaml`](config.yaml). Secrets come only from the en
 
 * API keys are random tokens stored only as SHA-256 hashes, with roles: `user` (acts as itself),
   `service` (may act for its end users), `admin` (maintenance endpoints).
-* Each user has a separate vector index; private memories are visible only to the agent that
-  wrote them, enforced in SQL.
+* Each user has a separate vector index, and a key only reaches its own user's memories.
+  `private` memories are scoped to the agent that wrote them (enforced in SQL), but the
+  `agent_id` is named by the caller: this separates a user's cooperating agents, it is not
+  access control between agents that don't trust each other.
+* Limits against abuse (`api` in `config.yaml`): request size (1 MB; 10 MB for imports),
+  metadata size, memories per import (one import per user at a time), and per-user writes
+  and recalls per second (a deep recall counts as 4). User and agent ids are at most 128
+  printable characters.
 * Deleting a memory removes its vector, long-term copy and timeline entry. Clearing a user
   removes their data from every store.
 * The engine binds to localhost and refuses to start without `RECALLIX_INTERNAL_KEY`.

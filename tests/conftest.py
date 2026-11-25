@@ -106,6 +106,7 @@ def hermetic(tmp_path, monkeypatch):
     deps.reset()
     keys._cache.update(mtime=None, keys={})
     monkeypatch.setattr(auth, "_limiter", auth._RateLimiter())
+    monkeypatch.setattr(auth, "_read_limiter", auth._RateLimiter())
     # The answer checker downloads a model; tests use it only through explicit fakes.
     from backend.brain.features import answer_check
     monkeypatch.setattr(answer_check.AnswerChecker, "from_config", classmethod(lambda cls: None))

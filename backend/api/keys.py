@@ -81,6 +81,8 @@ def create(user_id, role="user", label=""):
         raise ValueError(f"role must be one of {ROLES}")
     if not user_id:
         raise ValueError("user_id is required")
+    if len(user_id) > 128 or re.search(r"[\x00-\x1f\x7f]", user_id):
+        raise ValueError("user_id must be at most 128 characters with no control characters")
     key = "rx_" + secrets.token_urlsafe(32)
     with _lock:
         keys = dict(_load())

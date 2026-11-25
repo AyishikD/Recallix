@@ -286,6 +286,17 @@ class EpisodicMemory:
             conn.close()
         return list(results.values())
 
+    def agents(self, user_id):
+        """[{agent_id, memories, shared, last_stored}] for every agent that stored ACTIVE memories for this user."""
+        conn = self._connect()
+        try:
+            rows = conn.execute(
+                "SELECT agent_id, COUNT(*), SUM(memory_type = 'shared'), MAX(timestamp) FROM episodic_events "
+                "WHERE user_id = ? AND status = 'ACTIVE' GROUP BY agent_id ORDER BY MAX(timestamp) DESC", (user_id,)).fetchall()
+        finally:
+            conn.close()
+        return [{"agent_id": a, "memories": n, "shared": int(s or 0), "last_stored": t} for a, n, s, t in rows]
+
     def get_many(self, user_id, memory_ids, agent_id=None):
         """Batch fetch (one query per 500 ids) of visible ACTIVE memories, as {id: memory}."""
         ids = [int(i) for i in memory_ids if i is not None]
