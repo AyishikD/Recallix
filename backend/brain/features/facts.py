@@ -319,9 +319,8 @@ def resolve_definite(slots, lookup):
     return out
 
 
-# Questions a fact answers, phrased the way people ask them. Used as extra retrieval keys
-# (recall.question_keys): a question is far closer to another question in embedding space
-# than to the statement that answers it. Templates only: deterministic, no model.
+# Questions a fact answers, phrased the way people ask them. Used to generate test questions
+# (backend/tools/fuzz.py). Templates only: deterministic, no model.
 _QUESTION_TEMPLATES = {
     "location": ("Where does {s} live?", "Where is {s} based?"),
     "name": ("What is {p} name?", "What is {s} called?"),

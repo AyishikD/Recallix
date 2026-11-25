@@ -32,7 +32,7 @@ from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
 from ..features import dates as date_resolution
-from .updates import CONTEXT_KEY, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
+from .updates import promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok", "_counts")
@@ -120,7 +120,6 @@ class RecallEngine:
         self._add_confirmed_candidates(user_id, agent_id, q_vec, candidates)
         out = list(candidates.values())
         self._attach_semantic_scores(q_vec, out)
-        self._attach_question_keys(q_vec, out)
         return out
 
     def _add_confirmed_candidates(self, user_id, agent_id, q_vec, candidates):
@@ -162,29 +161,6 @@ class RecallEngine:
                 self.recall_log.add_confirmed(user_id, agent_id, query, vec, self.semantic.model_name,
                                               relevant_ids, recall_id)
         return n
-
-    def _attach_question_keys(self, q_vec, candidates):
-        """
-        recall.question_keys: a memory's meaning score becomes the better of question-vs-memory
-        and question-vs-the-questions-it-answers (stored at write time from its facts).
-        recall.neighbour_context: likewise for a short message's key "previous message + itself".
-        """
-        on = lambda name: (settings.get(f"recall.{name}", {}) or {}).get("enabled", False)
-        if q_vec is None or not (on("question_keys") or on("neighbour_context")):
-            return
-        keys = self.episodic.get_question_keys([c["id"] for c in candidates], self.semantic.model_name)
-        for c in candidates:
-            best = None
-            for text, vec in keys.get(c["id"], []):
-                sim = self.semantic.cosine(q_vec, vec)
-                if sim is not None and (best is None or sim > best[0]):
-                    best = (sim, text)
-            if best and best[0] > (c.get("semantic_score") or 0.0):
-                c["semantic_score"] = best[0]
-                if best[1].startswith(CONTEXT_KEY):  # recall.neighbour_context: matched together with the message before it
-                    c["matched_with_context"] = best[1][len(CONTEXT_KEY):]
-                else:
-                    c["matched_question"] = best[1]
 
     def _attach_semantic_scores(self, q_vec, candidates):
         """q · v from stored embeddings for lexical-only candidates; legacy rows are embedded once and saved."""
@@ -775,8 +751,6 @@ class RecallEngine:
                           "quote": content[span[0]:span[1]] if span else None, "extractor": src.get("extractor")})
         return {"memory_id": m.get("id"), "stored_at": m.get("timestamp"), "agent_id": m.get("agent_id"),
                 "memory_type": m.get("memory_type"), "speaker": memory_speaker(m) or None, "facts": facts,
-                "matched_question": m.get("matched_question"),
-                "matched_with_context": m.get("matched_with_context"),
                 "confirmed_for": m.get("confirmed_for"),
                 "inferred": m.get("inferred"),
                 "answer": m.get("answer") or None, "answer_margin": m.get("answer_margin")}

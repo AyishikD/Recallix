@@ -91,13 +91,8 @@ class EpisodicMemory:
                 "SELECT id, content FROM episodic_events WHERE content_hash IS NULL").fetchall():
             cursor.execute("UPDATE episodic_events SET content_hash = ? WHERE id = ?", (content_hash(content or ""), mid))
 
-        # Questions each memory answers (facts.question_keys), embedded; see recall.question_keys.
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS question_keys (
-                memory_id INTEGER, user_id TEXT, text TEXT, embedding BLOB, embedding_model TEXT
-            )
-        ''')
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_qk_memory ON question_keys(memory_id)")
+        # recall.question_keys and recall.neighbour_context were removed (no measured gain); their table goes too.
+        cursor.execute("DROP TABLE IF EXISTS question_keys")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_entity_relation_status ON episodic_events(entity_id, relation_type, status)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_hash ON episodic_events(user_id, content_hash)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_user_time ON episodic_events(user_id, timestamp)")
@@ -210,7 +205,6 @@ class EpisodicMemory:
             cur = conn.execute("DELETE FROM episodic_events WHERE id = ? AND user_id = ?", (memory_id, user_id))
             if cur.rowcount:
                 conn.execute("DELETE FROM episodic_fts WHERE rowid = ?", (memory_id,))
-                conn.execute("DELETE FROM question_keys WHERE memory_id = ?", (memory_id,))
             conn.commit()
             return cur.rowcount > 0
         finally:
@@ -221,7 +215,6 @@ class EpisodicMemory:
         try:
             conn.execute("DELETE FROM episodic_fts WHERE rowid IN (SELECT id FROM episodic_events WHERE user_id = ?)",
                          (user_id,))
-            conn.execute("DELETE FROM question_keys WHERE user_id = ?", (user_id,))
             n = conn.execute("DELETE FROM episodic_events WHERE user_id = ?", (user_id,)).rowcount
             conn.commit()
             return n
@@ -232,7 +225,6 @@ class EpisodicMemory:
         conn = self._connect()
         try:
             conn.execute("DELETE FROM episodic_fts")
-            conn.execute("DELETE FROM question_keys")
             n = conn.execute("DELETE FROM episodic_events").rowcount
             conn.commit()
             return n
@@ -405,34 +397,6 @@ class EpisodicMemory:
     # ------------------------------------------------------------------
     # Embedding cache (source of truth for the vector indexes)
     # ------------------------------------------------------------------
-    def add_question_keys(self, memory_id, user_id, items, model):
-        """items: [(question text, vector)]."""
-        conn = self._connect()
-        try:
-            with conn:
-                conn.executemany("INSERT INTO question_keys VALUES (?, ?, ?, ?, ?)",
-                                 [(int(memory_id), user_id, text, np.asarray(vec, dtype=np.float32).tobytes(), model)
-                                  for text, vec in items if vec is not None])
-        finally:
-            conn.close()
-
-    def get_question_keys(self, memory_ids, model):
-        """{memory id: [(question text, vector)]} for keys embedded with `model`."""
-        ids = [int(i) for i in memory_ids if i is not None]
-        out = {}
-        conn = self._connect()
-        try:
-            for start in range(0, len(ids), 500):
-                chunk = ids[start:start + 500]
-                ph = ",".join("?" * len(chunk))
-                for mid, text, blob in conn.execute(
-                        f"SELECT memory_id, text, embedding FROM question_keys WHERE memory_id IN ({ph}) "
-                        f"AND embedding_model = ?", (*chunk, model)):
-                    out.setdefault(mid, []).append((text, np.frombuffer(blob, dtype=np.float32)))
-        finally:
-            conn.close()
-        return out
-
     def get_embeddings(self, memory_ids, model):
         """{id: vector} for ids whose stored embedding was made by `model`."""
         ids = [int(i) for i in memory_ids if i is not None]

@@ -22,7 +22,6 @@ from functools import lru_cache
 
 from backend import settings
 
-CONTEXT_KEY = "[with the message before] "  # prefix of neighbour-context keys (recall.neighbour_context)
 
 _CHANGE_CUE = re.compile(
     r"\b(?:instead|rescheduled|re-scheduled|postponed|preponed|pushed (?:back|to)|moved (?:to|from|it)|"
