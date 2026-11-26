@@ -154,7 +154,7 @@
    "served_cover": 1.0,
    "ranked_cover": 0.8,
    "margin": null,
-   "latency_ms": 4630.7
+   "latency_ms": 4518.3
   },
   {
    "scenario": "agg_counting_00",
@@ -208,7 +208,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 84.7
+   "latency_ms": 85.7
   },
   {
    "scenario": "agg_counting_00",
@@ -258,7 +258,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 83.9
+   "latency_ms": 84.5
   },
   {
    "scenario": "agg_counting_00",
@@ -308,7 +308,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 80.1
+   "latency_ms": 80.7
   },
   {
    "scenario": "agg_counting_00",
@@ -356,7 +356,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 87.7
+   "latency_ms": 88.2
   },
   {
    "scenario": "agg_counting_00",
@@ -404,7 +404,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 81.0
+   "latency_ms": 80.5
   },
   {
    "scenario": "agg_counting_00",
@@ -454,7 +454,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 86.9
+   "latency_ms": 85.4
   },
   {
    "scenario": "agg_counting_00",
@@ -504,7 +504,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 80.6
+   "latency_ms": 79.6
   },
   {
    "scenario": "agg_counting_00",
@@ -552,7 +552,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 81.2
+   "latency_ms": 81.0
   },
   {
    "scenario": "agg_counting_00",
@@ -589,7 +589,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 82.4
+   "latency_ms": 77.3
   },
   {
    "scenario": "agg_counting_02",
@@ -641,7 +641,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 96.1
+   "latency_ms": 108.8
   },
   {
    "scenario": "agg_counting_02",
@@ -693,7 +693,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 103.7
+   "latency_ms": 106.6
   },
   {
    "scenario": "agg_counting_02",
@@ -705,9 +705,9 @@
     "kind": "counting",
     "claims": [
      {
-      "statement": "I did see a doctor or medical specialist for myself.",
-      "support": 0.995,
-      "memory": 34
+      "statement": "I did see a doctor or medical specialist for.",
+      "support": 0.997,
+      "memory": 20
      }
     ]
    },
@@ -745,7 +745,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 111.0
+   "latency_ms": 107.9
   },
   {
    "scenario": "agg_counting_02",
@@ -797,7 +797,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 108.9
+   "latency_ms": 111.0
   },
   {
    "scenario": "agg_counting_02",
@@ -847,7 +847,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 94.8
+   "latency_ms": 98.0
   },
   {
    "scenario": "agg_counting_02",
@@ -897,7 +897,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 104.4
+   "latency_ms": 99.4
   },
   {
    "scenario": "agg_counting_02",
@@ -947,7 +947,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 108.7
+   "latency_ms": 104.4
   },
   {
    "scenario": "agg_counting_02",
@@ -997,7 +997,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 103.4
+   "latency_ms": 95.7
   },
   {
    "scenario": "agg_counting_02",
@@ -1045,7 +1045,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 102.3
+   "latency_ms": 90.3
   },
   {
    "scenario": "agg_counting_02",
@@ -1082,7 +1082,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 101.6
+   "latency_ms": 93.2
   },
   {
    "scenario": "agg_counting_04",
@@ -1136,7 +1136,7 @@
    "served_cover": 0.8,
    "ranked_cover": 0.6,
    "margin": null,
-   "latency_ms": 109.7
+   "latency_ms": 107.0
   },
   {
    "scenario": "agg_counting_04",
@@ -1190,7 +1190,7 @@
    "served_cover": 0.8,
    "ranked_cover": 0.6,
    "margin": null,
-   "latency_ms": 103.4
+   "latency_ms": 101.3
   },
   {
    "scenario": "agg_counting_04",
@@ -1229,7 +1229,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 124.0
+   "latency_ms": 121.5
   },
   {
    "scenario": "agg_counting_04",
@@ -1279,7 +1279,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 133.0
+   "latency_ms": 119.8
   },
   {
    "scenario": "agg_counting_04",
@@ -1329,7 +1329,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 127.7
+   "latency_ms": 111.2
   },
   {
    "scenario": "agg_counting_04",
@@ -1379,7 +1379,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 120.5
+   "latency_ms": 105.7
   },
   {
    "scenario": "agg_counting_04",
@@ -1429,7 +1429,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 125.5
+   "latency_ms": 102.7
   },
   {
    "scenario": "agg_counting_04",
@@ -1479,7 +1479,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 113.8
+   "latency_ms": 94.1
   },
   {
    "scenario": "agg_counting_04",
@@ -1529,7 +1529,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 133.6
+   "latency_ms": 121.3
   },
   {
    "scenario": "agg_counting_04",
@@ -1579,7 +1579,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 128.7
+   "latency_ms": 103.8
   },
   {
    "scenario": "agg_counting_04",
@@ -1616,7 +1616,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 126.5
+   "latency_ms": 103.0
   },
   {
    "scenario": "agg_counting_04",
@@ -1628,9 +1628,9 @@
     "kind": "counting",
     "claims": [
      {
-      "statement": "I have visited Japan.",
-      "support": 0.576,
-      "memory": 41
+      "statement": "I have visited.",
+      "support": 0.998,
+      "memory": 36
      }
     ]
    },
@@ -1664,7 +1664,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 128.5
+   "latency_ms": 107.2
   },
   {
    "scenario": "agg_counting_06",
@@ -1720,7 +1720,7 @@
    "served_cover": 0.7142857142857143,
    "ranked_cover": 0.7142857142857143,
    "margin": null,
-   "latency_ms": 88.5
+   "latency_ms": 85.7
   },
   {
    "scenario": "agg_counting_06",
@@ -1732,9 +1732,9 @@
     "kind": "counting",
     "claims": [
      {
-      "statement": "I did have job interviews.",
-      "support": 0.998,
-      "memory": 64
+      "statement": "Some of did I have.",
+      "support": 0.967,
+      "memory": 59
      }
     ]
    },
@@ -1776,7 +1776,7 @@
    "served_cover": 0.5714285714285714,
    "ranked_cover": 0.5714285714285714,
    "margin": null,
-   "latency_ms": 93.6
+   "latency_ms": 88.5
   },
   {
    "scenario": "agg_counting_06",
@@ -1827,7 +1827,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 88.0
+   "latency_ms": 79.9
   },
   {
    "scenario": "agg_counting_06",
@@ -1878,7 +1878,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 98.4
+   "latency_ms": 89.7
   },
   {
    "scenario": "agg_counting_06",
@@ -1915,7 +1915,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 91.8
+   "latency_ms": 82.3
   },
   {
    "scenario": "agg_counting_06",
@@ -1952,7 +1952,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 95.9
+   "latency_ms": 85.3
   },
   {
    "scenario": "agg_counting_06",
@@ -1993,7 +1993,7 @@
    "served_cover": 0.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 106.9
+   "latency_ms": 90.6
   },
   {
    "scenario": "agg_counting_06",
@@ -2045,7 +2045,7 @@
    "served_cover": 1.0,
    "ranked_cover": 0.6666666666666666,
    "margin": null,
-   "latency_ms": 105.4
+   "latency_ms": 91.9
   },
   {
    "scenario": "agg_counting_06",
@@ -2082,7 +2082,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 106.0
+   "latency_ms": 90.3
   },
   {
    "scenario": "agg_counting_06",
@@ -2119,7 +2119,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 101.4
+   "latency_ms": 83.6
   },
   {
    "scenario": "agg_counting_08",
@@ -2175,7 +2175,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 105.9
+   "latency_ms": 99.2
   },
   {
    "scenario": "agg_counting_08",
@@ -2231,7 +2231,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 95.6
+   "latency_ms": 90.7
   },
   {
    "scenario": "agg_counting_08",
@@ -2281,7 +2281,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 107.4
+   "latency_ms": 107.1
   },
   {
    "scenario": "agg_counting_08",
@@ -2331,7 +2331,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 113.7
+   "latency_ms": 106.0
   },
   {
    "scenario": "agg_counting_08",
@@ -2381,7 +2381,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 122.6
+   "latency_ms": 114.8
   },
   {
    "scenario": "agg_counting_08",
@@ -2431,7 +2431,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 122.7
+   "latency_ms": 109.1
   },
   {
    "scenario": "agg_counting_08",
@@ -2468,7 +2468,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 107.0
+   "latency_ms": 94.3
   },
   {
    "scenario": "agg_counting_08",
@@ -2516,7 +2516,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 115.1
+   "latency_ms": 99.8
   },
   {
    "scenario": "agg_counting_11",
@@ -2573,7 +2573,7 @@
    "served_cover": 0.875,
    "ranked_cover": 0.875,
    "margin": null,
-   "latency_ms": 84.8
+   "latency_ms": 78.5
   },
   {
    "scenario": "agg_counting_11",
@@ -2630,7 +2630,7 @@
    "served_cover": 0.875,
    "ranked_cover": 0.875,
    "margin": null,
-   "latency_ms": 86.2
+   "latency_ms": 79.7
   },
   {
    "scenario": "agg_counting_11",
@@ -2680,7 +2680,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 90.1
+   "latency_ms": 86.7
   },
   {
    "scenario": "agg_counting_11",
@@ -2730,7 +2730,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 93.1
+   "latency_ms": 85.6
   },
   {
    "scenario": "agg_counting_11",
@@ -2780,7 +2780,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 91.4
+   "latency_ms": 81.0
   },
   {
    "scenario": "agg_counting_11",
@@ -2830,7 +2830,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 91.0
+   "latency_ms": 81.3
   },
   {
    "scenario": "agg_counting_11",
@@ -2867,7 +2867,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 91.3
+   "latency_ms": 80.2
   },
   {
    "scenario": "agg_counting_11",
@@ -2904,7 +2904,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 93.1
+   "latency_ms": 79.6
   },
   {
    "scenario": "agg_counting_13",
@@ -2958,7 +2958,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 76.6
+   "latency_ms": 74.6
   },
   {
    "scenario": "agg_counting_13",
@@ -3012,7 +3012,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 73.2
+   "latency_ms": 70.5
   },
   {
    "scenario": "agg_counting_13",
@@ -3064,7 +3064,7 @@
    "served_cover": 0.3333333333333333,
    "ranked_cover": 0.6666666666666666,
    "margin": null,
-   "latency_ms": 69.5
+   "latency_ms": 65.6
   },
   {
    "scenario": "agg_counting_13",
@@ -3116,7 +3116,7 @@
    "served_cover": 0.3333333333333333,
    "ranked_cover": 0.6666666666666666,
    "margin": null,
-   "latency_ms": 69.7
+   "latency_ms": 68.4
   },
   {
    "scenario": "agg_counting_13",
@@ -3156,7 +3156,7 @@
    "served_cover": 0.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 75.9
+   "latency_ms": 70.7
   },
   {
    "scenario": "agg_counting_13",
@@ -3207,7 +3207,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 75.1
+   "latency_ms": 70.8
   },
   {
    "scenario": "agg_counting_13",
@@ -3244,7 +3244,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 71.6
+   "latency_ms": 67.0
   },
   {
    "scenario": "agg_counting_13",
@@ -3281,7 +3281,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 73.9
+   "latency_ms": 69.5
   },
   {
    "scenario": "agg_counting_13",
@@ -3334,7 +3334,7 @@
    "served_cover": 0.5,
    "ranked_cover": 0.25,
    "margin": null,
-   "latency_ms": 70.9
+   "latency_ms": 66.1
   },
   {
    "scenario": "agg_counting_13",
@@ -3387,7 +3387,7 @@
    "served_cover": 0.5,
    "ranked_cover": 0.25,
    "margin": null,
-   "latency_ms": 81.9
+   "latency_ms": 74.6
   },
   {
    "scenario": "agg_counting_15",
@@ -3437,7 +3437,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 90.1
+   "latency_ms": 84.4
   },
   {
    "scenario": "agg_counting_15",
@@ -3487,7 +3487,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 89.0
+   "latency_ms": 85.1
   },
   {
    "scenario": "agg_counting_15",
@@ -3537,7 +3537,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 88.3
+   "latency_ms": 82.9
   },
   {
    "scenario": "agg_counting_15",
@@ -3587,7 +3587,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 96.2
+   "latency_ms": 87.5
   },
   {
    "scenario": "agg_counting_15",
@@ -3637,7 +3637,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 94.9
+   "latency_ms": 84.4
   },
   {
    "scenario": "agg_counting_15",
@@ -3676,7 +3676,7 @@
    "served_cover": 0.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 98.1
+   "latency_ms": 86.6
   },
   {
    "scenario": "agg_counting_15",
@@ -3713,7 +3713,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 102.6
+   "latency_ms": 83.5
   },
   {
    "scenario": "agg_counting_15",
@@ -3750,7 +3750,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 100.3
+   "latency_ms": 78.0
   },
   {
    "scenario": "agg_counting_17",
@@ -3800,7 +3800,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 104.2
+   "latency_ms": 94.7
   },
   {
    "scenario": "agg_counting_17",
@@ -3850,7 +3850,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 104.1
+   "latency_ms": 96.7
   },
   {
    "scenario": "agg_counting_17",
@@ -3900,7 +3900,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 110.2
+   "latency_ms": 101.6
   },
   {
    "scenario": "agg_counting_17",
@@ -3950,7 +3950,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 110.2
+   "latency_ms": 99.4
   },
   {
    "scenario": "agg_counting_17",
@@ -3987,7 +3987,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 109.5
+   "latency_ms": 97.8
   },
   {
    "scenario": "agg_counting_17",
@@ -4024,7 +4024,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 127.0
+   "latency_ms": 102.2
   },
   {
    "scenario": "agg_counting_17",
@@ -4074,7 +4074,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 130.7
+   "latency_ms": 102.2
   },
   {
    "scenario": "agg_counting_17",
@@ -4124,7 +4124,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 126.9
+   "latency_ms": 135.2
   },
   {
    "scenario": "agg_time_between_01",
@@ -4180,7 +4180,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 306.4
+   "latency_ms": 485.9
   },
   {
    "scenario": "agg_time_between_01",
@@ -4236,7 +4236,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 165.4
+   "latency_ms": 145.5
   },
   {
    "scenario": "agg_time_between_01",
@@ -4253,7 +4253,7 @@
       "memory": 167
      },
      {
-      "statement": "I was signing the paperwork.",
+      "statement": "Signing the paperwork happened.",
       "support": 0.997,
       "memory": 170
      }
@@ -4292,7 +4292,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 147.1
+   "latency_ms": 169.4
   },
   {
    "scenario": "agg_time_between_01",
@@ -4348,7 +4348,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 128.0
+   "latency_ms": 117.1
   },
   {
    "scenario": "agg_time_between_01",
@@ -4360,13 +4360,13 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was getting the keys.",
+      "statement": "Getting the keys happened.",
       "support": 0.997,
       "memory": 170
      },
      {
-      "statement": "I was driving the Camry home.",
-      "support": 0.996,
+      "statement": "Driving the Camry home happened.",
+      "support": 0.997,
       "memory": 171
      }
     ]
@@ -4404,7 +4404,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 140.7
+   "latency_ms": 209.1
   },
   {
    "scenario": "agg_time_between_01",
@@ -4460,7 +4460,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 134.2
+   "latency_ms": 122.9
   },
   {
    "scenario": "agg_time_between_01",
@@ -4516,7 +4516,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 170.6
+   "latency_ms": 149.3
   },
   {
    "scenario": "agg_time_between_01",
@@ -4572,7 +4572,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 169.3
+   "latency_ms": 146.9
   },
   {
    "scenario": "agg_time_between_01",
@@ -4614,7 +4614,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 214.9
+   "latency_ms": 321.8
   },
   {
    "scenario": "agg_time_between_01",
@@ -4656,7 +4656,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 217.6
+   "latency_ms": 178.6
   },
   {
    "scenario": "agg_time_between_03",
@@ -4712,7 +4712,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 141.0
+   "latency_ms": 135.8
   },
   {
    "scenario": "agg_time_between_03",
@@ -4768,7 +4768,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 147.2
+   "latency_ms": 136.8
   },
   {
    "scenario": "agg_time_between_03",
@@ -4780,13 +4780,13 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was booking the Puebla tasting flight.",
+      "statement": "Booking the Puebla tasting flight happened.",
       "support": 0.997,
       "memory": 190
      },
      {
-      "statement": "I was taking that flight.",
-      "support": 0.966,
+      "statement": "Taking that flight happened.",
+      "support": 0.975,
       "memory": 191
      }
     ]
@@ -4824,7 +4824,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 153.1
+   "latency_ms": 221.8
   },
   {
    "scenario": "agg_time_between_03",
@@ -4880,7 +4880,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 198.3
+   "latency_ms": 184.0
   },
   {
    "scenario": "agg_time_between_03",
@@ -4892,13 +4892,13 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was arriving in Oaxaca.",
-      "support": 0.993,
+      "statement": "Arriving in Oaxaca happened.",
+      "support": 0.995,
       "memory": 196
      },
      {
-      "statement": "I was flying back to Mexico City.",
-      "support": 0.996,
+      "statement": "Flying back to Mexico City happened.",
+      "support": 0.997,
       "memory": 187
      }
     ]
@@ -4936,7 +4936,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 145.2
+   "latency_ms": 197.1
   },
   {
    "scenario": "agg_time_between_03",
@@ -4992,7 +4992,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 155.7
+   "latency_ms": 140.2
   },
   {
    "scenario": "agg_time_between_03",
@@ -5004,14 +5004,14 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was buying the new grill.",
+      "statement": "Buying the new grill happened.",
       "support": 0.997,
       "memory": 182
      },
      {
-      "statement": "I was renewing the restaurant's health permit.",
-      "support": 0.0,
-      "memory": 186
+      "statement": "Renewing the restaurant's health permit happened.",
+      "support": 0.007,
+      "memory": 196
      }
     ]
    },
@@ -5034,7 +5034,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 159.1
+   "latency_ms": 226.3
   },
   {
    "scenario": "agg_time_between_03",
@@ -5076,7 +5076,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 157.2
+   "latency_ms": 142.0
   },
   {
    "scenario": "agg_time_between_03",
@@ -5121,7 +5121,7 @@
    "served_cover": 0.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 155.9
+   "latency_ms": 138.4
   },
   {
    "scenario": "agg_time_between_03",
@@ -5166,7 +5166,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.5,
    "margin": null,
-   "latency_ms": 158.7
+   "latency_ms": 133.2
   },
   {
    "scenario": "agg_time_between_05",
@@ -5222,7 +5222,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 207.3
+   "latency_ms": 194.3
   },
   {
    "scenario": "agg_time_between_05",
@@ -5278,7 +5278,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 210.8
+   "latency_ms": 194.4
   },
   {
    "scenario": "agg_time_between_05",
@@ -5334,7 +5334,7 @@
    "served_cover": 1.0,
    "ranked_cover": 0.5,
    "margin": null,
-   "latency_ms": 227.7
+   "latency_ms": 198.6
   },
   {
    "scenario": "agg_time_between_05",
@@ -5390,7 +5390,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 257.0
+   "latency_ms": 215.7
   },
   {
    "scenario": "agg_time_between_05",
@@ -5443,7 +5443,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 237.1
+   "latency_ms": 359.9
   },
   {
    "scenario": "agg_time_between_05",
@@ -5485,7 +5485,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 237.4
+   "latency_ms": 191.3
   },
   {
    "scenario": "agg_time_between_05",
@@ -5541,7 +5541,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 258.8
+   "latency_ms": 221.3
   },
   {
    "scenario": "agg_time_between_05",
@@ -5597,7 +5597,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 275.4
+   "latency_ms": 223.6
   },
   {
    "scenario": "agg_time_between_07",
@@ -5609,13 +5609,13 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was signing the lease.",
-      "support": 0.997,
+      "statement": "Signing the lease happened.",
+      "support": 0.998,
       "memory": 230
      },
      {
-      "statement": "I was moving in.",
-      "support": 0.965,
+      "statement": "Moving in happened.",
+      "support": 0.995,
       "memory": 224
      }
     ]
@@ -5653,7 +5653,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 127.6
+   "latency_ms": 180.9
   },
   {
    "scenario": "agg_time_between_07",
@@ -5709,7 +5709,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 130.4
+   "latency_ms": 124.4
   },
   {
    "scenario": "agg_time_between_07",
@@ -5721,13 +5721,13 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was signing the storage unit lease.",
-      "support": 0.997,
+      "statement": "Signing the storage unit lease happened.",
+      "support": 0.998,
       "memory": 230
      },
      {
-      "statement": "I was setting up the internet.",
-      "support": 0.997,
+      "statement": "Setting up the internet happened.",
+      "support": 0.998,
       "memory": 232
      }
     ]
@@ -5765,7 +5765,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 124.6
+   "latency_ms": 189.7
   },
   {
    "scenario": "agg_time_between_07",
@@ -5821,7 +5821,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 123.1
+   "latency_ms": 124.3
   },
   {
    "scenario": "agg_time_between_07",
@@ -5877,7 +5877,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 209.0
+   "latency_ms": 193.7
   },
   {
    "scenario": "agg_time_between_07",
@@ -5933,7 +5933,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 219.1
+   "latency_ms": 192.1
   },
   {
    "scenario": "agg_time_between_07",
@@ -5945,14 +5945,14 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was signing the lease.",
-      "support": 0.997,
+      "statement": "Signing the lease happened.",
+      "support": 0.998,
       "memory": 230
      },
      {
-      "statement": "I was hosting a housewarming party.",
-      "support": 0.001,
-      "memory": 235
+      "statement": "Hosting a housewarming party happened.",
+      "support": 0.002,
+      "memory": 220
      }
     ]
    },
@@ -5975,7 +5975,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 132.2
+   "latency_ms": 182.9
   },
   {
    "scenario": "agg_time_between_07",
@@ -6017,7 +6017,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 138.3
+   "latency_ms": 122.4
   },
   {
    "scenario": "agg_time_between_07",
@@ -6073,7 +6073,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 157.0
+   "latency_ms": 135.8
   },
   {
    "scenario": "agg_time_between_07",
@@ -6129,7 +6129,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 153.4
+   "latency_ms": 132.0
   },
   {
    "scenario": "agg_time_between_09",
@@ -6146,8 +6146,8 @@
       "memory": 238
      },
      {
-      "statement": "I was arriving in Bali.",
-      "support": 0.986,
+      "statement": "Arriving in Bali happened.",
+      "support": 0.992,
       "memory": 243
      }
     ]
@@ -6185,7 +6185,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 138.2
+   "latency_ms": 201.8
   },
   {
    "scenario": "agg_time_between_09",
@@ -6241,7 +6241,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 140.8
+   "latency_ms": 131.9
   },
   {
    "scenario": "agg_time_between_09",
@@ -6253,8 +6253,8 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was booking the Montreal hotel.",
-      "support": 0.995,
+      "statement": "Booking the Montreal hotel happened.",
+      "support": 0.998,
       "memory": 250
      },
      {
@@ -6297,7 +6297,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 138.6
+   "latency_ms": 208.4
   },
   {
    "scenario": "agg_time_between_09",
@@ -6353,7 +6353,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 138.9
+   "latency_ms": 129.6
   },
   {
    "scenario": "agg_time_between_09",
@@ -6370,8 +6370,8 @@
       "memory": 238
      },
      {
-      "statement": "I was going scuba diving in Bali.",
-      "support": 0.0,
+      "statement": "Going scuba diving in Bali happened.",
+      "support": 0.001,
       "memory": 245
      }
     ]
@@ -6395,7 +6395,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 147.8
+   "latency_ms": 211.4
   },
   {
    "scenario": "agg_time_between_09",
@@ -6437,7 +6437,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 146.7
+   "latency_ms": 129.8
   },
   {
    "scenario": "agg_time_between_09",
@@ -6454,8 +6454,8 @@
       "memory": 242
      },
      {
-      "statement": "I was getting back from Bali.",
-      "support": 0.985,
+      "statement": "Getting back from Bali happened.",
+      "support": 0.993,
       "memory": 246
      }
     ]
@@ -6493,7 +6493,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 152.8
+   "latency_ms": 208.4
   },
   {
    "scenario": "agg_time_between_09",
@@ -6549,7 +6549,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 148.8
+   "latency_ms": 129.6
   },
   {
    "scenario": "agg_time_between_12",
@@ -6561,13 +6561,13 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was starting the course.",
-      "support": 0.976,
-      "memory": 263
+      "statement": "Starting the course happened.",
+      "support": 0.991,
+      "memory": 256
      },
      {
-      "statement": "I was completing the project.",
-      "support": 0.995,
+      "statement": "Completing the final project happened.",
+      "support": 0.997,
       "memory": 265
      }
     ]
@@ -6605,7 +6605,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 166.7
+   "latency_ms": 259.9
   },
   {
    "scenario": "agg_time_between_12",
@@ -6661,7 +6661,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 155.9
+   "latency_ms": 145.4
   },
   {
    "scenario": "agg_time_between_12",
@@ -6673,8 +6673,8 @@
     "kind": "time_between",
     "claims": [
      {
-      "statement": "I was submitting the assignment.",
-      "support": 0.996,
+      "statement": "Submitting the first assignment happened.",
+      "support": 0.997,
       "memory": 263
      },
      {
@@ -6717,7 +6717,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 185.1
+   "latency_ms": 272.3
   },
   {
    "scenario": "agg_time_between_12",
@@ -6773,7 +6773,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 181.3
+   "latency_ms": 158.1
   },
   {
    "scenario": "agg_time_between_12",
@@ -6815,7 +6815,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 162.2
+   "latency_ms": 138.9
   },
   {
    "scenario": "agg_time_between_12",
@@ -6857,7 +6857,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 165.0
+   "latency_ms": 136.4
   },
   {
    "scenario": "agg_time_between_12",
@@ -6913,7 +6913,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 150.7
+   "latency_ms": 122.5
   },
   {
    "scenario": "agg_time_between_12",
@@ -6969,7 +6969,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 150.8
+   "latency_ms": 119.7
   },
   {
    "scenario": "agg_time_between_14",
@@ -7025,7 +7025,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 222.8
+   "latency_ms": 201.4
   },
   {
    "scenario": "agg_time_between_14",
@@ -7081,7 +7081,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 193.3
+   "latency_ms": 173.2
   },
   {
    "scenario": "agg_time_between_14",
@@ -7137,7 +7137,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 252.2
+   "latency_ms": 258.2
   },
   {
    "scenario": "agg_time_between_14",
@@ -7193,7 +7193,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 257.4
+   "latency_ms": 215.1
   },
   {
    "scenario": "agg_time_between_14",
@@ -7249,7 +7249,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 225.6
+   "latency_ms": 341.7
   },
   {
    "scenario": "agg_time_between_14",
@@ -7305,7 +7305,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 217.6
+   "latency_ms": 178.8
   },
   {
    "scenario": "agg_time_between_14",
@@ -7347,7 +7347,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 219.1
+   "latency_ms": 179.2
   },
   {
    "scenario": "agg_time_between_14",
@@ -7389,7 +7389,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 258.3
+   "latency_ms": 210.5
   },
   {
    "scenario": "agg_time_between_14",
@@ -7445,7 +7445,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 176.3
+   "latency_ms": 200.0
   },
   {
    "scenario": "agg_time_between_14",
@@ -7501,7 +7501,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 165.9
+   "latency_ms": 141.5
   },
   {
    "scenario": "agg_time_between_17",
@@ -7518,8 +7518,8 @@
       "memory": 288
      },
      {
-      "statement": "I was getting the haircut.",
-      "support": 0.996,
+      "statement": "Getting the haircut happened.",
+      "support": 0.998,
       "memory": 294
      }
     ]
@@ -7557,7 +7557,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 218.8
+   "latency_ms": 357.5
   },
   {
    "scenario": "agg_time_between_17",
@@ -7613,7 +7613,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 238.3
+   "latency_ms": 213.1
   },
   {
    "scenario": "agg_time_between_17",
@@ -7669,7 +7669,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 208.1
+   "latency_ms": 180.5
   },
   {
    "scenario": "agg_time_between_17",
@@ -7725,7 +7725,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 284.2
+   "latency_ms": 235.2
   },
   {
    "scenario": "agg_time_between_17",
@@ -7781,7 +7781,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 208.1
+   "latency_ms": 160.7
   },
   {
    "scenario": "agg_time_between_17",
@@ -7837,7 +7837,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 287.5
+   "latency_ms": 217.6
   },
   {
    "scenario": "agg_time_between_17",
@@ -7879,7 +7879,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 167.7
+   "latency_ms": 129.9
   },
   {
    "scenario": "agg_time_between_17",
@@ -7932,7 +7932,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 165.8
+   "latency_ms": 121.8
   },
   {
    "scenario": "agg_time_between_17",
@@ -7988,7 +7988,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 207.1
+   "latency_ms": 152.0
   },
   {
    "scenario": "agg_time_between_17",
@@ -8044,7 +8044,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 200.2
+   "latency_ms": 147.9
   },
   {
    "scenario": "agg_ordering_01",
@@ -8100,7 +8100,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 156.8
+   "latency_ms": 137.3
   },
   {
    "scenario": "agg_ordering_01",
@@ -8156,7 +8156,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 155.6
+   "latency_ms": 137.1
   },
   {
    "scenario": "agg_ordering_01",
@@ -8212,7 +8212,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 165.8
+   "latency_ms": 145.7
   },
   {
    "scenario": "agg_ordering_01",
@@ -8224,7 +8224,7 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was finishing 'The Nightingale'.",
+      "statement": "Finishing 'The Nightingale' happened.",
       "support": 0.996,
       "memory": 313
      },
@@ -8268,7 +8268,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 220.4
+   "latency_ms": 233.2
   },
   {
    "scenario": "agg_ordering_01",
@@ -8319,7 +8319,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 90.2
+   "latency_ms": 77.5
   },
   {
    "scenario": "agg_ordering_01",
@@ -8370,7 +8370,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 93.1
+   "latency_ms": 75.6
   },
   {
    "scenario": "agg_ordering_01",
@@ -8412,7 +8412,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 180.8
+   "latency_ms": 195.0
   },
   {
    "scenario": "agg_ordering_01",
@@ -8454,7 +8454,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 190.3
+   "latency_ms": 195.0
   },
   {
    "scenario": "agg_ordering_03",
@@ -8499,7 +8499,7 @@
    "served_cover": 0.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 136.9
+   "latency_ms": 120.9
   },
   {
    "scenario": "agg_ordering_03",
@@ -8511,12 +8511,12 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was finishing the Geotechnical Engineering Basics course.",
-      "support": 0.993,
+      "statement": "Finishing the Geotechnical Engineering Basics course happened.",
+      "support": 0.994,
       "memory": 327
      },
      {
-      "statement": "I was completing the Advanced Structural Analysis certification.",
+      "statement": "Completing the Advanced Structural Analysis certification happened.",
       "support": 0.996,
       "memory": 322
      }
@@ -8555,7 +8555,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 143.9
+   "latency_ms": 201.6
   },
   {
    "scenario": "agg_ordering_03",
@@ -8611,7 +8611,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 146.0
+   "latency_ms": 126.4
   },
   {
    "scenario": "agg_ordering_03",
@@ -8667,7 +8667,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 139.1
+   "latency_ms": 121.9
   },
   {
    "scenario": "agg_ordering_03",
@@ -8723,7 +8723,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 157.9
+   "latency_ms": 137.7
   },
   {
    "scenario": "agg_ordering_03",
@@ -8779,7 +8779,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 157.4
+   "latency_ms": 134.7
   },
   {
    "scenario": "agg_ordering_03",
@@ -8821,7 +8821,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 141.7
+   "latency_ms": 121.1
   },
   {
    "scenario": "agg_ordering_03",
@@ -8863,7 +8863,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 143.0
+   "latency_ms": 121.9
   },
   {
    "scenario": "agg_ordering_03",
@@ -8919,7 +8919,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 152.6
+   "latency_ms": 127.4
   },
   {
    "scenario": "agg_ordering_03",
@@ -8975,7 +8975,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 158.0
+   "latency_ms": 137.2
   },
   {
    "scenario": "agg_ordering_05",
@@ -9031,7 +9031,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 142.1
+   "latency_ms": 131.1
   },
   {
    "scenario": "agg_ordering_05",
@@ -9043,8 +9043,8 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was painting the spare bedroom.",
-      "support": 0.996,
+      "statement": "Painting the spare bedroom happened.",
+      "support": 0.997,
       "memory": 343
      },
      {
@@ -9087,7 +9087,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 144.7
+   "latency_ms": 222.2
   },
   {
    "scenario": "agg_ordering_05",
@@ -9099,13 +9099,13 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was installing the kitchen cabinets.",
-      "support": 0.997,
+      "statement": "Installing the kitchen cabinets happened.",
+      "support": 0.998,
       "memory": 348
      },
      {
-      "statement": "I was tiling the bathroom floor.",
-      "support": 0.995,
+      "statement": "Tiling the bathroom floor happened.",
+      "support": 0.996,
       "memory": 353
      }
     ]
@@ -9143,7 +9143,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 133.6
+   "latency_ms": 198.0
   },
   {
    "scenario": "agg_ordering_05",
@@ -9155,13 +9155,13 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was tiling the bathroom floor.",
-      "support": 0.995,
+      "statement": "Tiling the bathroom floor happened.",
+      "support": 0.996,
       "memory": 353
      },
      {
-      "statement": "I was installing the kitchen cabinets.",
-      "support": 0.997,
+      "statement": "Installing the kitchen cabinets happened.",
+      "support": 0.998,
       "memory": 348
      }
     ]
@@ -9199,7 +9199,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 132.4
+   "latency_ms": 190.1
   },
   {
    "scenario": "agg_ordering_05",
@@ -9255,7 +9255,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 135.3
+   "latency_ms": 121.3
   },
   {
    "scenario": "agg_ordering_05",
@@ -9267,12 +9267,12 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was ordering the new grout.",
-      "support": 0.996,
+      "statement": "Ordering the new grout happened.",
+      "support": 0.997,
       "memory": 349
      },
      {
-      "statement": "I was hiring the electrician.",
+      "statement": "Hiring the electrician happened.",
       "support": 0.997,
       "memory": 346
      }
@@ -9311,7 +9311,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 131.6
+   "latency_ms": 187.7
   },
   {
    "scenario": "agg_ordering_05",
@@ -9353,7 +9353,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 150.4
+   "latency_ms": 134.2
   },
   {
    "scenario": "agg_ordering_05",
@@ -9365,13 +9365,13 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was painting the hallway.",
-      "support": 0.996,
+      "statement": "Painting the hallway happened.",
+      "support": 0.998,
       "memory": 357
      },
      {
-      "statement": "I was installing the skylight.",
-      "support": 0.0,
+      "statement": "Installing the skylight happened.",
+      "support": 0.001,
       "memory": 345
      }
     ]
@@ -9395,7 +9395,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 155.5
+   "latency_ms": 219.0
   },
   {
    "scenario": "agg_ordering_05",
@@ -9451,7 +9451,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 161.4
+   "latency_ms": 220.4
   },
   {
    "scenario": "agg_ordering_05",
@@ -9507,7 +9507,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 166.3
+   "latency_ms": 220.9
   },
   {
    "scenario": "agg_ordering_07",
@@ -9552,7 +9552,7 @@
    "served_cover": 0.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 146.3
+   "latency_ms": 133.2
   },
   {
    "scenario": "agg_ordering_07",
@@ -9608,7 +9608,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 159.7
+   "latency_ms": 140.2
   },
   {
    "scenario": "agg_ordering_07",
@@ -9664,7 +9664,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 166.3
+   "latency_ms": 145.0
   },
   {
    "scenario": "agg_ordering_07",
@@ -9676,12 +9676,12 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was buying the MX-5.",
-      "support": 0.997,
+      "statement": "Buying the MX-5 happened.",
+      "support": 0.998,
       "memory": 368
      },
      {
-      "statement": "I was selling the Elantra.",
+      "statement": "Selling the Elantra happened.",
       "support": 0.997,
       "memory": 364
      }
@@ -9720,7 +9720,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 170.9
+   "latency_ms": 248.4
   },
   {
    "scenario": "agg_ordering_07",
@@ -9776,7 +9776,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 168.0
+   "latency_ms": 144.1
   },
   {
    "scenario": "agg_ordering_07",
@@ -9788,8 +9788,8 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was purchasing the Mazda MX-5.",
-      "support": 0.998,
+      "statement": "Purchasing the Mazda MX-5 happened.",
+      "support": 0.999,
       "memory": 368
      },
      {
@@ -9832,7 +9832,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 174.9
+   "latency_ms": 191.5
   },
   {
    "scenario": "agg_ordering_07",
@@ -9874,7 +9874,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 160.0
+   "latency_ms": 132.9
   },
   {
    "scenario": "agg_ordering_07",
@@ -9916,7 +9916,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 163.1
+   "latency_ms": 130.3
   },
   {
    "scenario": "agg_ordering_09",
@@ -9972,7 +9972,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 205.0
+   "latency_ms": 178.1
   },
   {
    "scenario": "agg_ordering_09",
@@ -10028,7 +10028,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 218.0
+   "latency_ms": 183.4
   },
   {
    "scenario": "agg_ordering_09",
@@ -10040,13 +10040,13 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was learning tabla.",
-      "support": 0.996,
+      "statement": "Learning tabla happened.",
+      "support": 0.997,
       "memory": 387
      },
      {
-      "statement": "I was starting yoga.",
-      "support": 0.996,
+      "statement": "Starting yoga happened.",
+      "support": 0.997,
       "memory": 381
      }
     ]
@@ -10084,7 +10084,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 140.7
+   "latency_ms": 191.7
   },
   {
    "scenario": "agg_ordering_09",
@@ -10096,13 +10096,13 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was starting yoga.",
-      "support": 0.996,
+      "statement": "Starting yoga happened.",
+      "support": 0.997,
       "memory": 381
      },
      {
-      "statement": "I was learning tabla.",
-      "support": 0.996,
+      "statement": "Learning tabla happened.",
+      "support": 0.997,
       "memory": 387
      }
     ]
@@ -10140,7 +10140,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 134.8
+   "latency_ms": 183.8
   },
   {
    "scenario": "agg_ordering_09",
@@ -10196,7 +10196,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 250.7
+   "latency_ms": 183.1
   },
   {
    "scenario": "agg_ordering_09",
@@ -10252,7 +10252,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 229.6
+   "latency_ms": 185.9
   },
   {
    "scenario": "agg_ordering_09",
@@ -10294,7 +10294,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 143.2
+   "latency_ms": 113.5
   },
   {
    "scenario": "agg_ordering_09",
@@ -10336,7 +10336,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 145.1
+   "latency_ms": 109.9
   },
   {
    "scenario": "agg_ordering_09",
@@ -10348,8 +10348,8 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was buying my camera lens.",
-      "support": 0.991,
+      "statement": "Buying my camera lens happened.",
+      "support": 0.993,
       "memory": 385
      },
      {
@@ -10392,7 +10392,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 187.9
+   "latency_ms": 184.9
   },
   {
    "scenario": "agg_ordering_09",
@@ -10448,7 +10448,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 193.7
+   "latency_ms": 159.1
   },
   {
    "scenario": "agg_ordering_11",
@@ -10504,7 +10504,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 163.0
+   "latency_ms": 148.7
   },
   {
    "scenario": "agg_ordering_11",
@@ -10560,7 +10560,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 164.1
+   "latency_ms": 146.7
   },
   {
    "scenario": "agg_ordering_11",
@@ -10622,7 +10622,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 392.4
+   "latency_ms": 339.7
   },
   {
    "scenario": "agg_ordering_11",
@@ -10684,7 +10684,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 420.2
+   "latency_ms": 339.1
   },
   {
    "scenario": "agg_ordering_11",
@@ -10740,7 +10740,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 192.6
+   "latency_ms": 151.5
   },
   {
    "scenario": "agg_ordering_11",
@@ -10796,7 +10796,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 181.5
+   "latency_ms": 161.3
   },
   {
    "scenario": "agg_ordering_11",
@@ -10838,7 +10838,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 178.2
+   "latency_ms": 146.4
   },
   {
    "scenario": "agg_ordering_11",
@@ -10880,7 +10880,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 172.0
+   "latency_ms": 143.7
   },
   {
    "scenario": "agg_ordering_11",
@@ -10936,7 +10936,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 204.2
+   "latency_ms": 296.3
   },
   {
    "scenario": "agg_ordering_11",
@@ -10992,7 +10992,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 167.3
+   "latency_ms": 258.4
   },
   {
    "scenario": "agg_ordering_13",
@@ -11048,7 +11048,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 123.7
+   "latency_ms": 121.9
   },
   {
    "scenario": "agg_ordering_13",
@@ -11060,12 +11060,12 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was picking up the Kindle Paperwhite.",
-      "support": 0.993,
+      "statement": "Picking up the Kindle Paperwhite happened.",
+      "support": 0.997,
       "memory": 408
      },
      {
-      "statement": "I was ordering the iPhone 15.",
+      "statement": "Ordering the iPhone 15 happened.",
       "support": 0.997,
       "memory": 407
      }
@@ -11104,7 +11104,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 133.7
+   "latency_ms": 210.0
   },
   {
    "scenario": "agg_ordering_13",
@@ -11160,7 +11160,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 134.9
+   "latency_ms": 131.9
   },
   {
    "scenario": "agg_ordering_13",
@@ -11216,7 +11216,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 135.4
+   "latency_ms": 126.7
   },
   {
    "scenario": "agg_ordering_13",
@@ -11272,7 +11272,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 132.1
+   "latency_ms": 119.4
   },
   {
    "scenario": "agg_ordering_13",
@@ -11328,7 +11328,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 128.6
+   "latency_ms": 119.0
   },
   {
    "scenario": "agg_ordering_13",
@@ -11370,7 +11370,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 134.1
+   "latency_ms": 119.9
   },
   {
    "scenario": "agg_ordering_13",
@@ -11412,7 +11412,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 125.6
+   "latency_ms": 117.2
   },
   {
    "scenario": "agg_ordering_13",
@@ -11474,7 +11474,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 190.4
+   "latency_ms": 167.1
   },
   {
    "scenario": "agg_ordering_13",
@@ -11536,7 +11536,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 212.5
+   "latency_ms": 176.6
   },
   {
    "scenario": "agg_ordering_15",
@@ -11592,7 +11592,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 119.3
+   "latency_ms": 111.6
   },
   {
    "scenario": "agg_ordering_15",
@@ -11648,7 +11648,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 122.1
+   "latency_ms": 113.7
   },
   {
    "scenario": "agg_ordering_15",
@@ -11704,7 +11704,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 212.5
+   "latency_ms": 367.7
   },
   {
    "scenario": "agg_ordering_15",
@@ -11760,7 +11760,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 221.8
+   "latency_ms": 263.7
   },
   {
    "scenario": "agg_ordering_15",
@@ -11816,7 +11816,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 205.5
+   "latency_ms": 168.1
   },
   {
    "scenario": "agg_ordering_15",
@@ -11872,7 +11872,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 199.6
+   "latency_ms": 163.3
   },
   {
    "scenario": "agg_ordering_15",
@@ -11914,7 +11914,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 146.8
+   "latency_ms": 118.2
   },
   {
    "scenario": "agg_ordering_15",
@@ -11956,7 +11956,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 133.3
+   "latency_ms": 110.2
   },
   {
    "scenario": "agg_ordering_15",
@@ -12012,7 +12012,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 221.9
+   "latency_ms": 267.9
   },
   {
    "scenario": "agg_ordering_15",
@@ -12068,7 +12068,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 159.0
+   "latency_ms": 137.9
   },
   {
    "scenario": "agg_ordering_17",
@@ -12124,7 +12124,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 170.6
+   "latency_ms": 144.8
   },
   {
    "scenario": "agg_ordering_17",
@@ -12180,7 +12180,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 153.8
+   "latency_ms": 139.8
   },
   {
    "scenario": "agg_ordering_17",
@@ -12242,7 +12242,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 224.1
+   "latency_ms": 197.6
   },
   {
    "scenario": "agg_ordering_17",
@@ -12304,7 +12304,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 231.0
+   "latency_ms": 192.4
   },
   {
    "scenario": "agg_ordering_17",
@@ -12360,7 +12360,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 186.7
+   "latency_ms": 155.0
   },
   {
    "scenario": "agg_ordering_17",
@@ -12416,7 +12416,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 188.2
+   "latency_ms": 147.4
   },
   {
    "scenario": "agg_ordering_17",
@@ -12458,7 +12458,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 178.8
+   "latency_ms": 138.5
   },
   {
    "scenario": "agg_ordering_17",
@@ -12470,8 +12470,8 @@
     "kind": "ordering",
     "claims": [
      {
-      "statement": "I was sending the behind-the-scenes video to the producer.",
-      "support": 0.996,
+      "statement": "Sending the behind-the-scenes video to the producer happened.",
+      "support": 0.998,
       "memory": 453
      },
      {
@@ -12500,7 +12500,7 @@
    "served_cover": 0.0,
    "ranked_cover": 0.0,
    "margin": null,
-   "latency_ms": 189.5
+   "latency_ms": 250.2
   },
   {
    "scenario": "agg_ordering_17",
@@ -12556,7 +12556,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 179.5
+   "latency_ms": 151.2
   },
   {
    "scenario": "agg_ordering_17",
@@ -12612,7 +12612,7 @@
    "served_cover": 1.0,
    "ranked_cover": 1.0,
    "margin": null,
-   "latency_ms": 170.8
+   "latency_ms": 134.4
   }
  ]
 }

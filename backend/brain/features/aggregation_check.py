@@ -44,7 +44,7 @@ def config():
 _UNITS = r"(?:days?|weeks?|months?|years?|hours?|minutes?)"
 # words that add nothing to the event itself
 _FILLER = re.compile(r"\b(?:actually|finally|eventually|ever|really|first of all|in total|altogether|so far|overall|"
-                     r"exactly|roughly|about how|in the end)\b\s*", re.I)
+                     r"exactly|roughly|about how|in the end|personally|myself|successfully|officially)\b\s*", re.I)
 # trailing time qualifiers: a memory's text rarely states them (the date is the message's timestamp)
 _TIME_TAIL = re.compile(
     r"\s+(?:(?:in|during|since|throughout|over) (?:the (?:past|last|whole) )?(?:\d{4}|this year|last year|the year|"
@@ -125,7 +125,9 @@ def _event(phrase):
         return _sentence("I was " + t[0].lower() + t[1:])       # "test driving the Kia Soul"
     w0 = words[0].lower()
     if w0.endswith("ing") and len(w0) > 4 and (w0 not in _NOT_GERUND or _is_gerund(words[0], words[1] if len(words) > 1 else None)):
-        return _sentence("I was " + t[0].lower() + t[1:])       # "ordering the kitchen cabinets", "starting yoga"
+        # "ordering the kitchen cabinets", "starting yoga". The person need not have done it with their own hands
+        # ("loading the container": the movers did), so the event is also read without a doer.
+        return (_sentence("I was " + t[0].lower() + t[1:]), _sentence(t + " happened"))
     m = re.match(rf"^({_DET} .+?) i (\w+)\b(.*)$", t, re.I)     # "the workshop I attended"
     if m and " " not in m.group(2):
         return _sentence(f"I {m.group(2)} {m.group(1)[0].lower() + m.group(1)[1:]}{m.group(3)}")
@@ -154,7 +156,8 @@ def _alternatives(claim):
     happened" is also tried as "My haircut happened": which one was first or second is worked out across
     memories; no single memory says it.
     """
-    variants = list(claim) if isinstance(claim, tuple) else [claim]
+    variants = list(_both(claim, None) or ()) if isinstance(claim, tuple) else [claim]
+    variants = [v for v in variants if isinstance(v, str)]
     for v in list(variants):
         if v and _ORDINAL.search(v):
             variants.append(_sentence(_ORDINAL.sub("", v)))
@@ -183,7 +186,12 @@ _PRONOUN = r"\b(?:it|them|that one|(?:the|my|his|her|their) (?:(?:first|second|t
 
 def _both(a, b):
     """Two readings of one statement (scored separately, the better counts); one when they are the same."""
-    return a if a == b or not b else b if not a else (a, b)
+    out = []
+    for x in (a, b):
+        for v in (x if isinstance(x, tuple) else (x,)):
+            if v and v not in out:
+                out.append(v)
+    return None if not out else out[0] if len(out) == 1 else tuple(out)
 
 
 def _resolve_it(second, first):
@@ -254,7 +262,7 @@ def _counting(q):
 
 def _ordering(q):
     m = re.match(rf"^which (?:(?:one|of (?:these|them|the two)) )?(?:(\w+(?: \w+)?) )?did {_SUBJ} (\w+)(?: \w+)? "
-                 r"(?:first|last|earlier|later|next|second|most recently)[,:]?\s+(.+)$", q, re.I)
+                 r"(?:first|last|earlier|later|next|second|most recently)(?: (?:in|of|during) [^,:]+)?[,:]?\s+(.+)$", q, re.I)
     if m:                                                       # "Which city did I visit first, New York or Boston?"
         noun, who, verb, items = m.group(1), m.group(2), m.group(3), _split_items(m.group(4))
         if noun:
@@ -290,17 +298,26 @@ def _ordering(q):
     return None
 
 
-def _pair(body):
-    """'A and B' / 'A to B' / 'A until B' -> (A, B), cutting where the second event starts."""
-    cut = re.search(rf",?\s+(?:and|to|until|till)\s+(?=(?:the (?:day|time|moment|arrival)|when|me |my |i |{_DET} |\w+ing\b))", body, re.I) \
-        or re.search(r",?\s+(?:and|to|until|till)\s+", body, re.I)
+def _pair(body, between=False):
+    """'A and B' (between ...) / 'A to B' / 'A until B' (from ...) -> (A, B), cutting where the second event starts."""
+    body = re.sub(r",\s*(?:what|how)\b.*$", "", body, flags=re.I)   # "... to B, what was the duration in weeks?"
+    link = r"(?:and)" if between else r"(?:to|until|till|and)"
+    cut = re.search(rf",?\s+{link}\s+(?=(?:the (?:day|time|moment|arrival)|when|me |my |i |{_DET} |\w+ing\b))", body, re.I) \
+        or re.search(rf",?\s+{link}\s+", body, re.I)
     return (body[:cut.start()], body[cut.end():]) if cut else None
+
+
+def _span(text):
+    """The two events after "between ..." / "from ..." in a question, or None."""
+    m = re.search(r"\b(between|from) (.+)$", text, re.I)
+    pair = m and _pair(m.group(2), between=m.group(1).lower() == "between")
+    return _two_events(*pair) if pair else None
 
 
 def _two_events(a, b):
     shared = re.match(r"^(.*?\b\w+ing) \S", _clean(a))            # "Maria adopting Coco and Shadow": Shadow too
     if shared and len(b.split()) <= 3 and not _FINITE.search(b) and not re.search(r"\w+ing\b", b):
-        return [_event(a), (_event(f"{shared.group(1)} {b}"), _event(b))]
+        return [_event(a), _both(_event(f"{shared.group(1)} {b}"), _event(b))]
     return [_event(a), _both(_event(b), _event(_resolve_it(b, _clean(a))))]
 
 
@@ -323,9 +340,8 @@ def _time_between(q):
     rest = _PAREN.sub("", m.group(1)).strip()
     rest = re.sub(r"^(?:(?:had |have |has )?(?:passed|elapsed|went by|gone by|were there|was there|was it|are there|is it|"
                   r"did it take|did i wait|apart were|separated)\s*)+", "", rest, flags=re.I)
-    m = re.match(r"^(?:between|from) (.+)$", rest, re.I)
-    if m and _pair(m.group(1)):
-        return _two_events(*_pair(m.group(1)))
+    if re.match(r"^(?:between|from) ", rest, re.I) and _span(rest):
+        return _span(rest)
     m = re.match(r"^(?:after|before|since|following) (.+?) (?:did|was|were|had) (.+)$", rest, re.I)
     if m:                                                       # "... after I signed up for X did I actually run it?"
         return [_event(m.group(1)), _then(m.group(1), m.group(2))]
@@ -356,7 +372,9 @@ def _normalise(q):
     q = re.sub(r"\bhow often(?= (?:did|have|has|had|was|were)\b)", "how many times", q, flags=re.I)
     q = re.sub(r"\b(?:what's|what is|what was) the (?:total )?number of\b", "how many", q, flags=re.I)
     q = re.sub(r"\b(?:what's|what is|what was) the (?:total )?number\b", "how many", q, flags=re.I)
-    q = re.sub(r"^the (?:total )?number of\b", "how many", q, flags=re.I)
+    q = re.sub(r"^(?:count )?the (?:total )?number of\b", "how many", q, flags=re.I)
+    q = re.sub(r"\b(?:separate |different |distinct )?(?:occasions|times|instances) (?:on which|when|that|where) ", "times ", q, flags=re.I)
+    q = re.sub(r",\s*whether\b.*$", "", q, flags=re.I)                                       # "..., whether matcha or ramen bowls"
     m = re.match(r"^((?:for|at|in|with|to|on|during) [^,]+),\s*(how many .+)$", q, re.I)       # "For my brother, how many ..."
     if m:
         q = f"{m.group(2)} {m.group(1)[0].lower() + m.group(1)[1:]}"
@@ -399,6 +417,9 @@ def _applied(who, verb, item, base=False):
 
 
 def _free_ordering(topic, ask, q):
+    m = re.match(rf"^did {_SUBJ} (.+?) (?:before or after|after or before|before|after) (.+?)(?:,.*)?$", q, re.I)
+    if m:                                                       # "Did I have the scan before or after starting the infusions?"
+        return [_state(m.group(1), "did", _clean(m.group(2))), _event(m.group(3))]
     m = re.match(r"^(?:after|following) (.+?), which .*?\b(i|we) (\w+)$", q, re.I)   # "After 'Educated', which book was the next one I finished?"
     if m:
         return [_applied(m.group(2), m.group(3), m.group(1))]
@@ -443,9 +464,8 @@ def _free_ordering(topic, ask, q):
 
 def _free_time(topic, ask, q):
     if topic is not None:
-        m = re.match(r"^(?:from|between) (.+)$", topic, re.I)   # "From A to B - how many days was that?"
-        if m and _pair(m.group(1)):
-            return _two_events(*_pair(m.group(1)))
+        if re.match(r"^(?:from|between) ", topic, re.I) and _span(topic):   # "From A to B - how many days was that?"
+            return _span(topic)
         m = re.search(r"\blater (?:did|was|were) (.+)$", ask, re.I)   # "A - how many days later did I B?"
         if m:
             return [_event(topic), _then(topic, m.group(1))]
@@ -459,9 +479,8 @@ def _free_time(topic, ask, q):
                 b = "I " + _clean(b)                            # "... and later got back from the meeting"
             return [_event(a), _both(_event(b), _event(_resolve_it(b, _clean(a))))]
         return None
-    m = re.search(r"\b(?:between|from) (.+)$", q, re.I)         # "How long was it between A and B?"
-    if m and _pair(m.group(1)):
-        return _two_events(*_pair(m.group(1)))
+    if _span(q):                                                # "How long was it between A and B?"
+        return _span(q)
     m = re.search(r"\bhow long after (.+?) did (.+)$", q, re.I)
     if m:
         return [_event(m.group(1)), _then(m.group(1), m.group(2))]
@@ -504,7 +523,7 @@ def _free(q):
     low = q.lower()
     if re.search(rf"how (?:long|much time)|how many {_UNITS}\b|\bgap\b", low):
         kind = "time_between"
-    elif re.search(r"\border\b|\bwhich\b.*\b(?:first|earlier|earliest|later|latest|next|before|after)\b|"
+    elif re.search(r"\border\b|\bbefore or after\b|\bwhich\b.*\b(?:first|earlier|earliest|later|latest|next|before|after)\b|"
                    r"\bwhat(?:'s| is| was)? .*\b(?:first|next)\b", low):
         kind = "ordering"
     elif re.search(r"\bhow many\b|\bcount\b|\btotal\b", low):
@@ -519,6 +538,11 @@ def _free(q):
             topic, ask = first, second                          # "Baby showers - how many have I attended?"
         elif _CUE.search(first):
             topic, ask = second, first                          # "Which was earlier: A or B?"
+    if topic is not None and not re.search(r"\b(?:it|that|them|those|there|these)\b", ask, re.I):
+        for kind_, rule_ in (("time_between", _time_between), ("ordering", _ordering), ("counting", _counting)):
+            claims = rule_(ask[:1].upper() + ask[1:])           # "home reno check - how many walls did I demolish?"
+            if claims and all(claims):
+                return kind_, claims
     rule = {"time_between": _free_time, "ordering": _free_ordering, "counting": _free_counting}[kind]
     claims = rule(topic, ask, q)
     return (kind, claims) if claims and all(claims) else None

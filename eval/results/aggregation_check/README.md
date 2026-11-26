@@ -49,7 +49,7 @@ Files: `paraphrases/{A,B}_{before,first_rules,after}.json`.
 | Half A, rules now | 8/188 (0.043) | 0.899 | 48/56 (0.857) |
 | **Half B (wording unseen), check off** | 50/178 (0.281) | 0.691 | 14/56 (0.250) |
 | Half B, first rules | 49/178 (0.275) | 0.702 | 28/56 (0.500) |
-| **Half B, rules now** | 20/178 (0.112) | 0.865 | 45/56 (0.804) |
+| **Half B, rules now** | 16/178 (0.090) | 0.888 | 42/56 (0.750) |
 
 The first rules (textbook forms only: "How many X did I ...", "Which came first, A or B") recognised 84 of
 244 rewordings in half A and 76 of 234 in half B; everything else fell back to the old behaviour. The rules
@@ -57,7 +57,7 @@ now also read a fronted topic, counts asked without "how many", and events state
 they recognise 244 of 244 in A and 220 of 234 in B. Half B is the number to quote: its wording was not
 used. It shares scenarios' style and author with half A, so it is still development data.
 
-By category on half B: counting 0.138 declined / 0.909 traps declined; time-between 0.167 / 0.625;
+By category on half B (answerable declined / traps declined): counting 0.138 / 0.773; time-between 0.093 / 0.625; ordering 0.045 / 0.833.
 ordering 0.045 / 0.833.
 
 ## LoCoMo dev (conversations 1-5, 999 questions): the no-harm check
@@ -87,6 +87,31 @@ question's own subject, and a statement about a memory's speaker is also read in
   "I mentioned" being literally true.
 - Real questions declined (7): the memory needs world knowledge the model lacks ("tried Ramiro tonight"
   as trying a restaurant in Lisbon), or the event's memory is not in the top 10.
+
+## Hard set from a different author (eval/data/dev/aggregation/hard_scenarios.jsonl)
+
+12 scenarios (47 answerable questions, 24 traps) written by a different AI model from a task description
+only, with deliberate distractors in every scenario: a cancelled plan, someone else's event of the same
+kind, a similar-but-different event, a follow-up message, and events worded differently in the question
+and the message. A separate agent audited the answer keys (hard_review.jsonl: 3 accepted, 9 fixed; all four
+ordering scenarios had a "trap" that was answerable). Recallix was then measured ONCE before anyone read the
+questions (`hard/before.json`, `hard/after_first_run.json`); after that the failures were read and the
+rules extended, so the last row is development data.
+
+| | answerable declined | all evidence served | traps declined |
+|---|---|---|---|
+| Check off | 17/47 | 0.617 | 11/24 |
+| **Check on, first run (questions unseen)** | 17/47 | 0.617 | 19/24 |
+| Check on, after fixing what it showed | 7/47 | 0.830 | 19/24 |
+
+Unseen, the check kept its trap protection and gave no net gain on answerable questions (ordering better,
+time-between worse). What it showed: the rewriting assumed the person did every event themselves ("the
+movers loading my container" became "I was loading the container", which the model rightly rejects), and
+messy phrasings garbled the statement ("Count the separate occasions on which ...", a chatty lead-in before
+a dash, "Did I have X before or after Y?"). Fixes: a gerund event is also read without a doer ("Loading
+the container happened"), and those phrasings are read. The same change moved half B of the reworded
+questions from 20 to 16 answerable declined and from 45 to 42 traps declined: the doer-less reading
+lets a few more traps through. The rules recognise 62 of 71 hard-set questions.
 
 ## Tried and rejected
 
