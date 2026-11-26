@@ -113,6 +113,23 @@ the container happened"), and those phrasings are read. The same change moved ha
 questions from 20 to 16 answerable declined and from 45 to 42 traps declined: the doer-less reading
 lets a few more traps through. The rules recognise 62 of 71 hard-set questions.
 
+## Second hard batch, measured once and not read (hard2_scenarios.jsonl)
+
+Same prompt and author as the hard set, new themes; 12 scenarios, 47 answerable questions, 24 traps.
+Keys audited by a separate agent (hard2_review.jsonl: 3 accepted, 9 fixed; again four ordering "traps" were
+answerable). Measured once, with the rules exactly as they were after the first hard set. Nobody working
+on the rules has read its questions or its per-question results; it is kept that way as a check set.
+Files: `hard2/before.json`, `hard2/after_first_run.json`.
+
+| | answerable declined | all evidence served | traps declined |
+|---|---|---|---|
+| Check off | 15/47 | 0.681 | 11/24 |
+| **Check on (first and only run)** | 8/47 | 0.830 | 15/24 |
+
+By category (answerable declined, traps declined): counting 1/15 -> 3/15, 3/8 -> 7/8; time-between
+6/16 -> 3/16, 4/8 -> 4/8; ordering 8/16 -> 2/16, 4/8 -> 4/8. The rules recognised 58 of 71 questions.
+All evidence was in the top 10 for every answerable question, with the check on or off.
+
 ## Tried and rejected
 
 - Declining when a memory contradicts a presupposed event (meant for "booked the gig", then "the gig got
