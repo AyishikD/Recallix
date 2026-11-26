@@ -143,12 +143,13 @@ mem.store("I moved to Pune last month.")
 print(mem.recall("Where do I live?")["memories"][0]["content"])
 ```
 
-**From source:**
+**Without Docker:**
 
 ```bash
 pip install -r requirements-local.txt           # API + local embeddings and answer check
-cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
-cmake --build backend/infra_cpp/build -j
+python -m backend.tools.get_engine              # prebuilt vector engine for this machine (checksum-verified)
+#   or compile it yourself (needs cmake and a C++17 compiler):
+#   cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release && cmake --build backend/infra_cpp/build -j
 
 python -m backend.tools.setup_env               # writes the engine secret to .env, prints an admin key
 set -a; source .env; set +a

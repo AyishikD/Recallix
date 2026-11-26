@@ -1,0 +1,104 @@
+name: Engine binaries
+
+# Prebuilt vector-engine binaries, so a non-Docker install does not need cmake or a C++ compiler.
+# Push a tag like v1.0.0: every target is built, unit-tested, started once, and attached to that
+# GitHub release with a SHA256SUMS file. Run it by hand (Actions -> Engine binaries -> Run) to get
+# the same files as workflow artifacts without making a release.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux builds run on Ubuntu 22.04 (glibc 2.35) with libstdc++ linked in, so the binary runs on
+          # Ubuntu 22.04+, Debian 12+, Fedora 36+ and similar.
+          - target: linux-x86_64          # AVX2 + FMA (Intel Haswell 2013+, AMD Excavator 2015+)
+            os: ubuntu-22.04
+            cmake_extra: ""
+          - target: linux-x86_64-noavx2   # older x86-64 CPUs; slower dot product
+            os: ubuntu-22.04
+            cmake_extra: "-DRECALLIX_DISABLE_AVX2=ON"
+          - target: linux-arm64           # NEON (Graviton, Ampere, Raspberry Pi 4/5 with a 64-bit OS)
+            os: ubuntu-22.04-arm
+            cmake_extra: ""
+          - target: macos-arm64           # Apple Silicon, macOS 13+
+            os: macos-14
+            cmake_extra: ""
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "13.0"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          LINK=""
+          if [ "$RUNNER_OS" = "Linux" ]; then LINK="-static-libstdc++ -static-libgcc"; fi
+          cmake -S backend/infra_cpp -B build -DCMAKE_BUILD_TYPE=Release -DRECALLIX_TSAN=OFF \
+                -DCMAKE_EXE_LINKER_FLAGS="$LINK" ${{ matrix.cmake_extra }}
+          cmake --build build -j 4 --target memory_service test_vector_engine
+      - name: Unit tests
+        run: ctest --test-dir build --output-on-failure
+      - name: Start once and answer /health and /status
+        run: |
+          export RECALLIX_INTERNAL_KEY=smoke-test-only-not-a-secret RECALLIX_ENGINE_PORT=18080
+          ./build/memory_service > engine.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:18080/health >/dev/null && break; sleep 1; done
+          H="X-Internal-Key: $RECALLIX_INTERNAL_KEY"
+          curl -sf -H "$H" http://127.0.0.1:18080/status | tee status.json
+          curl -sf -H "$H" -H "Content-Type: application/json" -d '{"namespace":"smoke","id":"a","vector":[1,0,0,0]}' http://127.0.0.1:18080/add
+          curl -sf -H "$H" -H "Content-Type: application/json" -d '{"namespace":"smoke","id":"b","vector":[0,1,0,0]}' http://127.0.0.1:18080/add
+          curl -sf -H "$H" -H "Content-Type: application/json" -d '{"namespace":"smoke","query":[0.9,0.1,0,0],"top_k":1}' http://127.0.0.1:18080/search | tee search.json
+          kill %1
+          python3 -c "import json; s=json.load(open('status.json')); r=json.load(open('search.json')); assert s['status']=='online', s; assert r['results'][0]['id']=='a', r; print('SIMD:', s['simd'], 'search ok')"
+      - name: Show linked libraries
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then ldd build/memory_service; else otool -L build/memory_service; fi
+      - name: Package
+        run: |
+          name=recallix-engine-${{ matrix.target }}
+          mkdir "$name"
+          cp build/memory_service "$name/"
+          cp LICENSE* "$name/" 2>/dev/null || true
+          tar -czf "$name.tar.gz" "$name"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recallix-engine-${{ matrix.target }}
+          path: recallix-engine-${{ matrix.target }}.tar.gz
+          if-no-files-found: error
+
+  release:
+    name: Attach to the GitHub release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum *.tar.gz | tee SHA256SUMS
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          fi

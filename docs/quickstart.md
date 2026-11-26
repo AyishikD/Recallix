@@ -29,6 +29,16 @@ Then skip to [5. Use](#5-use).
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-local.txt      # API + memory pipeline + local embeddings and answer check
                                            # (requirements.txt alone: no torch; set another embedding provider)
+python -m backend.tools.get_engine         # prebuilt vector engine for this machine
+```
+
+`get_engine` downloads the engine built for your machine from the latest
+[GitHub release](https://github.com/AyishikD/Recallix/releases) (Linux x86-64 with or without
+AVX2, Linux ARM64, macOS on Apple Silicon), checks it against the release's `SHA256SUMS`, and
+installs it as `backend/infra_cpp/build/memory_service`. The Linux builds need glibc 2.35 or
+newer (Ubuntu 22.04+, Debian 12+). On other platforms, or to compile it yourself:
+
+```bash
 cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
 cmake --build backend/infra_cpp/build -j
 ```
