@@ -130,6 +130,30 @@ By category (answerable declined, traps declined): counting 1/15 -> 3/15, 3/8 ->
 6/16 -> 3/16, 4/8 -> 4/8; ordering 8/16 -> 2/16, 4/8 -> 4/8. The rules recognised 58 of 71 questions.
 All evidence was in the top 10 for every answerable question, with the check on or off.
 
+## Plans are not events (plan rule)
+
+Found while building the investor deck: on six messages ("booked flights to goa for march!!", later
+"ugh goa is off. cancelled everything"), "How many times did I fly to Goa?" was answered, because the
+entailment model reads a booking as the trip. Now a memory that only records a plan (booked, reserved,
+registered, signed up, scheduled, planning, tickets for; or "will", "going to", "my next" with a named future
+time) cannot support a claim that the event happened, unless the claim is itself about the plan ("How many
+days after booking the flights did I cancel them?"). A first version also treated "can't wait" and "my
+next" alone as plans; reading the lost questions on the readable sets showed that was too broad, and "-ing"
+events now also get a "did" reading ("I did sign the paperwork"). Files: `plan_rule/`.
+
+| Set | answerable declined | traps declined |
+|---|---|---|
+| Dev originals | 7 -> 9 of 183 | 50 -> 53 of 56 |
+| Reworded A | 8 -> 8 of 188 | 48 -> 48 of 56 |
+| Hard set | 7 -> 7 of 47 | 19 -> 19 of 24 |
+| Reworded B (totals only) | 16 -> 20 of 178 | 42 -> 47 of 56 |
+| Hard2, unread (totals only) | 8 -> 8 of 47 | 15 -> 16 of 24 |
+| All five | 46 -> 52 | 174 -> 183 |
+
+Kept: 9 more traps declined for 6 more refusals, in line with the rule that a wrong answer costs more than
+a refusal. The receipt names the plan it set aside ("Memory 1 only records a plan for it, not the event").
+Known loss: "Signed up for a language exchange app" is both the plan and the event.
+
 ## Tried and rejected
 
 - Declining when a memory contradicts a presupposed event (meant for "booked the gig", then "the gig got

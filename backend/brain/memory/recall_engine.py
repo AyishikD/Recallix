@@ -796,7 +796,9 @@ class RecallEngine:
             if missing:
                 reason = (f"this {aggregation['kind'].replace('_', '-')} question takes for granted "
                           + "; ".join(f"\"{c['statement']}\" (support {c['support']})" for c in missing)
-                          + f", which no memory supports (threshold {t})")
+                          + f", which no memory supports (threshold {t})"
+                          + "".join(f". Memory {c['plan_only']['memory']} only records a plan for it, not the event"
+                                    for c in missing if c.get("plan_only")))
             else:
                 reason = (f"the memories support every event this {aggregation['kind'].replace('_', '-')} question takes "
                           "for granted: " + "; ".join(f"\"{c['statement']}\" (memory {c['memory']}, support {c['support']})"

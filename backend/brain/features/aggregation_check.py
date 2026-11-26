@@ -150,6 +150,20 @@ def _event(phrase):
 _ORDINAL = re.compile(r"\b(?:first|second|third|fourth|fifth|initial|final|last|next|latest|earliest|most recent)\s+", re.I)
 
 
+def _did_form(statement):
+    """"I was signing the paperwork." -> ("I did sign the paperwork.", "I did signe the paperwork."): the base verb
+    needs no tense table; both spellings are tried because "driving" may come from "drive"."""
+    m = re.match(r"^(I|We|[A-Z][a-z]+(?: [a-z]+){0,2}) (?:was|were) (\w+?)ing\b(.*)$", statement or "")
+    if not m or len(m.group(2)) < 2:
+        return ()
+    who, stem, rest = m.group(1), m.group(2), m.group(3).rstrip(".")
+    if len(stem) > 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiouls":
+        stems = (stem[:-1],)                                    # "shopping" -> "shop"
+    else:
+        stems = (stem, stem + "e")                              # "signing" -> "sign"; "driving" -> "drive"
+    return tuple(_sentence(f"{who} did {x}{rest}") for x in stems)
+
+
 def _alternatives(claim):
     """
     A claim plus looser phrasings of it, as a tuple (one statement stays a string). "My second haircut
@@ -158,6 +172,8 @@ def _alternatives(claim):
     """
     variants = list(_both(claim, None) or ()) if isinstance(claim, tuple) else [claim]
     variants = [v for v in variants if isinstance(v, str)]
+    for v in list(variants):
+        variants.extend(_did_form(v))
     for v in list(variants):
         if v and _ORDINAL.search(v):
             variants.append(_sentence(_ORDINAL.sub("", v)))
@@ -632,6 +648,32 @@ def _as_speaker(statement, speaker):
     return _sentence(t)
 
 
+# A memory that only records a plan ("booked flights to goa for march!!", "signed up for the marathon",
+# "planning to visit Hampi next week") says the event was arranged, not that it happened. The entailment
+# model reads "booked flights to Goa" as "flew to Goa", which answered "How many times did I fly to Goa?"
+# for a trip that was cancelled. So a plan-only memory cannot support a claim that the event happened,
+# unless the claim itself is about the plan ("How many days after booking the flights did I cancel them?").
+_PLAN = re.compile(r"\b(?:book(?:ed|ing)?|reserv(?:ed|ing)|register(?:ed|ing)|sign(?:ed|ing) up|signed-up|schedul(?:ed|ing)|"
+                   r"plan(?:ned|ning|s)?|intend(?:ed|ing)?|bought tickets|got tickets|tickets for|pre-?ordered)\b", re.I)
+# "will", "going to" and the like only mark a plan when a future time is named ("I will never forget it" is not one)
+_WEAK_PLAN = re.compile(r"\b(?:will|'ll|going to|gonna|hoping to|want to|thinking (?:of|about)|my next)\b", re.I)
+_FUTURE = re.compile(r"\b(?:tomorrow|next (?:week|month|year|weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday)|"
+                     r"this (?:weekend|coming)|upcoming|soon|later this|in (?:a|two|three|few) (?:days|weeks|months)|"
+                     r"(?:for|in|on|by) (?:the )?(?:\d{1,2}(?:st|nd|rd|th)?(?: of)? )?"
+                     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b)", re.I)
+_DONE = re.compile(r"\b(?:today|tonight|this (?:morning|afternoon|evening)|just|finally|got back|came back|"
+                   r"returned|yesterday|earlier today)\b", re.I)
+_ABOUT_PLANS = re.compile(r"\b(?:book|reserv|regist|sign(?:ed|ing)? up|schedul|plan|cancel|postpon|resched|"
+                          r"call(?:ed)? off|said i'?d|told you|intend)", re.I)
+
+
+def plan_only(text):
+    """True when a memory only records an arrangement for the future, not the event itself."""
+    t = str(text or "")
+    future = bool(_FUTURE.search(t))
+    return (bool(_PLAN.search(t)) and (future or not _DONE.search(t))) or (bool(_WEAK_PLAN.search(t)) and future)
+
+
 def check(checker, question, memories, threshold, read=None, speaker=None):
     """
     None when the question is not an aggregation question. Otherwise
@@ -656,9 +698,16 @@ def check(checker, question, memories, threshold, read=None, speaker=None):
                     if hyp:
                         pairs.append((t, hyp))
                         owners.append((m.get("id"), statement))
-        best, best_memory, best_statement = 0.0, None, variants[0]
+        best, best_memory, best_statement, discounted = 0.0, None, variants[0], None
+        text_of = {m.get("id"): t for m, t in usable}
         for (mid, statement), score in zip(owners, checker.entailment(pairs)):
+            if score > best and not _ABOUT_PLANS.search(statement) and plan_only(text_of.get(mid)):
+                discounted = discounted if discounted and discounted[1] >= score else (mid, score)
+                continue
             if score > best:
                 best, best_memory, best_statement = score, mid, statement
-        report.append({"statement": best_statement, "support": round(best, 3), "memory": best_memory})
+        entry = {"statement": best_statement, "support": round(best, 3), "memory": best_memory}
+        if discounted and discounted[1] > best:
+            entry["plan_only"] = {"memory": discounted[0], "support": round(discounted[1], 3)}
+        report.append(entry)
     return {"kind": parsed["kind"], "supported": all(c["support"] >= threshold for c in report), "claims": report}

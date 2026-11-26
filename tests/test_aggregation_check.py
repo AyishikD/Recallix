@@ -5,8 +5,47 @@ from backend.brain.features import aggregation_check as ac
 
 
 def claims(question):
+    """The rewriting under test, without the "did" readings every "-ing" statement also gets (tested below)."""
     out = ac.presuppositions(question)
-    return out and (out["kind"], out["claims"])
+    if not out:
+        return out
+    def strip(claim):
+        if not isinstance(claim, tuple):
+            return claim
+        extra = {d for v in claim for d in ac._did_form(v)}
+        kept = tuple(v for v in claim if v not in extra)
+        return kept[0] if len(kept) == 1 else kept
+    return out["kind"], [strip(c) for c in out["claims"]]
+
+
+def test_an_ing_event_is_also_read_with_did():
+    assert ac._did_form("I was signing the Camry paperwork.") == ("I did sign the Camry paperwork.", "I did signe the Camry paperwork.")
+    assert ac._did_form("I was shopping for a sofa.") == ("I did shop for a sofa.",)
+    assert ac._did_form("My knitting class happened.") == ()
+
+
+@pytest.mark.parametrize("memory, plan", [
+    ("booked flights to goa for march!!", True),
+    ("signed up for the city marathon!", True),
+    ("planning to visit hampi next week", True),
+    ("Booked and paid for the Bali villa today, flying out on 3 June", True),
+    ("My next big race is the Lisbon Half Marathon on March 5!", True),
+    ("Flew to Bali today!", False),
+    ("Just got back from Hampi, unreal", False),
+    ("Unboxed my new camera gear, can't wait to test it on my next shoot!", False),
+    ("I will never forget the wedding", False),
+])
+def test_plan_only_memories(memory, plan):
+    assert ac.plan_only(memory) is plan
+
+
+def test_a_plan_does_not_prove_the_event_happened():
+    memories = [{"id": 1, "content": "booked flights to goa for march"}, {"id": 2, "content": "the trip is off, cancelled everything"}]
+    out = ac.check(FakeEntailment(), "How many times did I fly to goa?", memories, 0.5)
+    assert out["supported"] is False and out["claims"][0]["plan_only"]["memory"] == 1
+    # a question about the plan itself may stand on it
+    out = ac.check(FakeEntailment(), "How many days after I booked the goa flights did I cancel?", memories, 0.5)
+    assert out["claims"][0]["memory"] == 1
 
 
 @pytest.mark.parametrize("question, kind, expected", [
@@ -165,8 +204,12 @@ def test_recall_answers_when_every_event_is_in_memory_and_declines_a_trap(client
     assert out["status"] == "ABSTAINED" and out["memories"] == [] and out["answer"] is None
     assert "I did visit Coorg." in out["receipt"]["reason"] and "no memory supports" in out["receipt"]["reason"]
 
+    _store(client, h, "Booked a homestay in Coorg for March!")             # a plan is not a visit
+    out = _recall(client, h, "Which did I visit first, Hampi or Coorg?")
+    assert out["status"] == "ABSTAINED" and "only records a plan" in out["receipt"]["reason"]
+
     out = _recall(client, h, "Which did I visit first, Hampi or Coorg?", keep_on_decline=True)
-    assert out["status"] == "ABSTAINED" and len(out["memories"]) == 2
+    assert out["status"] == "ABSTAINED" and len(out["memories"]) == 3
 
 
 def test_recall_is_unchanged_when_the_check_is_off_or_the_question_is_not_aggregation(client, api_keys, monkeypatch):
