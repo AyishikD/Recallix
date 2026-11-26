@@ -327,6 +327,13 @@ def run(args):
     with contextlib.redirect_stdout(io.StringIO()):
         mm = get_memory_manager()
 
+    reworded = None
+    if args.paraphrases:
+        # rewordings of the questions (paraphrases.jsonl, written without sight of the code). --half A / B
+        # keeps the scenarios at even / odd positions: A is looked at while fixing, B is only measured.
+        keep = {r["name"] for i, r in enumerate(rows) if args.half is None or (i % 2 == 0) == (args.half == "A")}
+        rows = [r for r in rows if r["name"] in keep]
+        reworded = {(p["scenario"], p["qi"]): p["paraphrases"] for p in read_jsonl(args.paraphrases)}
     recs = []
     for n, s in enumerate(rows):
         user = f"agg_{n}"
@@ -335,16 +342,22 @@ def run(args):
             for i, m in enumerate(s["messages"]):
                 res = mm.store(user, m["text"], timestamp=_ts(m["date"]))
                 mem_to_msg[res["memory_id"]].append(i)
-        for q in s["questions"]:
+        asked = [(q, q["q"]) for q in s["questions"]]
+        if reworded is not None:   # each rewording is asked in place of its question; the answer key is unchanged
+            asked = [(q, text) for qi, q in enumerate(s["questions"]) for text in reworded.get((s["name"], qi), [])]
+        for q, text in asked:
             with contextlib.redirect_stdout(io.StringIO()):
-                out = mm.retrieve(user, q["q"], limit=args.k, return_candidates=True,
+                out = mm.retrieve(user, text, limit=args.k, return_candidates=True,
                                   deep=True if args.deep else None, keep_on_decline=True if args.keep_on_decline else None)
             declined = out["status"] in ("ABSTAINED", "NO_MATCH")
             served = [i for m in out["memories"] for i in mem_to_msg[m["id"]]]
             ranked = [i for c in sorted(out["_candidates"], key=lambda c: -c["relevance"]) for i in mem_to_msg[c["id"]]][:args.k]
             ev = set(q.get("evidence") or [])
             chk = out["debug"].get("answer_check") or {}
-            recs.append({"scenario": s["name"], "category": s["category"], "q": q["q"], "trap": bool(q.get("trap")),
+            agg = out["debug"].get("aggregation_check")
+            recs.append({"scenario": s["name"], "category": s["category"], "q": text, "trap": bool(q.get("trap")),
+                         **({"original": q["q"]} if text != q["q"] else {}),
+                         "aggregation_check": agg and {"kind": agg["kind"], "claims": agg["claims"]},
                          "status": out["status"], "declined": declined,
                          "evidence": sorted(ev), "served": served, "ranked": ranked,
                          # share of the evidence messages among what was served (0 when declined), and in the ranked top k
@@ -365,8 +378,9 @@ def run(args):
     from backend.settings import get as settings_get
     result = {"dataset": str(path.relative_to(REPO)) if path.is_relative_to(REPO) else str(path),
               "scenarios": len(rows), "embedder": args.embedder, "k": args.k,
+              "paraphrases": args.paraphrases and Path(args.paraphrases).name, "half": args.half,
               "deep_recall": bool(args.deep), "keep_on_decline": bool(args.keep_on_decline), "config": args.config,
-              "recall_settings": {k: settings_get(f"recall.{k}") for k in ("second_pass", "rerank", "answer_check", "keep_results_on_decline")},
+              "recall_settings": {k: settings_get(f"recall.{k}") for k in ("second_pass", "rerank", "answer_check", "aggregation_check", "keep_results_on_decline")},
               "overall": summary(recs), "by_category": {c: summary([r for r in recs if r["category"] == c])
                                                          for c in CATEGORIES if any(r["category"] == c for r in recs)},
               "rows": recs}
@@ -395,6 +409,8 @@ def main():
     c.add_argument("-v", "--verbose", action="store_true")
     r = sub.add_parser("run")
     r.add_argument("--scenarios", default=str(SCENARIOS))
+    r.add_argument("--paraphrases", default=None, help="ask these rewordings instead of the original questions")
+    r.add_argument("--half", default=None, choices=["A", "B"], help="with --paraphrases: A = fixing half, B = check half")
     r.add_argument("--embedder", default="st:BAAI/bge-small-en-v1.5")
     r.add_argument("--engine-url", default=None)
     r.add_argument("--config", default=None, help="a config.yaml to use instead of the default one")

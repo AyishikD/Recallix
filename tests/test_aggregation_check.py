@@ -36,6 +36,39 @@ def test_questions_become_the_events_they_take_for_granted(question, kind, expec
     assert claims(question) == (kind, expected)
 
 
+@pytest.mark.parametrize("question, kind, expected", [
+    ("Baby showers - how many have I actually attended?", "counting", ["I have attended baby showers."]),
+    ("What's the number of weddings I've been to?", "counting", ["I have been to weddings."]),
+    ("Count the in-person workshops I went to, please.", "counting", ["I went to in-person workshops."]),
+    ("How often did I make a dessert?", "counting", ["I did make a dessert."]),
+    ("Italy - how many times have I gone there?", "counting", ["I have gone to Italy."]),
+    ("Getting a flu shot - how many times have I done that?", "counting", ["I was getting a flu shot."]),
+    ("For my sister, how many birthday gifts did I buy?", "counting", ["I did buy birthday gifts for my sister."]),
+    ("'Deep Work' and 'Atomic Habits' - put them in the order I finished them.", "ordering",
+     ["I finished 'Deep Work'.", "I finished 'Atomic Habits'."]),
+    ("The Mazda MX-5 or the Hyundai Elantra - which car did I own earlier?", "ordering",
+     ["I did own the Mazda MX-5.", "I did own the Hyundai Elantra."]),
+    ("My yoga session or my knitting class - which one came first?", "ordering",
+     ["My yoga session happened.", "My knitting class happened."]),
+    ("What was the order in which I installed the smart thermostat and the smart kitchen scale?", "ordering",
+     ["I installed the smart thermostat.", "I installed the smart kitchen scale."]),
+    ("What was the order of me clearing the attic and cleaning the gutters?", "ordering",
+     ["I was clearing the attic.", "I was cleaning the gutters."]),
+    ("Which was shipped first by me: the wedding album or the photo set?", "ordering",
+     ["I shipped the wedding album.", "I shipped the photo set."]),
+    ("I signed the lease - how many days later did I host a housewarming party?", "time_between",
+     ["I signed the lease.", "I did host a housewarming party."]),
+    ("From the day I signed the lease to the day I moved in - how many days was it?", "time_between",
+     ["I signed the lease.", "I moved in."]),
+    ("In weeks and days, how long was it between the day I bought the grill and the day I got back from Pune?", "time_between",
+     ["I bought the grill.", "I got back from Pune."]),
+    ("My school announced the snow day - how many days after I backed up my photos was that?", "time_between",
+     ["I backed up my photos.", "My school announced the snow day."]),
+])
+def test_freer_phrasings_are_understood_too(question, kind, expected):
+    assert claims(question) == (kind, expected)
+
+
 def test_unclear_phrasings_keep_every_reading():
     # which haircut was "second" is worked out across memories, so the claim is also tried without the ordinal
     _, c = claims("How many weeks passed between my first haircut and my second haircut?")
@@ -51,6 +84,7 @@ def test_unclear_phrasings_keep_every_reading():
 @pytest.mark.parametrize("question", [
     "What is my dog's name?", "Where did I go first?", "How many employees does my company have?",
     "How much rent do I pay?", "How many children does Melanie have?", "When did I move to Pune?", "",
+    "How often does John take his kids to the park?", "How long has Melanie been practicing art?",
 ])
 def test_other_questions_are_left_alone(question):
     assert ac.presuppositions(question) is None

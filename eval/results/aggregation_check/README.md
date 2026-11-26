@@ -21,7 +21,7 @@ Files: `aggregation_dev_before.json`, `aggregation_dev_after.json`.
 | | answerable declined | all evidence served | traps declined | median recall |
 |---|---|---|---|---|
 | Before | 57/183 (0.311) | 0.661 | 17/56 (0.304) | 65 ms |
-| After | 7/183 (0.038) | 0.907 | 50/56 (0.893) | 128 ms |
+| After | 7/183 (0.038) | 0.907 | 50/56 (0.893) | 129 ms |
 
 | Category | answerable declined | all evidence served | traps declined |
 |---|---|---|---|
@@ -30,7 +30,35 @@ Files: `aggregation_dev_before.json`, `aggregation_dev_after.json`.
 | Ordering (67 / 18) | 0.418 → 0.000 | 0.582 → 0.985 | 0.333 → 1.000 |
 
 The rewriting rules were written while looking at this set, so these numbers are an upper bound, not a
-held-out result.
+held-out result. The next section is the fairer test.
+
+## Reworded questions (eval/data/dev/aggregation/paraphrases.jsonl)
+
+Two rewordings of each of the 239 questions (478), written by a separate agent that saw only
+scenarios.jsonl, never the code or the rules ("Baby showers - how many have I actually attended?",
+"What was the order in which I sent A and B?", "I signed the lease - how many days later did I move in?").
+The answer keys are unchanged. Scenarios at even positions are half A, at odd positions half B. Half A's
+wording was read while extending the rules; half B's wording was never read, only its totals.
+`python eval/aggregation.py run --paraphrases eval/data/dev/aggregation/paraphrases.jsonl --half A|B`.
+Files: `paraphrases/{A,B}_{before,first_rules,after}.json`.
+
+| | answerable declined | all evidence served | traps declined |
+|---|---|---|---|
+| Half A, check off | 67/188 (0.356) | 0.606 | 21/56 (0.375) |
+| Half A, first rules | 53/188 (0.282) | 0.676 | 33/56 (0.589) |
+| Half A, rules now | 8/188 (0.043) | 0.899 | 48/56 (0.857) |
+| **Half B (wording unseen), check off** | 50/178 (0.281) | 0.691 | 14/56 (0.250) |
+| Half B, first rules | 49/178 (0.275) | 0.702 | 28/56 (0.500) |
+| **Half B, rules now** | 20/178 (0.112) | 0.865 | 45/56 (0.804) |
+
+The first rules (textbook forms only: "How many X did I ...", "Which came first, A or B") recognised 84 of
+244 rewordings in half A and 76 of 234 in half B; everything else fell back to the old behaviour. The rules
+now also read a fronted topic, counts asked without "how many", and events stated before the question;
+they recognise 244 of 244 in A and 220 of 234 in B. Half B is the number to quote: its wording was not
+used. It shares scenarios' style and author with half A, so it is still development data.
+
+By category on half B: counting 0.138 declined / 0.909 traps declined; time-between 0.167 / 0.625;
+ordering 0.045 / 0.833.
 
 ## LoCoMo dev (conversations 1-5, 999 questions): the no-harm check
 
@@ -40,7 +68,7 @@ Files: `locomo_dev_before.json`, `locomo_dev_after.json`.
 | | served recall@10 | answerable wrongly declined | traps declined | median recall |
 |---|---|---|---|---|
 | Before | 0.7008 | 60/760 | 77/237 | 92 ms |
-| After | 0.6996 | 59/760 | 77/237 | 100 ms |
+| After | 0.6996 | 59/760 | 77/237 | 92 ms |
 
 15 of 999 questions are recognised as aggregation questions; 7 change: 4 that were declined are now
 answered, 3 that were answered are now declined (their wording is looser than the memory: "adopting Coco"
@@ -59,6 +87,16 @@ question's own subject, and a statement about a memory's speaker is also read in
   "I mentioned" being literally true.
 - Real questions declined (7): the memory needs world knowledge the model lacks ("tried Ramiro tonight"
   as trying a restaurant in Lisbon), or the event's memory is not in the top 10.
+
+## Tried and rejected
+
+- Declining when a memory contradicts a presupposed event (meant for "booked the gig", then "the gig got
+  cancelled"): the entailment model marks unrelated memories as contradictions. Offline on the dev set:
+  answerable questions answered 176 -> 64 of 183 for 4 more traps declined.
+- Also reading the memories `recall.second_pass` would add before declining: no decision changed on either set.
+- cross-encoder/nli-deberta-v3-xsmall instead of -base: offline 134 vs 163 of 183 answerable answered.
+- Treating "How often does John ...?" as a count: it asks for a habit that one memory states; on LoCoMo dev
+  it turned a declined trap into an answer. Only past-tense "how often did/have ..." counts.
 
 ## Not yet done
 
