@@ -1,13 +1,8 @@
 import type { NextConfig } from "next";
 
-// Static export for GitHub Pages. The site is served from a sub-path
-// (https://<user>.github.io/<repo>/), which the deploy workflow passes in as
-// PAGES_BASE_PATH; locally it is empty so `npm run dev` serves from /.
-const basePath = process.env.PAGES_BASE_PATH || "";
-
+// Static export, deployed by Vercel (https://recallix.vercel.app) on every push to main.
 const nextConfig: NextConfig = {
   output: "export",
-  basePath,
   images: {
     unoptimized: true,
   },
