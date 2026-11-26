@@ -34,7 +34,9 @@ _DEFAULT_MODEL = "cross-encoder/nli-deberta-v3-xsmall"
 
 def config():
     c = settings.get("recall.aggregation_check", {}) or {}
-    return {"enabled": bool(c.get("enabled", False)), "model": c.get("model") or _DEFAULT_MODEL,
+    mode = str(c.get("mode", "rescue")).lower()
+    return {"enabled": bool(c.get("enabled", False)), "mode": mode if mode in ("rescue", "decide") else "rescue",
+            "model": c.get("model") or _DEFAULT_MODEL,
             "threshold": float(c.get("threshold", 0.5)), "memories": int(c.get("memories", 10)),
             "max_length": int(c.get("max_length", 256)), "device": c.get("device")}
 

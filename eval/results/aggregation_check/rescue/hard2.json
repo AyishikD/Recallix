@@ -1,0 +1,3088 @@
+{
+ "dataset": "eval/data/dev/aggregation/hard2_scenarios.jsonl",
+ "scenarios": 12,
+ "embedder": "st:BAAI/bge-small-en-v1.5",
+ "k": 10,
+ "paraphrases": null,
+ "half": null,
+ "deep_recall": false,
+ "keep_on_decline": false,
+ "config": "/Users/ayishikdas/Projects/recallix/.phase6_data/config_agg_rescue.yaml",
+ "recall_settings": {
+  "second_pass": {
+   "enabled": true,
+   "keep": 5,
+   "search": 2,
+   "seeds": 3,
+   "weight": 0.5,
+   "neighbours": 2,
+   "max_gap_minutes": 60
+  },
+  "rerank": {
+   "enabled": false,
+   "model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+   "candidates": 50,
+   "keep": 3,
+   "context": true,
+   "context_gap_minutes": 60,
+   "context_max_words": null,
+   "max_length": 256,
+   "threads": null,
+   "device": null,
+   "preload": true,
+   "auto": false
+  },
+  "answer_check": {
+   "enabled": true,
+   "model": "deepset/roberta-base-squad2",
+   "max_length": 384,
+   "stride": 128,
+   "device": null,
+   "max_answer_tokens": 30,
+   "threshold": null,
+   "rerank": true,
+   "restore_case": false,
+   "calculation_questions": true,
+   "reject_non_statements": true,
+   "other_people": {
+    "enabled": true
+   },
+   "subject_contrast": {
+    "enabled": true,
+    "min_contrast": 0.0,
+    "max_alternatives": 3
+   }
+  },
+  "aggregation_check": {
+   "enabled": true,
+   "mode": "rescue",
+   "model": "cross-encoder/nli-deberta-v3-base",
+   "threshold": 0.5,
+   "memories": 10,
+   "max_length": 256,
+   "device": null
+  },
+  "keep_results_on_decline": false
+ },
+ "overall": {
+  "answerable": 47,
+  "traps": 24,
+  "answerable_declined": 0.043,
+  "all_evidence_served": 0.957,
+  "evidence_served": 0.957,
+  "all_evidence_ranked": 1.0,
+  "traps_declined": 0.292
+ },
+ "by_category": {
+  "counting": {
+   "answerable": 15,
+   "traps": 8,
+   "answerable_declined": 0.0,
+   "all_evidence_served": 1.0,
+   "evidence_served": 1.0,
+   "all_evidence_ranked": 1.0,
+   "traps_declined": 0.25
+  },
+  "time_between": {
+   "answerable": 16,
+   "traps": 8,
+   "answerable_declined": 0.062,
+   "all_evidence_served": 0.938,
+   "evidence_served": 0.938,
+   "all_evidence_ranked": 1.0,
+   "traps_declined": 0.375
+  },
+  "ordering": {
+   "answerable": 16,
+   "traps": 8,
+   "answerable_declined": 0.062,
+   "all_evidence_served": 0.938,
+   "evidence_served": 0.938,
+   "all_evidence_ranked": 1.0,
+   "traps_declined": 0.25
+  }
+ },
+ "rows": [
+  {
+   "scenario": "hard2_counting_01",
+   "category": "counting",
+   "q": "how many one-on-one training sessions did I have with trainer Sarah?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    3,
+    7,
+    12,
+    15
+   ],
+   "served": [
+    15,
+    7,
+    1,
+    3,
+    12,
+    9,
+    5,
+    8,
+    4,
+    6
+   ],
+   "ranked": [
+    1,
+    15,
+    7,
+    3,
+    12,
+    8,
+    5,
+    9,
+    6,
+    4
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 2.427,
+   "latency_ms": 1715.4
+  },
+  {
+   "scenario": "hard2_counting_01",
+   "category": "counting",
+   "q": "Count the separate occasions on which Buster took formal behavioral certification exams.",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    11
+   ],
+   "served": [
+    11,
+    10,
+    9,
+    2,
+    8,
+    13,
+    15,
+    12,
+    7,
+    1
+   ],
+   "ranked": [
+    10,
+    11,
+    9,
+    2,
+    8,
+    0,
+    13,
+    5,
+    1,
+    15
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -2.699,
+   "latency_ms": 44.5
+  },
+  {
+   "scenario": "hard2_counting_01",
+   "category": "counting",
+   "q": "winter training: how many sessions with Sarah took place during January and February?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    3
+   ],
+   "served": [
+    7,
+    15,
+    12,
+    1,
+    3,
+    5,
+    9,
+    8,
+    10,
+    6
+   ],
+   "ranked": [
+    15,
+    7,
+    12,
+    1,
+    3,
+    5,
+    10,
+    8,
+    4,
+    9
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 0.322,
+   "latency_ms": 48.0
+  },
+  {
+   "scenario": "hard2_counting_01",
+   "category": "counting",
+   "q": "How many group agility classes did Buster attend at the Peckham agility academy?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    5,
+    6,
+    2,
+    8,
+    11,
+    15,
+    13,
+    1,
+    0,
+    9
+   ],
+   "ranked": [
+    5,
+    6,
+    2,
+    8,
+    11,
+    0,
+    13,
+    15,
+    1,
+    10
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 4.232,
+   "latency_ms": 46.5
+  },
+  {
+   "scenario": "hard2_counting_01",
+   "category": "counting",
+   "q": "Obedience competitions: how many did Buster enter in Surrey?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [],
+   "served": [],
+   "ranked": [
+    9,
+    8,
+    11,
+    2,
+    13,
+    5,
+    0,
+    1,
+    10,
+    7
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -4.882,
+   "latency_ms": 2678.4
+  },
+  {
+   "scenario": "hard2_counting_02",
+   "category": "counting",
+   "q": "how many times have i traded at broadway market this year?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    4,
+    10,
+    16
+   ],
+   "served": [
+    10,
+    1,
+    11,
+    16,
+    4,
+    12,
+    14,
+    2,
+    7,
+    5
+   ],
+   "ranked": [
+    10,
+    1,
+    11,
+    16,
+    4,
+    12,
+    2,
+    14,
+    7,
+    8
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -1.314,
+   "latency_ms": 37.5
+  },
+  {
+   "scenario": "hard2_counting_02",
+   "category": "counting",
+   "q": "Count the occasions when I set up my stall at Chatsworth Road market.",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "counting",
+    "claims": [
+     {
+      "statement": "I set up my stall at Chatsworth Road market.",
+      "support": 0.997,
+      "memory": 20
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    2,
+    12
+   ],
+   "served": [
+    2,
+    12,
+    7,
+    4,
+    8,
+    1,
+    5,
+    10,
+    16,
+    11
+   ],
+   "ranked": [
+    2,
+    12,
+    7,
+    4,
+    8,
+    1,
+    5,
+    11,
+    0,
+    10
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -3.339,
+   "latency_ms": 158.8
+  },
+  {
+   "scenario": "hard2_counting_02",
+   "category": "counting",
+   "q": "What is the total number of market dates I did at Victoria Park market?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    8,
+    14
+   ],
+   "served": [
+    14,
+    8,
+    1,
+    6,
+    4,
+    5,
+    16,
+    2,
+    7,
+    12
+   ],
+   "ranked": [
+    14,
+    8,
+    1,
+    6,
+    4,
+    11,
+    2,
+    10,
+    16,
+    7
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 0.583,
+   "latency_ms": 35.6
+  },
+  {
+   "scenario": "hard2_counting_02",
+   "category": "counting",
+   "q": "How many private catering birthday cakes did I bake for clients?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    9
+   ],
+   "served": [
+    9,
+    1,
+    5,
+    0,
+    15,
+    7,
+    2,
+    4,
+    3,
+    14
+   ],
+   "ranked": [
+    9,
+    1,
+    5,
+    0,
+    15,
+    3,
+    2,
+    7,
+    4,
+    8
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 1.766,
+   "latency_ms": 35.1
+  },
+  {
+   "scenario": "hard2_counting_02",
+   "category": "counting",
+   "q": "How many days did I trade at the Greenwich food festival?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [],
+   "served": [],
+   "ranked": [
+    5,
+    6,
+    1,
+    0,
+    4,
+    2,
+    7,
+    14,
+    12,
+    10
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -4.26,
+   "latency_ms": 90.5
+  },
+  {
+   "scenario": "hard2_counting_02",
+   "category": "counting",
+   "q": "Herne Hill market: how many times did I sell baked goods there?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    7,
+    1,
+    9,
+    4,
+    2,
+    14,
+    12,
+    0,
+    15,
+    5
+   ],
+   "ranked": [
+    7,
+    1,
+    9,
+    4,
+    2,
+    14,
+    12,
+    0,
+    10,
+    11
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -4.908,
+   "latency_ms": 94.1
+  },
+  {
+   "scenario": "hard2_counting_03",
+   "category": "counting",
+   "q": "How many book club meetings did I host at my own home?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    10,
+    16
+   ],
+   "served": [
+    10,
+    1,
+    13,
+    12,
+    16,
+    8,
+    0,
+    4,
+    2,
+    9
+   ],
+   "ranked": [
+    1,
+    13,
+    10,
+    12,
+    16,
+    8,
+    4,
+    2,
+    14,
+    7
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -0.879,
+   "latency_ms": 36.4
+  },
+  {
+   "scenario": "hard2_counting_03",
+   "category": "counting",
+   "q": "Count the times our book club held its discussion at the Black Dog pub.",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    4,
+    14
+   ],
+   "served": [
+    14,
+    4,
+    2,
+    8,
+    12,
+    1,
+    16,
+    9,
+    10,
+    5
+   ],
+   "ranked": [
+    4,
+    14,
+    2,
+    8,
+    12,
+    1,
+    5,
+    9,
+    16,
+    10
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -0.596,
+   "latency_ms": 35.5
+  },
+  {
+   "scenario": "hard2_counting_03",
+   "category": "counting",
+   "q": "What's the number of book club meetings that took place at Claire's flat?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    2,
+    12
+   ],
+   "served": [
+    12,
+    2,
+    4,
+    8,
+    14,
+    16,
+    1,
+    9,
+    10,
+    5
+   ],
+   "ranked": [
+    2,
+    12,
+    4,
+    8,
+    14,
+    5,
+    9,
+    1,
+    16,
+    10
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 0.592,
+   "latency_ms": 34.0
+  },
+  {
+   "scenario": "hard2_counting_03",
+   "category": "counting",
+   "q": "public literary talks: how many author Q&A events at Southbank Centre did I attend?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    9
+   ],
+   "served": [
+    10,
+    9,
+    4,
+    0,
+    2,
+    8,
+    1,
+    13,
+    12,
+    16
+   ],
+   "ranked": [
+    9,
+    4,
+    0,
+    2,
+    8,
+    1,
+    5,
+    12,
+    7,
+    10
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -1.926,
+   "latency_ms": 95.6
+  },
+  {
+   "scenario": "hard2_counting_03",
+   "category": "counting",
+   "q": "How many literary walking tours of Bloomsbury did I go on with the club?",
+   "trap": true,
+   "aggregation_check": {
+    "kind": "counting",
+    "claims": [
+     {
+      "statement": "I did go literary walking tours of Bloomsbury on with the club.",
+      "support": 0.966,
+      "memory": 40
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    5,
+    6,
+    1,
+    13,
+    8,
+    10,
+    16,
+    9,
+    12,
+    2
+   ],
+   "ranked": [
+    5,
+    6,
+    1,
+    13,
+    8,
+    10,
+    16,
+    4,
+    2,
+    12
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -4.309,
+   "latency_ms": 173.4
+  },
+  {
+   "scenario": "hard2_counting_03",
+   "category": "counting",
+   "q": "How many times did I attend a sci-fi book club meeting in Manchester?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    7,
+    8,
+    4,
+    1,
+    2,
+    9,
+    12,
+    10,
+    16,
+    14
+   ],
+   "ranked": [
+    7,
+    8,
+    4,
+    1,
+    2,
+    12,
+    10,
+    16,
+    13,
+    14
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -4.885,
+   "latency_ms": 92.8
+  },
+  {
+   "scenario": "hard2_counting_04",
+   "category": "counting",
+   "q": "How many 10-kilometer open water swims did I complete?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    3,
+    6,
+    9,
+    13
+   ],
+   "served": [
+    3,
+    0,
+    9,
+    6,
+    15,
+    13,
+    11,
+    8,
+    1,
+    10
+   ],
+   "ranked": [
+    0,
+    9,
+    6,
+    15,
+    3,
+    13,
+    1,
+    10,
+    8,
+    11
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -2.716,
+   "latency_ms": 51.0
+  },
+  {
+   "scenario": "hard2_counting_04",
+   "category": "counting",
+   "q": "Count the separate training or qualifying swims I completed in Dover Harbour.",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    11
+   ],
+   "served": [
+    1,
+    11,
+    8,
+    6,
+    3,
+    4,
+    15,
+    9,
+    13,
+    10
+   ],
+   "ranked": [
+    1,
+    11,
+    8,
+    6,
+    3,
+    9,
+    4,
+    15,
+    0,
+    2
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 3.176,
+   "latency_ms": 34.8
+  },
+  {
+   "scenario": "hard2_counting_04",
+   "category": "counting",
+   "q": "What's the number of 5-kilometer open water swims I did?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    15
+   ],
+   "served": [
+    1,
+    15,
+    0,
+    9,
+    10,
+    6,
+    11,
+    8,
+    13,
+    3
+   ],
+   "ranked": [
+    1,
+    15,
+    0,
+    9,
+    10,
+    8,
+    11,
+    6,
+    3,
+    13
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -1.931,
+   "latency_ms": 35.1
+  },
+  {
+   "scenario": "hard2_counting_04",
+   "category": "counting",
+   "q": "Longest training session: how many swims of 15 kilometers or longer did I finish?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    11
+   ],
+   "served": [
+    11,
+    8,
+    3,
+    15,
+    1,
+    6,
+    9,
+    13,
+    4,
+    10
+   ],
+   "ranked": [
+    11,
+    8,
+    3,
+    15,
+    1,
+    4,
+    9,
+    6,
+    10,
+    2
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 3.18,
+   "latency_ms": 35.4
+  },
+  {
+   "scenario": "hard2_counting_04",
+   "category": "counting",
+   "q": "How many times did I swim the Thames Marathon from Henley to Marlow?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    4,
+    3,
+    7,
+    13,
+    8,
+    1,
+    15,
+    11,
+    9,
+    6
+   ],
+   "ranked": [
+    4,
+    3,
+    7,
+    13,
+    8,
+    1,
+    9,
+    11,
+    15,
+    6
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 1.219,
+   "latency_ms": 35.9
+  },
+  {
+   "scenario": "hard2_counting_04",
+   "category": "counting",
+   "q": "How many English Channel solo crossings did I complete this season?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    8,
+    0,
+    11,
+    1,
+    3,
+    10,
+    15,
+    6,
+    13,
+    4
+   ],
+   "ranked": [
+    8,
+    0,
+    11,
+    1,
+    3,
+    4,
+    10,
+    15,
+    13,
+    6
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -2.216,
+   "latency_ms": 36.4
+  },
+  {
+   "scenario": "hard2_time_between_01",
+   "category": "time_between",
+   "q": "From completing financial reporting to my first full-length mock exam, how many days was it?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    6
+   ],
+   "served": [
+    7,
+    6,
+    1,
+    9,
+    8,
+    15,
+    13,
+    11,
+    3,
+    10
+   ],
+   "ranked": [
+    7,
+    6,
+    1,
+    9,
+    8,
+    15,
+    10,
+    13,
+    11,
+    2
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -0.83,
+   "latency_ms": 34.9
+  },
+  {
+   "scenario": "hard2_time_between_01",
+   "category": "time_between",
+   "q": "What was the time between my first full-length mock exam and taking the official CFA exam at the test center?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    6,
+    11
+   ],
+   "served": [
+    7,
+    11,
+    6,
+    9,
+    15,
+    13,
+    1,
+    14,
+    8,
+    3
+   ],
+   "ranked": [
+    7,
+    11,
+    6,
+    9,
+    15,
+    8,
+    0,
+    13,
+    1,
+    4
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 2.408,
+   "latency_ms": 38.5
+  },
+  {
+   "scenario": "hard2_time_between_01",
+   "category": "time_between",
+   "q": "From finishing the quantitative methods module to the day I completed my final mock exam, how many days elapsed?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "time_between",
+    "claims": [
+     {
+      "statement": "I did finish the quantitative methods module.",
+      "support": 0.998,
+      "memory": 71
+     },
+     {
+      "statement": "I completed my mock exam.",
+      "support": 0.998,
+      "memory": 77
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    3,
+    9
+   ],
+   "served": [
+    3,
+    7,
+    9,
+    15,
+    6,
+    13,
+    10,
+    1,
+    11,
+    8
+   ],
+   "ranked": [
+    3,
+    7,
+    9,
+    15,
+    6,
+    13,
+    10,
+    1,
+    8,
+    11
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -3.079,
+   "latency_ms": 428.4
+  },
+  {
+   "scenario": "hard2_time_between_01",
+   "category": "time_between",
+   "q": "How long was it in days between sitting the official CFA exam and receiving my passing results email?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    11,
+    13
+   ],
+   "served": [
+    13,
+    11,
+    0,
+    9,
+    7,
+    15,
+    1,
+    6,
+    14,
+    8
+   ],
+   "ranked": [
+    13,
+    11,
+    0,
+    9,
+    7,
+    15,
+    8,
+    14,
+    3,
+    6
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -0.542,
+   "latency_ms": 34.9
+  },
+  {
+   "scenario": "hard2_time_between_01",
+   "category": "time_between",
+   "q": "How many weeks and days did I spend attending the cram seminar in Frankfurt?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [],
+   "served": [],
+   "ranked": [
+    4,
+    5,
+    2,
+    9,
+    12,
+    8,
+    6,
+    14,
+    0,
+    11
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -2.939,
+   "latency_ms": 87.9
+  },
+  {
+   "scenario": "hard2_time_between_01",
+   "category": "time_between",
+   "q": "What was the time gap between Chen starting his FRM prep and passing the exam?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    8,
+    15,
+    7,
+    13,
+    4,
+    9,
+    11,
+    6,
+    1,
+    3
+   ],
+   "ranked": [
+    8,
+    15,
+    7,
+    13,
+    4,
+    3,
+    11,
+    2,
+    1,
+    0
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 6.105,
+   "latency_ms": 35.7
+  },
+  {
+   "scenario": "hard2_time_between_02",
+   "category": "time_between",
+   "q": "How many days passed between my ACL reconstruction surgery and my first outpatient physiotherapy session?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    3
+   ],
+   "served": [
+    3,
+    1,
+    9,
+    0,
+    4,
+    15,
+    11,
+    6,
+    5,
+    8
+   ],
+   "ranked": [
+    3,
+    1,
+    9,
+    0,
+    4,
+    15,
+    5,
+    13,
+    6,
+    11
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -2.419,
+   "latency_ms": 34.4
+  },
+  {
+   "scenario": "hard2_time_between_02",
+   "category": "time_between",
+   "q": "From the day of surgery to being cleared to ride the stationary exercise bike, what was the duration in weeks and days?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    11
+   ],
+   "served": [
+    11,
+    13,
+    9,
+    1,
+    5,
+    3,
+    0,
+    15,
+    6,
+    8
+   ],
+   "ranked": [
+    11,
+    13,
+    9,
+    1,
+    5,
+    0,
+    3,
+    2,
+    8,
+    6
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -2.375,
+   "latency_ms": 34.5
+  },
+  {
+   "scenario": "hard2_time_between_02",
+   "category": "time_between",
+   "q": "What was the gap in days between my surgeon consultation with Dr. Bradley and being cleared for outdoor jogging?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "time_between",
+    "claims": [
+     {
+      "statement": "My surgeon consultation with Dr. Bradley happened.",
+      "support": 0.998,
+      "memory": 92
+     },
+     {
+      "statement": "Being cleared for outdoor jogging happened.",
+      "support": 0.997,
+      "memory": 97
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    8,
+    13
+   ],
+   "served": [
+    13,
+    8,
+    0,
+    1,
+    11,
+    9,
+    15,
+    3,
+    14,
+    6
+   ],
+   "ranked": [
+    13,
+    8,
+    0,
+    1,
+    11,
+    9,
+    4,
+    15,
+    3,
+    10
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -2.827,
+   "latency_ms": 367.9
+  },
+  {
+   "scenario": "hard2_time_between_02",
+   "category": "time_between",
+   "q": "How long was it from achieving full 90-degree knee extension and one crutch to my final physical therapy discharge?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    5,
+    15
+   ],
+   "served": [
+    5,
+    15,
+    1,
+    3,
+    6,
+    11,
+    13,
+    8,
+    0,
+    9
+   ],
+   "ranked": [
+    5,
+    15,
+    1,
+    3,
+    6,
+    0,
+    13,
+    11,
+    4,
+    8
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 1.419,
+   "latency_ms": 45.3
+  },
+  {
+   "scenario": "hard2_time_between_02",
+   "category": "time_between",
+   "q": "How many days did I spend completing sessions in the hydrotherapy pool?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    4,
+    7,
+    3,
+    1,
+    15,
+    13,
+    14,
+    9,
+    6,
+    11
+   ],
+   "ranked": [
+    4,
+    7,
+    3,
+    1,
+    15,
+    0,
+    14,
+    9,
+    13,
+    2
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 1.794,
+   "latency_ms": 35.5
+  },
+  {
+   "scenario": "hard2_time_between_02",
+   "category": "time_between",
+   "q": "How many weeks and days did Simon spend on crutches after his meniscus surgery?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [],
+   "served": [],
+   "ranked": [
+    9,
+    5,
+    0,
+    1,
+    3,
+    2,
+    6,
+    4,
+    13,
+    12
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -3.729,
+   "latency_ms": 92.3
+  },
+  {
+   "scenario": "hard2_time_between_03",
+   "category": "time_between",
+   "q": "How many days did it take from signing the contractor agreement with Marco to completing the stone foundation underpinning?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "time_between",
+    "claims": [
+     {
+      "statement": "I did sign the contractor agreement with Marco.",
+      "support": 0.998,
+      "memory": 101
+     },
+     {
+      "statement": "Completing the stone foundation underpinning happened.",
+      "support": 0.998,
+      "memory": 103
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    3
+   ],
+   "served": [
+    3,
+    1,
+    4,
+    6,
+    13,
+    14,
+    7,
+    5,
+    10,
+    12
+   ],
+   "ranked": [
+    3,
+    1,
+    4,
+    6,
+    13,
+    12,
+    14,
+    7,
+    9,
+    0
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -4.555,
+   "latency_ms": 479.0
+  },
+  {
+   "scenario": "hard2_time_between_03",
+   "category": "time_between",
+   "q": "From the completion of foundation underpinning to finishing the new timber roof, what was the duration in weeks and days?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [
+    3,
+    7
+   ],
+   "served": [],
+   "ranked": [
+    7,
+    3,
+    4,
+    5,
+    8,
+    1,
+    14,
+    9,
+    6,
+    2
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 1.0,
+   "margin": -5.293,
+   "latency_ms": 104.6
+  },
+  {
+   "scenario": "hard2_time_between_03",
+   "category": "time_between",
+   "q": "What was the gap between finishing the roof and connecting the pressurized plumbing and septic system?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "time_between",
+    "claims": [
+     {
+      "statement": "Finishing the roof happened.",
+      "support": 0.997,
+      "memory": 107
+     },
+     {
+      "statement": "Connecting the pressurized plumbing and septic system happened.",
+      "support": 0.993,
+      "memory": 111
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    7,
+    11
+   ],
+   "served": [
+    11,
+    4,
+    7,
+    3,
+    5,
+    14,
+    9,
+    8,
+    1,
+    2
+   ],
+   "ranked": [
+    11,
+    4,
+    7,
+    3,
+    5,
+    14,
+    9,
+    1,
+    2,
+    10
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -12.42,
+   "latency_ms": 512.2
+  },
+  {
+   "scenario": "hard2_time_between_03",
+   "category": "time_between",
+   "q": "How long was it in days between finishing the internal lime plastering and receiving the municipal habitation certification?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "time_between",
+    "claims": [
+     {
+      "statement": "Finishing the internal lime plastering happened.",
+      "support": 0.997,
+      "memory": 113
+     },
+     {
+      "statement": "Receiving the municipal habitation certification happened.",
+      "support": 0.997,
+      "memory": 114
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    13,
+    14
+   ],
+   "served": [
+    14,
+    13,
+    4,
+    5,
+    1,
+    7,
+    3,
+    12,
+    10,
+    2
+   ],
+   "ranked": [
+    14,
+    13,
+    4,
+    5,
+    1,
+    3,
+    7,
+    2,
+    12,
+    15
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -5.19,
+   "latency_ms": 517.8
+  },
+  {
+   "scenario": "hard2_time_between_03",
+   "category": "time_between",
+   "q": "How many weeks and days did it take for the reclaimed roof tiles from Lucca to arrive at the farmhouse?",
+   "trap": true,
+   "aggregation_check": {
+    "kind": "time_between",
+    "claims": [
+     {
+      "statement": "Lucca happened.",
+      "support": 0.996,
+      "memory": 104
+     },
+     {
+      "statement": "Arrive at the farmhouse happened.",
+      "support": 0.994,
+      "memory": 100
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    4,
+    5,
+    7,
+    0,
+    6,
+    14,
+    1,
+    15,
+    8,
+    3
+   ],
+   "ranked": [
+    4,
+    5,
+    7,
+    0,
+    6,
+    1,
+    8,
+    15,
+    14,
+    9
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -3.714,
+   "latency_ms": 209.3
+  },
+  {
+   "scenario": "hard2_time_between_03",
+   "category": "time_between",
+   "q": "What was the time between Matteo ordering solar panels and their installation on his barn?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    6,
+    4,
+    5,
+    1,
+    0,
+    14,
+    15,
+    10,
+    7,
+    12
+   ],
+   "ranked": [
+    6,
+    4,
+    5,
+    1,
+    0,
+    10,
+    14,
+    15,
+    9,
+    3
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 6.3,
+   "latency_ms": 37.2
+  },
+  {
+   "scenario": "hard2_time_between_04",
+   "category": "time_between",
+   "q": "How many days did my February trip to visit Liam in Chicago last, from arrival to departure?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    2
+   ],
+   "served": [
+    9,
+    1,
+    7,
+    4,
+    11,
+    14,
+    2,
+    15,
+    12,
+    3
+   ],
+   "ranked": [
+    1,
+    9,
+    7,
+    4,
+    11,
+    10,
+    6,
+    2,
+    3,
+    14
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 2.19,
+   "latency_ms": 36.7
+  },
+  {
+   "scenario": "hard2_time_between_04",
+   "category": "time_between",
+   "q": "From the day Liam arrived for his spring visit in London to the day he flew back, what was the duration?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    7,
+    9
+   ],
+   "served": [
+    7,
+    9,
+    4,
+    1,
+    12,
+    14,
+    15,
+    2,
+    11,
+    8
+   ],
+   "ranked": [
+    7,
+    9,
+    4,
+    1,
+    12,
+    14,
+    2,
+    5,
+    15,
+    8
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 4.641,
+   "latency_ms": 37.8
+  },
+  {
+   "scenario": "hard2_time_between_04",
+   "category": "time_between",
+   "q": "What was the gap in days between my February departure from Chicago and Liam's arrival in London for his spring visit?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    2,
+    7
+   ],
+   "served": [
+    7,
+    4,
+    1,
+    11,
+    9,
+    14,
+    2,
+    15,
+    12,
+    8
+   ],
+   "ranked": [
+    7,
+    4,
+    1,
+    11,
+    9,
+    5,
+    2,
+    6,
+    3,
+    12
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 2.729,
+   "latency_ms": 39.7
+  },
+  {
+   "scenario": "hard2_time_between_04",
+   "category": "time_between",
+   "q": "How long was it from my departure from Chicago after Fourth of July to Liam landing in London in September?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    12,
+    14
+   ],
+   "served": [
+    9,
+    11,
+    7,
+    2,
+    1,
+    14,
+    4,
+    15,
+    12,
+    3
+   ],
+   "ranked": [
+    11,
+    9,
+    7,
+    2,
+    1,
+    4,
+    12,
+    6,
+    14,
+    15
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -2.252,
+   "latency_ms": 37.5
+  },
+  {
+   "scenario": "hard2_time_between_04",
+   "category": "time_between",
+   "q": "How many days did Liam spend in Edinburgh during his Christmas trip?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [],
+   "served": [],
+   "ranked": [
+    7,
+    4,
+    1,
+    14,
+    9,
+    5,
+    11,
+    8,
+    15,
+    2
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -3.632,
+   "latency_ms": 94.1
+  },
+  {
+   "scenario": "hard2_time_between_04",
+   "category": "time_between",
+   "q": "What was the time between Hannah planning her Vancouver trip and flying there?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    6,
+    7,
+    2,
+    12,
+    1,
+    9,
+    4,
+    14,
+    3,
+    15
+   ],
+   "ranked": [
+    6,
+    7,
+    2,
+    12,
+    1,
+    0,
+    9,
+    4,
+    3,
+    16
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 4.796,
+   "latency_ms": 35.3
+  },
+  {
+   "scenario": "hard2_ordering_01",
+   "category": "ordering",
+   "q": "Which came first, planting the runner bean seedlings or harvesting the first radishes?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "Planting the runner bean seedlings happened.",
+      "support": 0.997,
+      "memory": 136
+     },
+     {
+      "statement": "I did harvest the first radishes.",
+      "support": 0.998,
+      "memory": 140
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    3,
+    7
+   ],
+   "served": [
+    3,
+    7,
+    10,
+    8,
+    0,
+    15,
+    1,
+    14,
+    4,
+    13
+   ],
+   "ranked": [
+    3,
+    7,
+    10,
+    8,
+    0,
+    1,
+    4,
+    15,
+    14,
+    5
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -5.443,
+   "latency_ms": 682.3
+  },
+  {
+   "scenario": "hard2_ordering_01",
+   "category": "ordering",
+   "q": "Put these three garden harvests in chronological order: King Edward potatoes, butternut squash, and Sun Gold cherry tomatoes.",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "King Edward potatoes happened.",
+      "support": 0.997,
+      "memory": 145
+     },
+     {
+      "statement": "Butternut squash happened.",
+      "support": 0.998,
+      "memory": 147
+     },
+     {
+      "statement": "Sun Gold cherry tomatoes happened.",
+      "support": 0.994,
+      "memory": 143
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    10,
+    12,
+    14
+   ],
+   "served": [
+    12,
+    10,
+    14,
+    15,
+    8,
+    7,
+    13,
+    4,
+    1,
+    2
+   ],
+   "ranked": [
+    12,
+    10,
+    14,
+    15,
+    8,
+    2,
+    7,
+    0,
+    1,
+    5
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -9.542,
+   "latency_ms": 305.9
+  },
+  {
+   "scenario": "hard2_ordering_01",
+   "category": "ordering",
+   "q": "Did I sow seeds on the greenhouse heating mat before or after harvesting cherry tomatoes, and which occurred earlier?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "I did sow seeds on the greenhouse heating mat.",
+      "support": 0.997,
+      "memory": 134
+     },
+     {
+      "statement": "I did harvest cherry tomatoes.",
+      "support": 0.998,
+      "memory": 143
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    10
+   ],
+   "served": [
+    1,
+    10,
+    14,
+    4,
+    15,
+    13,
+    7,
+    0,
+    12,
+    3
+   ],
+   "ranked": [
+    1,
+    10,
+    14,
+    4,
+    15,
+    13,
+    7,
+    0,
+    6,
+    5
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -3.897,
+   "latency_ms": 433.1
+  },
+  {
+   "scenario": "hard2_ordering_01",
+   "category": "ordering",
+   "q": "Between digging up the maincrop potatoes and picking the first radishes, which was later in the year?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "I did dig up the maincrop potatoes.",
+      "support": 0.998,
+      "memory": 145
+     },
+     {
+      "statement": "I did pick the first radishes.",
+      "support": 0.997,
+      "memory": 140
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    7,
+    12
+   ],
+   "served": [
+    12,
+    7,
+    10,
+    8,
+    0,
+    15,
+    4,
+    11,
+    14,
+    13
+   ],
+   "ranked": [
+    12,
+    7,
+    10,
+    8,
+    0,
+    4,
+    15,
+    14,
+    11,
+    1
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -5.187,
+   "latency_ms": 938.7
+  },
+  {
+   "scenario": "hard2_ordering_01",
+   "category": "ordering",
+   "q": "Which came earlier: attending the beekeeping workshop or harvesting cherry tomatoes?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    5,
+    10,
+    6,
+    9,
+    4,
+    7,
+    15,
+    13,
+    1,
+    14
+   ],
+   "ranked": [
+    5,
+    10,
+    6,
+    9,
+    4,
+    7,
+    1,
+    13,
+    0,
+    15
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -2.255,
+   "latency_ms": 50.5
+  },
+  {
+   "scenario": "hard2_ordering_01",
+   "category": "ordering",
+   "q": "Put in order: my first strawberry harvest versus my King Edward potato harvest.",
+   "trap": true,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "My strawberry harvest versus my King Edward potato harvest happened.",
+      "support": 0.574,
+      "memory": 144
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    12,
+    10,
+    7,
+    0,
+    9,
+    15,
+    13,
+    4,
+    11,
+    8
+   ],
+   "ranked": [
+    12,
+    10,
+    7,
+    0,
+    9,
+    15,
+    13,
+    4,
+    1,
+    11
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -15.694,
+   "latency_ms": 313.5
+  },
+  {
+   "scenario": "hard2_ordering_02",
+   "category": "ordering",
+   "q": "Which came first, the parent-teacher consultation with Mrs. Gable or Maya's first day of school?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    3
+   ],
+   "served": [
+    3,
+    1,
+    12,
+    10,
+    4,
+    13,
+    6,
+    14,
+    8,
+    9
+   ],
+   "ranked": [
+    3,
+    1,
+    12,
+    10,
+    4,
+    6,
+    13,
+    15,
+    8,
+    14
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 4.25,
+   "latency_ms": 47.7
+  },
+  {
+   "scenario": "hard2_ordering_02",
+   "category": "ordering",
+   "q": "Put these three school events in the order they happened: the Bocketts Farm trip, Maya's nativity play, and World Book Day.",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "The Bocketts Farm trip happened.",
+      "support": 0.992,
+      "memory": 161
+     },
+     {
+      "statement": "Maya's nativity play happened.",
+      "support": 0.994,
+      "memory": 155
+     },
+     {
+      "statement": "World Book Day happened.",
+      "support": 0.994,
+      "memory": 159
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    6,
+    10,
+    12
+   ],
+   "served": [
+    12,
+    10,
+    6,
+    7,
+    15,
+    4,
+    13,
+    1,
+    3,
+    14
+   ],
+   "ranked": [
+    12,
+    10,
+    6,
+    7,
+    15,
+    0,
+    2,
+    4,
+    1,
+    8
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -6.789,
+   "latency_ms": 380.4
+  },
+  {
+   "scenario": "hard2_ordering_02",
+   "category": "ordering",
+   "q": "Did Maya's school sports day happen before or after the Bocketts Farm field trip, and which came earlier?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    12,
+    13
+   ],
+   "served": [
+    10,
+    12,
+    13,
+    4,
+    15,
+    6,
+    1,
+    9,
+    14,
+    3
+   ],
+   "ranked": [
+    12,
+    13,
+    10,
+    4,
+    15,
+    1,
+    6,
+    0,
+    3,
+    7
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -0.07,
+   "latency_ms": 48.0
+  },
+  {
+   "scenario": "hard2_ordering_02",
+   "category": "ordering",
+   "q": "Between World Book Day and receiving the final end-of-year report card, which occurred later?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    10,
+    14
+   ],
+   "served": [
+    14,
+    10,
+    15,
+    13,
+    1,
+    4,
+    9,
+    11,
+    6,
+    7
+   ],
+   "ranked": [
+    14,
+    10,
+    15,
+    13,
+    1,
+    4,
+    11,
+    9,
+    0,
+    5
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 0.948,
+   "latency_ms": 45.5
+  },
+  {
+   "scenario": "hard2_ordering_02",
+   "category": "ordering",
+   "q": "Which was earlier: Maya starting the after-school gymnastics club or the school nativity play?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    4,
+    6,
+    10,
+    7,
+    13,
+    12,
+    1,
+    14,
+    9,
+    3
+   ],
+   "ranked": [
+    4,
+    6,
+    10,
+    7,
+    13,
+    12,
+    1,
+    3,
+    9,
+    5
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -0.178,
+   "latency_ms": 44.5
+  },
+  {
+   "scenario": "hard2_ordering_02",
+   "category": "ordering",
+   "q": "Put in chronological order: Maya losing her first tooth versus Maya's first day of school.",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [],
+   "served": [],
+   "ranked": [
+    1,
+    3,
+    10,
+    12,
+    4,
+    13,
+    6,
+    7,
+    0,
+    15
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -6.473,
+   "latency_ms": 658.4
+  },
+  {
+   "scenario": "hard2_ordering_03",
+   "category": "ordering",
+   "q": "Which came first, assisting in the spay and neuter surgical clinic or completing my new volunteer orientation?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    3
+   ],
+   "served": [
+    3,
+    1,
+    14,
+    8,
+    10,
+    6,
+    4,
+    11,
+    13,
+    15
+   ],
+   "ranked": [
+    3,
+    1,
+    14,
+    8,
+    10,
+    6,
+    4,
+    0,
+    12,
+    9
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 2.086,
+   "latency_ms": 45.3
+  },
+  {
+   "scenario": "hard2_ordering_03",
+   "category": "ordering",
+   "q": "Put these three volunteer milestones in chronological sequence: Barnaby's adoption, building the outdoor obstacle course, and running the summer fundraiser gala.",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [
+    6,
+    10,
+    12
+   ],
+   "served": [],
+   "ranked": [
+    10,
+    6,
+    1,
+    12,
+    4,
+    14,
+    7,
+    11,
+    8,
+    5
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 1.0,
+   "margin": -8.238,
+   "latency_ms": 130.4
+  },
+  {
+   "scenario": "hard2_ordering_03",
+   "category": "ordering",
+   "q": "Did I receive my 100-hours service pin before or after the dog temperament testing shift, and which happened earlier?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    13,
+    14
+   ],
+   "served": [
+    14,
+    13,
+    1,
+    11,
+    0,
+    10,
+    6,
+    3,
+    15,
+    8
+   ],
+   "ranked": [
+    14,
+    13,
+    1,
+    11,
+    0,
+    6,
+    3,
+    10,
+    5,
+    4
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -0.71,
+   "latency_ms": 42.3
+  },
+  {
+   "scenario": "hard2_ordering_03",
+   "category": "ordering",
+   "q": "Between Barnaby the hound finding his forever home and the annual summer gala, which milestone was later?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    6,
+    10
+   ],
+   "served": [
+    10,
+    6,
+    7,
+    11,
+    14,
+    1,
+    4,
+    15,
+    8,
+    13
+   ],
+   "ranked": [
+    10,
+    6,
+    7,
+    11,
+    14,
+    4,
+    0,
+    5,
+    2,
+    15
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 2.529,
+   "latency_ms": 45.3
+  },
+  {
+   "scenario": "hard2_ordering_03",
+   "category": "ordering",
+   "q": "Which was earlier: staffing the mobile adoption van at the town fair or Barnaby's adoption?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    4,
+    5,
+    6,
+    10,
+    14,
+    1,
+    7,
+    8,
+    15,
+    12
+   ],
+   "ranked": [
+    4,
+    5,
+    6,
+    10,
+    14,
+    7,
+    3,
+    0,
+    12,
+    15
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 0.391,
+   "latency_ms": 40.9
+  },
+  {
+   "scenario": "hard2_ordering_03",
+   "category": "ordering",
+   "q": "Put in chronological order: adopting a shelter cat myself versus my volunteer orientation.",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "ABSTAINED",
+   "declined": true,
+   "evidence": [],
+   "served": [],
+   "ranked": [
+    1,
+    15,
+    14,
+    10,
+    0,
+    4,
+    8,
+    6,
+    9,
+    12
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -5.763,
+   "latency_ms": 380.9
+  },
+  {
+   "scenario": "hard2_ordering_04",
+   "category": "ordering",
+   "q": "Which came first, exchanging contracts or formal mortgage approval?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    1,
+    3
+   ],
+   "served": [
+    1,
+    3,
+    0,
+    6,
+    4,
+    10,
+    9,
+    13,
+    5,
+    8
+   ],
+   "ranked": [
+    1,
+    0,
+    3,
+    6,
+    4,
+    9,
+    10,
+    14,
+    8,
+    13
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 0.65,
+   "latency_ms": 38.1
+  },
+  {
+   "scenario": "hard2_ordering_04",
+   "category": "ordering",
+   "q": "Put these three flat milestones in chronological order: sanding the pine floorboards, assembling the king-size bed, and fitting the kitchen appliances.",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "Sanding the pine floorboards happened.",
+      "support": 0.998,
+      "memory": 192
+     },
+     {
+      "statement": "Assembling the king-size bed happened.",
+      "support": 0.997,
+      "memory": 191
+     },
+     {
+      "statement": "Fitting the kitchen appliances happened.",
+      "support": 0.998,
+      "memory": 194
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    10,
+    11,
+    13
+   ],
+   "served": [
+    11,
+    10,
+    13,
+    4,
+    7,
+    12,
+    2,
+    6,
+    0,
+    9
+   ],
+   "ranked": [
+    11,
+    10,
+    13,
+    4,
+    7,
+    2,
+    12,
+    0,
+    6,
+    9
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -9.418,
+   "latency_ms": 905.0
+  },
+  {
+   "scenario": "hard2_ordering_04",
+   "category": "ordering",
+   "q": "Did I collect the front door keys before or after exchanging property contracts, and which happened earlier?",
+   "trap": false,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "I did collect the front door keys.",
+      "support": 0.998,
+      "memory": 187
+     },
+     {
+      "statement": "I did exchange property contracts.",
+      "support": 0.998,
+      "memory": 184
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    3,
+    6
+   ],
+   "served": [
+    6,
+    3,
+    0,
+    4,
+    1,
+    9,
+    5,
+    8,
+    10,
+    2
+   ],
+   "ranked": [
+    6,
+    3,
+    0,
+    4,
+    1,
+    9,
+    5,
+    8,
+    2,
+    10
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": -3.666,
+   "latency_ms": 543.2
+  },
+  {
+   "scenario": "hard2_ordering_04",
+   "category": "ordering",
+   "q": "Between having the king-size bed delivered and hosting our flatwarming party, which milestone was later?",
+   "trap": false,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [
+    10,
+    14
+   ],
+   "served": [
+    10,
+    14,
+    9,
+    1,
+    3,
+    13,
+    6,
+    0,
+    8,
+    2
+   ],
+   "ranked": [
+    10,
+    14,
+    9,
+    1,
+    3,
+    8,
+    0,
+    13,
+    6,
+    2
+   ],
+   "served_cover": 1.0,
+   "ranked_cover": 1.0,
+   "margin": 1.364,
+   "latency_ms": 49.1
+  },
+  {
+   "scenario": "hard2_ordering_04",
+   "category": "ordering",
+   "q": "Which was earlier: delivery of the vintage rosewood sideboard or picking up the front door keys?",
+   "trap": true,
+   "aggregation_check": null,
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    4,
+    6,
+    5,
+    10,
+    0,
+    3,
+    9,
+    1,
+    2,
+    12
+   ],
+   "ranked": [
+    4,
+    6,
+    5,
+    10,
+    0,
+    9,
+    2,
+    3,
+    1,
+    12
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": 2.359,
+   "latency_ms": 49.0
+  },
+  {
+   "scenario": "hard2_ordering_04",
+   "category": "ordering",
+   "q": "Put in order: getting the broadband installed versus my completion day.",
+   "trap": true,
+   "aggregation_check": {
+    "kind": "ordering",
+    "claims": [
+     {
+      "statement": "Getting the broadband installed versus my completion day happened.",
+      "support": 0.986,
+      "memory": 189
+     }
+    ]
+   },
+   "status": "CONSISTENT",
+   "declined": false,
+   "evidence": [],
+   "served": [
+    4,
+    0,
+    3,
+    9,
+    6,
+    1,
+    5,
+    10,
+    2,
+    12
+   ],
+   "ranked": [
+    4,
+    0,
+    3,
+    9,
+    6,
+    1,
+    5,
+    2,
+    10,
+    8
+   ],
+   "served_cover": 0.0,
+   "ranked_cover": 0.0,
+   "margin": -10.271,
+   "latency_ms": 356.0
+  }
+ ]
+}

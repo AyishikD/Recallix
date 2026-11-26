@@ -1,0 +1,280 @@
+{
+  "dataset": "LongMemEval_S (cleaned)",
+  "embedder": "st:BAAI/bge-small-en-v1.5",
+  "engine": "real",
+  "questions": 500,
+  "turns": 246750,
+  "answer_check": "deepset/roberta-base-squad2",
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:BAAI/bge-small-en-v1.5 + LoCoMo dev conversations (5)",
+  "deep_recall": false,
+  "keep_on_decline": false,
+  "stored_in_earlier_run": true,
+  "recall_settings": {
+    "second_pass": {
+      "enabled": true,
+      "keep": 5,
+      "search": 2,
+      "seeds": 3,
+      "weight": 0.5,
+      "neighbours": 2,
+      "max_gap_minutes": 60
+    },
+    "rerank": {
+      "enabled": false,
+      "model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+      "candidates": 50,
+      "keep": 3,
+      "context": true,
+      "context_gap_minutes": 60,
+      "context_max_words": null,
+      "max_length": 256,
+      "threads": null,
+      "device": null,
+      "preload": true,
+      "auto": false
+    },
+    "answer_check": {
+      "enabled": true,
+      "model": "deepset/roberta-base-squad2",
+      "max_length": 384,
+      "stride": 128,
+      "device": null,
+      "max_answer_tokens": 30,
+      "threshold": null,
+      "rerank": true,
+      "restore_case": false,
+      "calculation_questions": true,
+      "reject_non_statements": true,
+      "other_people": {
+        "enabled": true
+      },
+      "subject_contrast": {
+        "enabled": true,
+        "min_contrast": 0.0,
+        "max_alternatives": 3
+      }
+    },
+    "keep_results_on_decline": false
+  },
+  "systems": {
+    "recallix": {
+      "knowledge-update": {
+        "recall@5": 0.8565,
+        "hit@5": 0.9167,
+        "recall@10": 0.9282,
+        "hit@10": 0.9722,
+        "n": 72
+      },
+      "multi-session": {
+        "recall@5": 0.5697,
+        "hit@5": 0.7851,
+        "recall@10": 0.6435,
+        "hit@10": 0.8099,
+        "n": 121
+      },
+      "single-session-assistant": {
+        "recall@5": 0.7321,
+        "hit@5": 0.7321,
+        "recall@10": 0.8036,
+        "hit@10": 0.8036,
+        "n": 56
+      },
+      "single-session-preference": {
+        "recall@5": 0.4444,
+        "hit@5": 0.5667,
+        "recall@10": 0.7444,
+        "hit@10": 0.8,
+        "n": 30
+      },
+      "single-session-user": {
+        "recall@5": 0.9141,
+        "hit@5": 0.9219,
+        "recall@10": 0.9531,
+        "hit@10": 0.9531,
+        "n": 64
+      },
+      "temporal-reasoning": {
+        "recall@5": 0.6087,
+        "hit@5": 0.7008,
+        "recall@10": 0.664,
+        "hit@10": 0.7323,
+        "n": 127
+      },
+      "overall": {
+        "recall@5": 0.6824,
+        "hit@5": 0.7809,
+        "recall@10": 0.7604,
+        "hit@10": 0.8319,
+        "n": 470
+      }
+    },
+    "recallix_ranked": {
+      "knowledge-update": {
+        "recall@5": 0.8495,
+        "hit@5": 0.9444,
+        "recall@10": 0.963,
+        "hit@10": 1.0,
+        "n": 72
+      },
+      "multi-session": {
+        "recall@5": 0.6018,
+        "hit@5": 0.843,
+        "recall@10": 0.7478,
+        "hit@10": 0.9421,
+        "n": 121
+      },
+      "single-session-assistant": {
+        "recall@5": 0.9107,
+        "hit@5": 0.9107,
+        "recall@10": 0.9643,
+        "hit@10": 0.9643,
+        "n": 56
+      },
+      "single-session-preference": {
+        "recall@5": 0.4778,
+        "hit@5": 0.6,
+        "recall@10": 0.7167,
+        "hit@10": 0.8,
+        "n": 30
+      },
+      "single-session-user": {
+        "recall@5": 0.9141,
+        "hit@5": 0.9219,
+        "recall@10": 0.9766,
+        "hit@10": 0.9844,
+        "n": 64
+      },
+      "temporal-reasoning": {
+        "recall@5": 0.7268,
+        "hit@5": 0.8425,
+        "recall@10": 0.8378,
+        "hit@10": 0.9055,
+        "n": 127
+      },
+      "overall": {
+        "recall@5": 0.7449,
+        "hit@5": 0.8617,
+        "recall@10": 0.86,
+        "hit@10": 0.9404,
+        "n": 470
+      }
+    },
+    "dense": {
+      "knowledge-update": {
+        "recall@5": 0.7037,
+        "hit@5": 0.8611,
+        "recall@10": 0.9028,
+        "hit@10": 0.9722,
+        "n": 72
+      },
+      "multi-session": {
+        "recall@5": 0.5421,
+        "hit@5": 0.8512,
+        "recall@10": 0.7366,
+        "hit@10": 0.9587,
+        "n": 121
+      },
+      "single-session-assistant": {
+        "recall@5": 0.8036,
+        "hit@5": 0.8036,
+        "recall@10": 0.9464,
+        "hit@10": 0.9464,
+        "n": 56
+      },
+      "single-session-preference": {
+        "recall@5": 0.6611,
+        "hit@5": 0.7667,
+        "recall@10": 0.8278,
+        "hit@10": 0.9,
+        "n": 30
+      },
+      "single-session-user": {
+        "recall@5": 0.8359,
+        "hit@5": 0.8438,
+        "recall@10": 0.8984,
+        "hit@10": 0.9062,
+        "n": 64
+      },
+      "temporal-reasoning": {
+        "recall@5": 0.5514,
+        "hit@5": 0.7087,
+        "recall@10": 0.6738,
+        "hit@10": 0.811,
+        "n": 127
+      },
+      "overall": {
+        "recall@5": 0.6482,
+        "hit@5": 0.8021,
+        "recall@10": 0.7979,
+        "hit@10": 0.9085,
+        "n": 470
+      }
+    },
+    "bm25": {
+      "knowledge-update": {
+        "recall@5": 0.8148,
+        "hit@5": 0.9028,
+        "recall@10": 0.8889,
+        "hit@10": 0.9306,
+        "n": 72
+      },
+      "multi-session": {
+        "recall@5": 0.4467,
+        "hit@5": 0.7438,
+        "recall@10": 0.6361,
+        "hit@10": 0.8347,
+        "n": 121
+      },
+      "single-session-assistant": {
+        "recall@5": 0.8571,
+        "hit@5": 0.8571,
+        "recall@10": 0.9107,
+        "hit@10": 0.9107,
+        "n": 56
+      },
+      "single-session-preference": {
+        "recall@5": 0.2667,
+        "hit@5": 0.3333,
+        "recall@10": 0.4444,
+        "hit@10": 0.5,
+        "n": 30
+      },
+      "single-session-user": {
+        "recall@5": 0.8984,
+        "hit@5": 0.9062,
+        "recall@10": 0.9297,
+        "hit@10": 0.9375,
+        "n": 64
+      },
+      "temporal-reasoning": {
+        "recall@5": 0.6598,
+        "hit@5": 0.7717,
+        "recall@10": 0.753,
+        "hit@10": 0.8346,
+        "n": 127
+      },
+      "overall": {
+        "recall@5": 0.6596,
+        "hit@5": 0.7851,
+        "recall@10": 0.7669,
+        "hit@10": 0.8511,
+        "n": 470
+      }
+    }
+  },
+  "timing_seconds": {
+    "recallix_ingest_s": 0.0,
+    "recallix_query_s": 220.4
+  },
+  "llm_calls": 0,
+  "api_cost_usd": 0.0,
+  "baselines_from": "longmemeval_s_bge-small-en-v1.5.json",
+  "abstention": {
+    "unanswerable_declined": 0.5666666666666667,
+    "answerable_wrongly_declined": 0.11702127659574468,
+    "n_unanswerable": 30,
+    "n_answerable": 470,
+    "auc_top_relevance": 0.672695035460993,
+    "auc_answer_margin": 0.7925925925925926
+  }
+}

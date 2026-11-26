@@ -182,7 +182,7 @@ def aggregation_on(monkeypatch):
 
     def get(key, default=None):
         if key == "recall.aggregation_check":
-            return {"enabled": True, "threshold": 0.5, "memories": 10}
+            return {"enabled": True, "mode": "decide", "threshold": 0.5, "memories": 10}
         return real(key, default)
     monkeypatch.setattr(settings, "get", get)
     monkeypatch.setattr(ac.EntailmentChecker, "from_config", classmethod(lambda cls: FakeEntailment()))
@@ -223,3 +223,68 @@ def test_recall_is_unchanged_when_the_check_is_off_or_the_question_is_not_aggreg
                         else real(key, default))
     monkeypatch.setattr(ac.EntailmentChecker, "from_config", classmethod(lambda cls: FakeEntailment()))
     assert _recall(client, h, "Where did I fly today?")["debug"]["aggregation_check"] is None
+
+
+class NoAnswerReader:
+    """An answer check that never finds an answer phrase, so the usual path declines."""
+    model_name = "no-answer"
+
+    def threshold(self):
+        return 0.0
+
+    def check(self, question, contexts):
+        return [{"margin": -1.0, "answer": ""} for _ in contexts]
+
+
+class AlwaysAnswerReader(NoAnswerReader):
+    model_name = "always"
+
+    def check(self, question, contexts):
+        return [{"margin": 1.0, "answer": c.split()[0] if c.split() else ""} for c in contexts]
+
+
+@pytest.fixture
+def rescue_mode(monkeypatch):
+    real = settings.get
+
+    def get(key, default=None):
+        if key == "recall.aggregation_check":
+            return {"enabled": True, "mode": "rescue", "threshold": 0.5, "memories": 10}
+        if key == "recall.answer_check":
+            return {**(real(key, default) or {}), "calculation_questions": False}
+        return real(key, default)
+    monkeypatch.setattr(settings, "get", get)
+    monkeypatch.setattr(ac.EntailmentChecker, "from_config", classmethod(lambda cls: FakeEntailment()))
+
+
+def test_rescue_answers_a_supported_question_the_usual_path_declined(client, api_keys, rescue_mode, monkeypatch):
+    from backend.brain.features import answer_check
+    h = api_keys["alice"]
+    _store(client, h, "Flew to Hampi today, the ruins are unreal.")
+    _store(client, h, "Reached Gokarna this morning, beach day.")
+    monkeypatch.setattr(answer_check.AnswerChecker, "from_config", classmethod(lambda cls: NoAnswerReader()))
+    out = _recall(client, h, "Which did I visit first, Hampi or Gokarna?")
+    assert out["status"] == "CONSISTENT" and len(out["memories"]) == 2
+    assert out["debug"]["aggregation_check"]["rescued"] is True
+    assert out["receipt"]["reason"].startswith("the answer check found no answer phrase, but the memories support")
+    # an event no memory supports: the decline stands
+    out = _recall(client, h, "Which did I visit first, Hampi or Coorg?")
+    assert out["status"] == "ABSTAINED" and out["memories"] == []
+
+
+def test_rescue_never_declines_what_the_usual_path_answered(client, api_keys, rescue_mode, monkeypatch):
+    from backend.brain.features import answer_check
+    h = api_keys["alice"]
+    _store(client, h, "Flew to Hampi today, the ruins are unreal.")
+    monkeypatch.setattr(answer_check.AnswerChecker, "from_config", classmethod(lambda cls: AlwaysAnswerReader()))
+    out = _recall(client, h, "Which did I visit first, Hampi or Coorg?")   # Coorg unsupported, but not its call
+    assert out["status"] == "CONSISTENT" and out["debug"]["aggregation_check"] is None
+
+
+def test_mode_defaults_to_rescue_and_rejects_unknown_values(monkeypatch):
+    real = settings.get
+    for given, expected in ((None, "rescue"), ("decide", "decide"), ("DECIDE", "decide"), ("veto", "rescue")):
+        cfg = {"enabled": True} if given is None else {"enabled": True, "mode": given}
+        monkeypatch.setattr(settings, "get", lambda key, default=None, cfg=cfg: cfg if key == "recall.aggregation_check"
+                            else real(key, default))
+        assert ac.config()["mode"] == expected

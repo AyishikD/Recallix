@@ -366,9 +366,12 @@ class RecallEngine:
         keep_on_decline = bool(keep_on_decline)
         checker = AnswerChecker.from_config()
         outsider = self._unknown_person(asked, all_scored)
-        # recall.aggregation_check: counting / ordering / time-between questions are decided by whether the
-        # memories support every event the question presupposes, not by the extractive reader
-        aggregation = self._aggregation_check(asked, resolved) if resolved and not outsider else None
+        # recall.aggregation_check: for counting / ordering / time-between questions, whether the memories
+        # support every event the question presupposes. mode "decide": that alone answers or declines.
+        # mode "rescue" (the default when enabled): it only turns a decline of the usual path into an answer,
+        # further down; it never declines anything itself.
+        agg_mode = aggregation_check.config()["mode"]
+        aggregation = self._aggregation_check(asked, resolved) if resolved and not outsider and agg_mode == "decide" else None
         if outsider:
             status, final = "ABSTAINED", []
         elif not resolved:
@@ -418,6 +421,15 @@ class RecallEngine:
             status, final = "ABSTAINED", (resolved[:top_k] if keep_on_decline else [])
         else:
             status, final = "CONSISTENT", resolved[:top_k]
+
+        if status == "ABSTAINED" and agg_mode == "rescue" and resolved and not outsider:
+            # Held-out LongMemEval: deciding these questions outright refused more real questions than it
+            # caught traps, while rescuing the usual path's declines cut wrong refusals 78 -> 55 of 470 with
+            # no unanswerable question answered (eval/results/aggregation_check/README.md).
+            rescue = self._aggregation_check(asked, resolved)
+            if rescue is not None and rescue["supported"]:
+                rescue["rescued"] = True
+                aggregation, status, final = rescue, "CONSISTENT", resolved[:top_k]
 
         if status == "CONSISTENT":
             # recall.second_pass and recall.rerank: applied after the answer-or-decline
@@ -793,7 +805,13 @@ class RecallEngine:
         elif aggregation is not None:
             t = aggregation["threshold"]
             missing = [c for c in aggregation["claims"] if c["support"] < t]
-            if missing:
+            if aggregation.get("rescued"):
+                reason = ("the answer check found no answer phrase, but the memories support every event this "
+                          f"{aggregation['kind'].replace('_', '-')} question takes for granted: "
+                          + "; ".join(f"\"{c['statement']}\" (memory {c['memory']}, support {c['support']})"
+                                      for c in aggregation["claims"])
+                          + ". The answer has to be worked out across the memories")
+            elif missing:
                 reason = (f"this {aggregation['kind'].replace('_', '-')} question takes for granted "
                           + "; ".join(f"\"{c['statement']}\" (support {c['support']})" for c in missing)
                           + f", which no memory supports (threshold {t})"

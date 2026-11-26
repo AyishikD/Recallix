@@ -187,6 +187,33 @@ temporal-reasoning and knowledge-update questions. Even weighting a wrong answer
 questions. LongMemEval has now been used for this check, so any change made after looking at why must be
 confirmed on other fresh data (a new hard batch, or LongMemEval_M), not on LongMemEval_S again.
 
+## Rescue mode: the opt-in setting (27 November 2026)
+
+After the LongMemEval run above, the per-question rows were split by what the check did: declining questions
+the usual path answered (most of the extra refusals) and answering questions the usual path declined (most of
+the gain). `mode: rescue`, the default once the check is enabled, keeps only the second: it never declines
+anything, it only turns a decline of the usual path into an answer when every presupposed event is
+supported. The check stays off by default. This choice was made by looking at LongMemEval's rows, so
+LongMemEval is no longer an unbiased test of it; a fresh set must confirm it. Files: `rescue/`.
+
+| Set | answerable wrongly declined | unanswerable / traps declined |
+|---|---|---|
+| **LongMemEval_S** | 78 -> 55 of 470 | 16 -> 17 of 30 |
+| LoCoMo dev | 60 -> 56 of 760 | 77 -> 77 of 237 |
+| Dev originals | 57 -> 3 of 183 | 17 -> 15 of 56 |
+| Reworded A | 67 -> 4 of 188 | 21 -> 16 of 56 |
+| Hard set | 17 -> 3 of 47 | 11 -> 11 of 24 |
+| Reworded B (totals) | 50 -> 10 of 178 | 14 -> 14 of 56 |
+| Hard2 (totals) | 15 -> 2 of 47 | 11 -> 7 of 24 |
+
+LongMemEval served recall@10: 0.726 -> 0.760 overall (multi-session 0.561 -> 0.643, temporal-reasoning
+0.622 -> 0.664, the other types unchanged or up). LoCoMo dev served recall@10 0.7008 -> 0.7022; median recall
+92 -> 109 ms (the entailment model runs only on a decline of a recognised question).
+
+Why opt-in, not default: on our own sets it also answers some traps the usual path declined (dev 2, reworded
+A 5, hard2 4), and a wrong answer costs more than a refusal. Deployments that prefer fewer refusals can turn
+it on with `recall.aggregation_check.enabled: true`.
+
 ## Tried and rejected
 
 - Declining when a memory contradicts a presupposed event (meant for "booked the gig", then "the gig got

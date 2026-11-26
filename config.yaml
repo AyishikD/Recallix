@@ -190,8 +190,14 @@ recall:
   # says the answer must be worked out. One unsupported (never mentioned, only planned, someone else's):
   # decline. Other questions are untouched. When on, it replaces answer_check.calculation_questions for the
   # questions it recognises.
+  # mode: rescue (default) only turns a decline of the usual answer check into an answer when every event is
+  # supported; it never declines anything itself. On held-out LongMemEval_S (eval/results/aggregation_check):
+  # answerable wrongly declined 78 -> 55 of 470, unanswerable declined unchanged (16 of 30); on our own sets it
+  # also answers a few traps the usual path declined, so it is opt-in. mode: decide lets the check alone answer
+  # or decline these questions: better on our sets, worse on LongMemEval (89 of 470 wrongly declined).
   aggregation_check:
     enabled: false
+    mode: rescue
     model: cross-encoder/nli-deberta-v3-base   # 184M parameters; nli-deberta-v3-xsmall is ~4x faster and weaker
     threshold: 0.5         # P(entailment) a presupposed event needs from its best memory
     memories: 10           # how many ranked memories are read
