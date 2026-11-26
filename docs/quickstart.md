@@ -84,6 +84,12 @@ python -m backend.tools.keys revoke rx_AbCd
 
 ## 5. Use
 
+**From the browser:** open http://localhost:8000/docs (interactive API explorer), click
+**Authorize**, paste your key, and try any endpoint with "Try it out". The same API is
+described for other tools at http://localhost:8000/openapi.json.
+
+**From code:**
+
 ```bash
 pip install recallix                                       # Python SDK + recallix-mcp
 ```

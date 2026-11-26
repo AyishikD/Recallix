@@ -16,14 +16,20 @@ import time
 from collections import defaultdict, deque
 from contextlib import contextmanager
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException
+from fastapi.security import APIKeyHeader
 
 from backend import settings
 from backend.api import keys
 
 
-async def verify_api_key(request: Request):
-    key = request.headers.get("X-API-Key")
+# Declared as a security scheme so the interactive docs (/docs) show an Authorize button for the key.
+# auto_error=False keeps Recallix's own 401 message for a missing key.
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False, scheme_name="APIKey",
+                              description="Your Recallix API key (create one with: python -m backend.tools.keys create --user <id>)")
+
+
+async def verify_api_key(key: str | None = Depends(api_key_header)):
     if not key:
         raise HTTPException(status_code=401, detail="API key missing (X-API-Key header)")
     principal = keys.lookup(key)
