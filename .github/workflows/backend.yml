@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30   # a hang should fail fast, not run for GitHub's 6-hour default
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build
         run: |
           cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release
@@ -32,8 +32,8 @@ jobs:
     name: API, integration and eval gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
