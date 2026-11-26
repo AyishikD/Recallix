@@ -26,6 +26,7 @@ from ..memory_ranking.ranker import Ranker, RecallLog, candidate_features, memor
 from ..memory_ranking.reinforcement_learning import MemoryRL
 from ..features.answer_check import AnswerChecker
 from ..features import reranker as rerank_cfg
+from ..features import aggregation_check
 from ..features.reranker import Reranker
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 from ..features.facts import EXTRACTOR_VERSION
@@ -365,10 +366,16 @@ class RecallEngine:
         keep_on_decline = bool(keep_on_decline)
         checker = AnswerChecker.from_config()
         outsider = self._unknown_person(asked, all_scored)
+        # recall.aggregation_check: counting / ordering / time-between questions are decided by whether the
+        # memories support every event the question presupposes, not by the extractive reader
+        aggregation = self._aggregation_check(asked, resolved) if resolved and not outsider else None
         if outsider:
             status, final = "ABSTAINED", []
         elif not resolved:
             status, final = "NO_MATCH", []
+        elif aggregation is not None:
+            status = "CONSISTENT" if aggregation["supported"] else "ABSTAINED"
+            final = resolved[:top_k] if (aggregation["supported"] or keep_on_decline) else []
         elif checker is not None:
             final = resolved[:top_k]
             t = checker.threshold()
@@ -455,7 +462,7 @@ class RecallEngine:
             "status": status,
             "answer": self._best_answer(final, memories) if status == "CONSISTENT" else None,
             "memories": memories,
-            "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check, outsider),
+            "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check, outsider, aggregation),
             "debug": {
                 "aliases": aliases,
                 "read_as": query if query != asked else None,
@@ -467,6 +474,7 @@ class RecallEngine:
                 "top_relevance": round(resolved[0]["relevance"], 4) if resolved else None,
                 "model": Ranker.model().get("source", ""),
                 "answer_check": answer_check,
+                "aggregation_check": aggregation,
             },
             "latency_ms": round((time.time() - t0) * 1000, 1),
         }
@@ -509,6 +517,27 @@ class RecallEngine:
     def _needs_calculation(cls, query):
         on = (settings.get("recall.answer_check", {}) or {}).get("calculation_questions", False)
         return bool(on and cls._CALCULATION.search(str(query or "")))
+
+    @staticmethod
+    def _aggregation_check(query, resolved):
+        """
+        recall.aggregation_check (features/aggregation_check.py). None when it is off, the entailment model
+        is unavailable, or the question is not a counting / ordering / time-between question; otherwise
+        {"kind", "supported", "claims", "model", "threshold", "needs_calculation": True, "read": memories read}.
+        """
+        cfg = aggregation_check.config()
+        if not cfg["enabled"] or aggregation_check.presuppositions(query) is None:
+            return None
+        checker = aggregation_check.EntailmentChecker.from_config()
+        if checker is None:
+            return None
+        memories = resolved[:cfg["memories"]]
+        out = aggregation_check.check(checker, query, memories, cfg["threshold"],
+                                      read=lambda m: without_other_people(m.get("content", ""), query),
+                                      speaker=memory_speaker)
+        if out is not None:
+            out.update(model=checker.model_name, threshold=cfg["threshold"], needs_calculation=True, read=len(memories))
+        return out
 
     def _unknown_person(self, query, candidates):
         """
@@ -755,12 +784,24 @@ class RecallEngine:
                 "inferred": m.get("inferred"),
                 "answer": m.get("answer") or None, "answer_margin": m.get("answer_margin")}
 
-    def _recall_receipt(self, status, resolved, final, threshold, answer_check, outsider=None):
+    def _recall_receipt(self, status, resolved, final, threshold, answer_check, outsider=None, aggregation=None):
         """Why this recall answered or declined, and which models and rules were involved."""
         if outsider:
             reason = f"the question asks about {outsider}, who is not mentioned in any memory"
         elif status == "NO_MATCH":
             reason = "no stored memory matched the question"
+        elif aggregation is not None:
+            t = aggregation["threshold"]
+            missing = [c for c in aggregation["claims"] if c["support"] < t]
+            if missing:
+                reason = (f"this {aggregation['kind'].replace('_', '-')} question takes for granted "
+                          + "; ".join(f"\"{c['statement']}\" (support {c['support']})" for c in missing)
+                          + f", which no memory supports (threshold {t})")
+            else:
+                reason = (f"the memories support every event this {aggregation['kind'].replace('_', '-')} question takes "
+                          "for granted: " + "; ".join(f"\"{c['statement']}\" (memory {c['memory']}, support {c['support']})"
+                                                      for c in aggregation["claims"])
+                          + ". The answer has to be worked out across the memories")
         elif answer_check is not None:
             t, b = answer_check["threshold"], answer_check["best_margin"]
             rejected = answer_check.get("rejected_as_about_someone_else") or []
@@ -789,7 +830,8 @@ class RecallEngine:
             "trust": None,
             "guarantee": (answer_check or {}).get("guarantee"),
             "versions": {"ranker": Ranker.model().get("source", ""), "embedding": self.semantic.model_name,
-                         "extractor": EXTRACTOR_VERSION, "answer_check": (answer_check or {}).get("model")},
+                         "extractor": EXTRACTOR_VERSION, "answer_check": (answer_check or {}).get("model"),
+                         "aggregation_check": (aggregation or {}).get("model")},
         }
 
     def _reinforce(self, memories):

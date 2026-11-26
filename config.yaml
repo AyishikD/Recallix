@@ -181,6 +181,22 @@ recall:
       enabled: true
       min_contrast: 0.0      # principled default: support the asked person more than anyone else
       max_alternatives: 3    # other speakers to compare against (one reader pass each)
+  # Aggregation check (features/aggregation_check.py; needs requirements-local.txt). Counting, ordering and
+  # time-between questions ("How many weddings did I attend?", "Which came first, A or B?", "How many days
+  # after X did Y happen?") have no answer phrase inside one memory, so the extractive answer check cannot
+  # judge them. Instead the question is rewritten into the events it takes for granted ("I did attend
+  # weddings.") and an entailment model (NLI cross-encoder, Apache 2.0, no LLM) checks that some ranked memory
+  # supports each one. All supported: the memories are served and debug.aggregation_check.needs_calculation
+  # says the answer must be worked out. One unsupported (never mentioned, only planned, someone else's):
+  # decline. Other questions are untouched. When on, it replaces answer_check.calculation_questions for the
+  # questions it recognises.
+  aggregation_check:
+    enabled: false
+    model: cross-encoder/nli-deberta-v3-base   # 184M parameters; nli-deberta-v3-xsmall is ~4x faster and weaker
+    threshold: 0.5         # P(entailment) a presupposed event needs from its best memory
+    memories: 10           # how many ranked memories are read
+    max_length: 256
+    device: null
   # Re-ranker / deep recall (features/reranker.py): a small cross-encoder (22M parameters, not an
   # LLM) reads the question and each of the `candidates` memories after the first `keep` together and
   # reorders them; `context` also reads each memory after the message before it (the better score
