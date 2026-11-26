@@ -154,6 +154,39 @@ Kept: 9 more traps declined for 6 more refusals, in line with the rule that a wr
 a refusal. The receipt names the plan it set aside ("Memory 1 only records a plan for it, not the event").
 Known loss: "Signed up for a language exchange app" is both the plan and the event.
 
+## LongMemEval_S, held out for this check (27 November 2026): it does not confirm
+
+LongMemEval had been run before (see eval/README.md), but never with this check, and no rule here was
+written from its questions. Both passes use the same stored data (`.phase6_data/lme_store`, rebuilt for this
+run) and today's code; the second pass has `recall.aggregation_check` on (with the plan rule). Files:
+`longmemeval/before.json`, `after.json`, `rows_before.json`, `rows_after.json`.
+
+| | check off | check on |
+|---|---|---|
+| Answerable wrongly declined (of 470) | 78 (0.166) | 89 (0.189) |
+| Unanswerable declined (of 30) | 16 (0.533) | 19 (0.633) |
+
+| Question type | served recall@10 | hit@10 |
+|---|---|---|
+| overall | 0.726 -> 0.701 | 0.789 -> 0.764 |
+| temporal-reasoning | 0.622 -> 0.561 | 0.685 -> 0.606 |
+| multi-session | 0.561 -> 0.577 | 0.703 -> 0.736 |
+| knowledge-update | 0.928 -> 0.859 | 0.972 -> 0.903 |
+| single-session-user | 0.953 -> 0.938 | 0.953 -> 0.938 |
+| single-session-assistant | 0.786 -> 0.786 | 0.786 -> 0.786 |
+| single-session-preference | 0.744 -> 0.744 | 0.800 -> 0.800 |
+
+The rules recognised 148 of the 500 questions (136 answerable, 12 unanswerable). Among them, 23 answerable
+questions that used to be declined are now answered and 34 that used to be answered are now declined (32
+of those 34 had the evidence in the top 10), and 2 more unanswerable ones are declined. Net: more traps
+declined (16 -> 19 of 30 overall) but more real questions refused, and lower served recall, mainly on
+temporal-reasoning and knowledge-update questions. Even weighting a wrong answer as three refusals
+(`learning.answer_check.wrong_answer_cost`), 3 traps x 3 = 9 does not cover 11 extra refusals.
+
+**Decision: the check stays off by default.** Its gains on our own sets did not carry over to LongMemEval's
+questions. LongMemEval has now been used for this check, so any change made after looking at why must be
+confirmed on other fresh data (a new hard batch, or LongMemEval_M), not on LongMemEval_S again.
+
 ## Tried and rejected
 
 - Declining when a memory contradicts a presupposed event (meant for "booked the gig", then "the gig got
