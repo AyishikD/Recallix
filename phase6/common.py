@@ -56,13 +56,13 @@ socket.setdefaulttimeout(90)  # a dead connection fails within 90 s instead of h
 class Teacher:
     """OpenAI-compatible chat client that stays under a tokens-per-minute budget."""
 
-    def __init__(self, tpm=None, rpd=None):
+    def __init__(self, tpm=None, rpd=None, key=None, base=None, model=None):
         e = env()
-        self.key = e.get("TEACHER_API_KEY") or e.get("GROQ_API_KEY")
+        self.key = key or e.get("TEACHER_API_KEY") or e.get("GROQ_API_KEY")
         if not self.key:
             raise SystemExit("no teacher API key: set GROQ_API_KEY in .env")
-        self.base = e.get("TEACHER_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/")
-        self.model = e.get("TEACHER_MODEL", "openai/gpt-oss-120b")
+        self.base = (base or e.get("TEACHER_BASE_URL", "https://api.groq.com/openai/v1")).rstrip("/")
+        self.model = model or e.get("TEACHER_MODEL", "openai/gpt-oss-120b")
         self.tpm = int(tpm or os.environ.get("TEACHER_TPM", 7500))  # a little under the 8000 limit
         self.window = deque()  # (time, tokens)
         self.used = 0

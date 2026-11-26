@@ -11,10 +11,12 @@ someone else's event), which should be declined.
 
 Why: on LongMemEval, most answerable questions Recallix declined with the evidence already in its top 10
 were counting or ordering questions. Fixes are designed on THIS set (dev) and LoCoMo dev; LongMemEval is
-run once at the end. The scenarios are written by an open-weight model (Groq, openai/gpt-oss-120b,
-Apache 2.0) from a task description only: it never sees Recallix's code, rules or results.
+run once at the end. The scenarios are written from a task description only, by models that never see
+Recallix's code, rules or results: an open-weight model (Groq, openai/gpt-oss-120b, Apache 2.0) for most,
+Gemini 2.5 Flash for agg_counting_00-09 (each draft records its "model"). Every scenario is then reviewed
+(review.jsonl records each verdict and every change) before it enters scenarios.jsonl.
 
-  python eval/aggregation.py draft  [--per-category 18] [--only counting]   # needs GROQ_API_KEY in .env
+  python eval/aggregation.py draft  [--per-category 18] [--only counting] [--provider gemini]   # needs GROQ_API_KEY (or GEMINI_API_KEY) in .env
   python eval/aggregation.py check                                         # answer-key checks, writes a report
   python eval/aggregation.py run    --embedder st:BAAI/bge-small-en-v1.5 [--keep-on-decline] [--deep] [--json out.json]
 
@@ -104,9 +106,12 @@ The messages (14 to 22):
 - Include near-misses that a careless reader would confuse with the real answer: {near_misses}
 
 The questions (4 to 6), each asked on a date after the last message ("asked_on"):
-- At least 3 answerable questions of this kind: {question_kind}
-- At least 1 trap: a question that sounds like the others but cannot be answered from the messages
-  (the thing was never mentioned, or only planned and never done, or it happened to someone else).
+- EVERY question must be of this kind, traps included: {question_kind}
+  Do not add questions of any other kind (no "which one", "what was the name", "did I ever" questions
+  unless that is the kind above).
+- At least 3 answerable questions.
+- At least 1 trap: a question of the same kind that sounds like the others but cannot be answered from the
+  messages (the thing was never mentioned, or only planned and never done, or it happened to someone else).
   A trap has "answer": null and "evidence": [].
 - "evidence" lists the indexes (0-based) of EVERY message needed to answer. Nothing else.
 - "answer" is short: a number with its unit, a name, or an ordered list "A, B, C".
@@ -124,15 +129,21 @@ KIND = {
                  "similar but different kind, and one occurrence mentioned twice (a follow-up message about the "
                  "same event, which must be counted once and is NOT evidence)."),
     "time_between": ("How many days / weeks / months between two of this person's events, or how long after X did Y "
-                     "happen. The answer follows from the two messages' dates.",
+                     "happen. The answer follows from the two messages' dates and must be exact, never rounded: \"41 days\", or in "
+                     "the unit asked with the exact day count, e.g. \"5 weeks 6 days (41 days)\" or \"about 3 months "
+                     "(92 days)\".",
                      "a similar event of a friend, a plan for the event that is later rescheduled to another "
                      "date (only the day it actually happened counts), and a third event of the same kind."),
     "ordering": ("Which came first, A or B? / In what order did I ...? The answer follows from the messages' dates.",
                  "an item that was considered but never done, someone else's item, and an item from a "
                  "different category with a similar name."),
     "preference": ("Recommend / suggest something for me, where a good answer must respect this person's stated "
-                   "likes, dislikes and constraints. The answer is a short description of what fits "
-                   "(e.g. 'vegetarian, mild spice, near Koramangala').",
+                   "likes, dislikes and constraints. The answer lists the constraints a good suggestion must meet, "
+                   "taken from at least two different messages (e.g. 'vegetarian, mild spice, near Koramangala'); "
+                   "it NEVER names one specific title, product, place or brand, because many suggestions can fit. "
+                   "Questions are always about this person's own taste, never a friend's. A trap here asks for a "
+                   "suggestion in an area the person never stated any preference about (not even a dislike); "
+                   "something they said they dislike is NOT a trap, because the dislike answers it.",
                    "a preference that later changed (the newer one wins; the old message is NOT evidence), a "
                    "friend's taste, and a one-off exception (\"I don't usually like X but this one was ok\")."),
 }
@@ -143,7 +154,15 @@ def draft(args):
     from phase6.common import Teacher, append_jsonl, read_jsonl
     FOLDER.mkdir(parents=True, exist_ok=True)
     done = {r["name"] for r in read_jsonl(DRAFTS)}
-    teacher = Teacher()
+    if args.provider == "gemini":
+        from phase6.common import env
+        key = env().get("GEMINI_API_KEY")
+        if not key:
+            raise SystemExit("no GEMINI_API_KEY in .env")
+        teacher = Teacher(key=key, base="https://generativelanguage.googleapis.com/v1beta/openai",
+                          model=args.model or "gemini-2.5-flash")
+    else:
+        teacher = Teacher(model=args.model)
     cats = args.only.split(",") if args.only else CATEGORIES
     made = 0
     for cat in cats:
@@ -191,6 +210,18 @@ def _number(text):
     return None, None
 
 
+def _exact_days(text):
+    """Total days stated exactly in a time answer: "41 days", "5 weeks 6 days" or "... (41 days)"; else None."""
+    t = str(text or "").lower()
+    m = re.search(r"\((\d+)\s*days?\)", t)
+    if m:
+        return int(m.group(1))
+    m = re.search(r"(\d+)\s*weeks?\s*(?:and\s*)?(\d+)\s*days?", t)
+    if m:
+        return int(m.group(1)) * 7 + int(m.group(2))
+    return None
+
+
 def problems(s):
     """Machine-checkable problems with one scenario's answer key. A human still reads every scenario."""
     out = []
@@ -231,8 +262,12 @@ def problems(s):
                 out.append(f"{tag}: answer {q['answer']!r} but {len(ev)} evidence messages")
         elif cat == "time_between" and len(ev) == 2 and all(days[i] for i in ev):
             gap = abs((days[ev[1]] - days[ev[0]]).days)
+            exact = _exact_days(q["answer"])
             per = {"day": 1, "days": 1, "week": 7, "weeks": 7, "month": 30.44, "months": 30.44}.get(unit)
-            if n is None or per is None:
+            if exact is not None:
+                if exact != gap:  # events happen on the message day, so the count is exact
+                    out.append(f"{tag}: answer {q['answer']!r} but the dates are {gap} days apart")
+            elif n is None or per is None:
                 out.append(f"{tag}: time answer {q['answer']!r} has no number with day/week/month")
             elif abs(n * per - gap) > max(1.0, per / 2):
                 out.append(f"{tag}: answer {q['answer']!r} but the dates are {gap} days apart")
@@ -352,6 +387,9 @@ def main():
     d = sub.add_parser("draft")
     d.add_argument("--per-category", type=int, default=18)
     d.add_argument("--only", default=None, help="comma-separated categories")
+    d.add_argument("--provider", choices=["groq", "gemini"], default="groq",
+                   help="groq uses GROQ_API_KEY / TEACHER_*; gemini uses GEMINI_API_KEY")
+    d.add_argument("--model", default=None, help="override the provider's default model")
     c = sub.add_parser("check")
     c.add_argument("--drafts", default=str(DRAFTS))
     c.add_argument("-v", "--verbose", action="store_true")
