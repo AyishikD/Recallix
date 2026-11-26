@@ -64,3 +64,6 @@ storage/
 .vscode/
 .idea/
 *.log
+
+# Phase 6 training data (some sources are CC BY-SA; never committed)
+.phase6_data/
