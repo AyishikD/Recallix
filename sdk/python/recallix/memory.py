@@ -121,6 +121,16 @@ class Memory:
         return self.client.request("POST", "/memory/import", data={
             "format": format, "data": data, "agent_id": agent_id, "memory_type": memory_type, "user_id": user_id})
 
+    def update(self, memory_id: int, content: str, user_id: Optional[str] = None, metadata: Optional[Dict] = None,
+               timestamp: Optional[float] = None) -> Dict[str, Any]:
+        """
+        Replaces a memory's text (server 0.2.7+). It is re-processed like a new store with its original time
+        (or `timestamp`) and metadata (or `metadata`); the old version is deleted with a receipt.
+        Returns {"status": "edited" | "unchanged" | "merged", "memory_id" (new), "previous_memory_id", ...}.
+        """
+        return self.client.request("PUT", f"/memory/{memory_id}", data={
+            "content": content, "user_id": user_id, "metadata": metadata, "timestamp": timestamp})
+
     def delete(self, memory_id: int, user_id: Optional[str] = None) -> Dict[str, Any]:
         return self.client.request("DELETE", f"/memory/{memory_id}", params={"user_id": user_id} if user_id else None)
 

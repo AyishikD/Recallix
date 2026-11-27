@@ -35,8 +35,15 @@ Storing a whole conversation at once (server 0.2.6 or newer; an older server get
 mem.store_many(["I moved to Pune in March.", {"content": "Mira got married.", "timestamp": 1717200000}])
 ```
 
+Correcting a memory keeps when it was said; the memory gets a new id (server 0.2.7 or newer):
+
+```python
+mem.update(memory_id, "I moved to Mumbai in March.")
+```
+
 ## Changes
 
+* **0.2.7**: `update(memory_id, content)` corrects a memory (`PUT /memory/{id}`); the MCP server has an `update_memory` tool.
 * **0.2.6**: `store_many(items)` stores many messages in one request per 100 (`POST /memory/store_batch`).
 * **0.2.5**: `recall(..., mode="cautious" | "balanced" | "helpful")`; `store(..., timestamp=...)` keeps when a message was originally said.
 * **0.2.4**: `requests>=2.33.0`.

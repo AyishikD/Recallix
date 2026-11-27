@@ -33,7 +33,8 @@ INSTRUCTIONS = (
     "Recallix is the user's long-term memory. Call recall_memory before answering questions that may "
     "depend on what the user told you earlier; if its status is ABSTAINED or NO_MATCH, say you don't know "
     "rather than guessing. Call store_memory when the user shares a durable fact, preference or decision. "
-    "When a recalled memory was what answered the user, call confirm_answer."
+    "When a recalled memory was what answered the user, call confirm_answer. When the user corrects something "
+    "you recalled, call update_memory on that memory instead of storing a second, contradicting one."
 )
 
 TOOLS = [
@@ -67,6 +68,14 @@ TOOLS = [
      "description": "Given what the user just said, return memories worth keeping in mind even though they did not "
                     "ask (e.g. an allergy when they mention a restaurant), each with the reason.",
      "inputSchema": {"type": "object", "properties": {"message": {"type": "string"}}, "required": ["message"]}},
+    {"name": "update_memory",
+     "description": "Correct a memory the user says is wrong or out of date (e.g. 'it was Mumbai, not Pune'): find "
+                    "it with recall_memory, then replace its text. It keeps the date it was originally said; the old "
+                    "version is deleted.",
+     "inputSchema": {"type": "object", "properties": {
+         "memory_id": {"type": "integer"},
+         "content": {"type": "string", "description": "The corrected memory, written as the user would say it."}},
+         "required": ["memory_id", "content"]}},
     {"name": "forget_memory",
      "description": "Delete a memory permanently (its vector, long-term copy and timeline entry too).",
      "inputSchema": {"type": "object", "properties": {"memory_id": {"type": "integer"}},
@@ -107,6 +116,10 @@ class RecallixMCP:
         rows = self.memory.proactive(message, agent_id=self.agent_id)
         return "\n".join(f"- [memory {r['memory_id']}] {r['content']} ({r['why']})" for r in rows) or "nothing relevant"
 
+    def _update(self, memory_id, content):
+        out = self.memory.update(int(memory_id), content)
+        return f"{out.get('status')}: memory {memory_id} is now memory {out.get('memory_id')}"
+
     def _forget(self, memory_id):
         self.memory.delete(int(memory_id))
         return f"memory {memory_id} deleted"
@@ -116,7 +129,7 @@ class RecallixMCP:
 
     def call_tool(self, name, args):
         handlers = {"recall_memory": self._recall, "store_memory": self._store, "confirm_answer": self._confirm,
-                    "forget_memory": self._forget, "relevant_memories": self._relevant, "export_memories": self._export}
+                    "forget_memory": self._forget, "update_memory": self._update, "relevant_memories": self._relevant, "export_memories": self._export}
         if name not in handlers:
             raise KeyError(name)
         return handlers[name](**(args or {}))

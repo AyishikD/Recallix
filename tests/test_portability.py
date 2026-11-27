@@ -86,6 +86,10 @@ class FakeMemory:
     def delete(self, memory_id):
         return {}
 
+    def update(self, memory_id, content):
+        self.calls.append(("update", memory_id, content))
+        return {"status": "edited", "memory_id": memory_id + 100, "previous_memory_id": memory_id}
+
     def export(self):
         return {"format": "recallix-memory", "memories": []}
 
@@ -117,6 +121,15 @@ def test_mcp_handshake_tools_and_calls():
     assert mem.calls[0] == ("recall", "What am I allergic to?", "claude-desktop")
     assert mem.calls[1] == ("store", "I moved to Mumbai.", "claude-desktop", "shared")
     assert replies[4]["error"]["code"] == -32602 and replies[5]["error"]["code"] == -32601
+
+
+def test_mcp_update_memory_tool():
+    sys.path.insert(0, str(ROOT / "sdk" / "python"))
+    from recallix.mcp_server import RecallixMCP, TOOLS
+    assert "update_memory" in {t["name"] for t in TOOLS}
+    mem = FakeMemory()
+    text = RecallixMCP(mem).call_tool("update_memory", {"memory_id": 7, "content": "I moved to Mumbai, not Pune."})
+    assert mem.calls[-1] == ("update", 7, "I moved to Mumbai, not Pune.") and "memory 7 is now memory 107" in text
 
 
 def test_mcp_unknown_protocol_version_gets_latest_supported():

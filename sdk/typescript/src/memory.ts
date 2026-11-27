@@ -153,6 +153,16 @@ export class Memory {
         });
     }
 
+    /**
+     * Replace a memory's text (server 0.2.7+). It is re-processed like a new store with its original time and
+     * metadata (unless given); the old version is deleted with a receipt. The result's `memory_id` is the new id.
+     */
+    update(memoryId: number, content: string, opts: { userId?: string; metadata?: Record<string, unknown>; timestamp?: number } = {}) {
+        return this.client.request("PUT", `/memory/${memoryId}`, {
+            content, user_id: opts.userId, metadata: opts.metadata, timestamp: opts.timestamp,
+        });
+    }
+
     delete(memoryId: number, userId?: string) {
         return this.client.request("DELETE", `/memory/${memoryId}${q({ user_id: userId })}`);
     }

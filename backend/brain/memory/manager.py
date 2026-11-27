@@ -1,3 +1,4 @@
+import json
 import threading
 import time
 
@@ -265,6 +266,41 @@ class MemoryManager:
             hits = self.semantic.search(user_id, "", top_k=1, vector=vector)
             absent["vector"] = not any(h[0] == mid for h in hits)
         return self.audit.record(user_id, deletion_receipt(mid, content, removed, absent, reason))
+
+    def edit(self, user_id, memory_id, content, metadata=None, timestamp=None):
+        """
+        Replaces a memory's text (a user fixing "Pune" to "Mumbai"). The new text goes through the normal store
+        pipeline with the original time, agent, type and client metadata (or the given ones), so its facts, topics
+        and embedding are derived afresh; the old version is deleted with a receipt (reason "edited") like any
+        deletion. The memory gets a new id. Returns None if the memory does not exist, else
+        {"status": "edited" | "unchanged" | "merged", "memory_id", "previous_memory_id", "conflicts", "receipt"}
+        ("merged": the new text is identical to another memory, which is kept instead).
+        """
+        mid = int(memory_id)
+        old = self.episodic.get_many(user_id, [mid]).get(mid)
+        if old is None:
+            return None
+        meta = old.get("metadata") or {}
+        if isinstance(meta, str):
+            try:
+                meta = json.loads(meta)
+            except ValueError:
+                meta = {}
+        client = meta.get("client") if metadata is None else metadata
+        ts = float(old["timestamp"]) if timestamp is None else float(timestamp)
+        if content == old["content"] and metadata is None and timestamp is None:
+            return {"status": "unchanged", "memory_id": mid, "previous_memory_id": mid, "conflicts": [], "receipt": None}
+        receipt = self.delete(user_id, mid, reason="edited")  # first, so the old text is not a conflict or duplicate
+        try:
+            out = self.store(user_id, content, agent_id=old["agent_id"], memory_type=old["memory_type"],
+                             client_metadata=client, timestamp=ts)
+        except Exception:
+            # never lose the memory: put the old text back (new id), then report the failure
+            self.store(user_id, old["content"], agent_id=old["agent_id"], memory_type=old["memory_type"],
+                       client_metadata=meta.get("client"), timestamp=float(old["timestamp"]))
+            raise
+        return {"status": "edited" if out["status"] == "stored" else "merged", "memory_id": out["memory_id"],
+                "previous_memory_id": mid, "conflicts": out.get("conflicts") or [], "receipt": receipt}
 
     def clear_user(self, user_id):
         """Deletes all of one user's data in every store and their vector index."""

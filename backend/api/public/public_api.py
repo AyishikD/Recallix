@@ -212,6 +212,31 @@ def delete_memory(memory_id: int, user_id: Optional[str] = None, auth=Depends(ve
     return envelope({"deleted": memory_id, "receipt": receipt})
 
 
+class EditRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=20000)
+    user_id: UserId = None
+    # None keeps the memory's own metadata / original time
+    metadata: Metadata = None
+    timestamp: Optional[float] = Field(default=None, ge=0)
+
+
+@router.put("/{memory_id}")
+def edit_memory(memory_id: int, request: EditRequest, auth=Depends(verify_api_key)):
+    """
+    Replaces a memory's text. It is re-processed like a new store (facts, topics, embedding) with its original
+    time, and the old version is deleted with a receipt (reason "edited"). The memory gets a new `memory_id`.
+    """
+    uid = acting_user(auth, request.user_id)
+    rate_limit_writes(uid)
+    if request.timestamp is not None and request.timestamp > time.time() + 86400:
+        raise HTTPException(status_code=422, detail="timestamp is more than a day in the future")
+    out = get_memory_manager().edit(uid, memory_id, request.content, metadata=request.metadata,
+                                    timestamp=request.timestamp)
+    if out is None:
+        raise HTTPException(status_code=404, detail="Memory not found")
+    return envelope(out)
+
+
 @router.get("/deletions")
 def deletion_receipts(user_id: Optional[str] = None, limit: int = Query(100, ge=1, le=1000), auth=Depends(verify_api_key)):
     """This user's deletion receipts from the tamper-evident log (newest first)."""

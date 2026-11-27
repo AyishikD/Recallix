@@ -33,8 +33,15 @@ Storing a whole conversation at once (server 0.2.6 or newer; an older server get
 await mem.storeMany(["I moved to Pune in March.", { content: "Mira got married.", timestamp: 1717200000 }]);
 ```
 
+Correcting a memory keeps when it was said; the memory gets a new id (server 0.2.7 or newer):
+
+```ts
+await mem.update(memoryId, "I moved to Mumbai in March.");
+```
+
 ## Changes
 
+* **0.2.7**: `update(memoryId, content)` corrects a memory (`PUT /memory/{id}`).
 * **0.2.6**: `storeMany(items)` stores many messages in one request per 100 (`POST /memory/store_batch`);
   `store(content, { timestamp })` keeps when a message was originally said.
 * **0.2.5**: `recall(query, { mode: "cautious" | "balanced" | "helpful" })`. (Version aligned with the Python SDK.)

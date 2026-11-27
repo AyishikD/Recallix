@@ -225,7 +225,7 @@ package installs a `recallix-mcp` command (or use `python -m recallix.mcp_server
 }
 ```
 
-Tools: `recall_memory`, `store_memory`, `confirm_answer`, `relevant_memories`, `forget_memory`, `export_memories`.
+Tools: `recall_memory`, `store_memory`, `confirm_answer`, `relevant_memories`, `update_memory`, `forget_memory`, `export_memories`.
 Memories stored as `shared` are visible to every client and agent of the same user.
 
 ## 9. Find problems before your users do
