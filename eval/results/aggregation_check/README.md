@@ -227,3 +227,12 @@ it on with `recall.aggregation_check.enabled: true`.
 ## Not yet done
 
 Held-out confirmation. LongMemEval is to be run once, after the preference category is added.
+
+## Preference sweep: tried and removed (27 November 2026)
+
+For recommendation questions, a second search for the user's own likes and dislikes on the subject, placed in
+places 6-10. Preference dev set (49 answerable): all evidence served 0.531 -> 0.551 (5 slots); deep recall
+alone is worse (0.449). Held-out LongMemEval single-session-preference (30 questions): served recall@10
+0.744 -> 0.622. It pulls other "like / usually / avoid" statements (including the assistant's own
+suggestions) into places 6-10 and pushes real evidence out. Removed from the code; result files in
+`eval/results/preference_sweep/`. LongMemEval's preference questions have now been used once for this.
