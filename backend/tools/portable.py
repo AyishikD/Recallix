@@ -99,14 +99,9 @@ def parse(data, fmt="recallix"):
 
 def import_items(mm, user_id, items, agent_id="default_agent", memory_type="private"):
     """Stores items in time order through the normal pipeline (duplicates are skipped)."""
-    stored = skipped = 0
-    for it in sorted(items, key=lambda x: x["timestamp"]):
-        mt = it.get("memory_type") if it.get("memory_type") in ("private", "shared") else memory_type
-        res = mm.store(user_id, it["content"], agent_id=it.get("agent_id") or agent_id, memory_type=mt,
-                       client_metadata=it.get("metadata"), timestamp=it["timestamp"])
-        stored += res["status"] == "stored"
-        skipped += res["status"] != "stored"
-    return {"stored": stored, "skipped_duplicates": skipped}
+    results = mm.store_many(user_id, items, agent_id=agent_id, memory_type=memory_type)
+    stored = sum(r["status"] == "stored" for r in results)
+    return {"stored": stored, "skipped_duplicates": len(results) - stored}
 
 
 def main(argv=None):

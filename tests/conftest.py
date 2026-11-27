@@ -111,6 +111,7 @@ def hermetic(tmp_path, monkeypatch):
     from backend.brain.features import answer_check
     monkeypatch.setattr(answer_check.AnswerChecker, "from_config", classmethod(lambda cls: None))
     monkeypatch.setattr(mr.ModelRouter, "get_embedding", lambda self, text: hash_embedding(text))
+    monkeypatch.setattr(mr.ModelRouter, "get_embeddings", lambda self, texts: [hash_embedding(t) for t in texts])
 
     def no_llm(self, *a, **k):
         raise AssertionError("an LLM was called")

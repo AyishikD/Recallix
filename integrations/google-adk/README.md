@@ -60,7 +60,8 @@ What maps to what:
 | `search_memory` | `recall`; `MemoryEntry.custom_metadata` carries the relevance, trust and receipt |
 | `delete_memory` | `delete`, with a deletion receipt in Recallix |
 
-Needs Recallix server 0.2.5 or newer (for `mode` and original timestamps).
+Needs Recallix server 0.2.5 or newer (for `mode` and original timestamps). A session is stored in one request per
+100 events on server 0.2.6 or newer, and one request per event before that.
 
 ## Tests
 

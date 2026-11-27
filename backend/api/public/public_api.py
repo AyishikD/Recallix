@@ -99,6 +99,45 @@ def store_memory(request: StoreRequest, auth=Depends(verify_api_key)):
                      ("status", "memory_id", "importance", "schemas", "promoted", "indexed", "conflicts", "total_ms", "processing_log")})
 
 
+class BatchItem(BaseModel):
+    content: str = Field(min_length=1, max_length=20000)
+    timestamp: Optional[float] = Field(default=None, ge=0)
+    metadata: Metadata = None
+    memory_type: Optional[Literal["private", "shared"]] = None
+
+
+class StoreBatchRequest(BaseModel):
+    items: List[BatchItem] = Field(min_length=1)
+    user_id: UserId = None
+    agent_id: AgentId = "default_agent"
+    memory_type: Literal["private", "shared"] = "private"
+
+
+@router.post("/store_batch")
+def store_memories(request: StoreBatchRequest, auth=Depends(verify_api_key)):
+    """
+    Stores several messages in one request (an agent framework handing over a session, a chat history).
+    Same pipeline and result as storing them one by one in time order, with one embedding call per batch.
+    `results` follow the order of `items`.
+    """
+    user_id = acting_user(auth, request.user_id)
+    cap = int(settings.get("api.max_batch_items", 100))
+    if len(request.items) > cap:
+        raise HTTPException(status_code=413, detail=f"{len(request.items)} items in one batch; at most {cap} (split it up)")
+    rate_limit_writes(user_id)
+    future = time.time() + 86400
+    for i, it in enumerate(request.items):
+        if it.timestamp is not None and it.timestamp > future:
+            raise HTTPException(status_code=422, detail=f"items[{i}].timestamp is more than a day in the future")
+    with one_import_at_a_time(user_id):  # one bulk store per user at a time, so batches can't bypass the write limit
+        results = get_memory_manager().store_many(user_id, [it.model_dump() for it in request.items],
+                                                  agent_id=request.agent_id, memory_type=request.memory_type)
+    keys = ("status", "memory_id", "importance", "schemas", "promoted", "indexed", "conflicts")
+    return envelope({"stored": sum(r["status"] == "stored" for r in results),
+                     "skipped_duplicates": sum(r["status"] != "stored" for r in results),
+                     "results": [{k: r.get(k) for k in keys} for r in results]})
+
+
 @router.post("/recall")
 def recall_memory(request: RecallRequest, auth=Depends(verify_api_key)):
     user_id = acting_user(auth, request.user_id)

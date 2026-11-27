@@ -1,5 +1,6 @@
 """
-Request size cap (config api.max_request_bytes; api.max_import_bytes for POST /memory/import).
+Request size cap (config api.max_request_bytes; api.max_import_bytes for the bulk writes POST /memory/import
+and POST /memory/store_batch).
 
 A request that declares a larger Content-Length is refused with 413 before its body is read.
 One without a length (chunked) is counted as it arrives and cut off at the limit, so an
@@ -9,11 +10,11 @@ import json
 
 from backend import settings
 
-IMPORT_PATH = "/memory/import"
+BULK_PATHS = ("/memory/import", "/memory/store_batch")
 
 
 def _limit(path):
-    if path == IMPORT_PATH:
+    if path in BULK_PATHS:
         return int(settings.get("api.max_import_bytes", 10 * 1024 * 1024))
     return int(settings.get("api.max_request_bytes", 1024 * 1024))
 

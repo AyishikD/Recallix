@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from .client import MemoryClient
+from .client import MemoryClient, RecallixError
 
 
 class Memory:
@@ -28,6 +28,35 @@ class Memory:
         return self.client.request("POST", "/memory/store", data={
             "content": content, "agent_id": agent_id, "memory_type": memory_type,
             "user_id": user_id, "metadata": metadata, "timestamp": timestamp})
+
+    BATCH_SIZE = 100  # server api.max_batch_items
+
+    def store_many(self, items: List[Any], agent_id: str = "default_agent", memory_type: str = "private",
+                   user_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Stores several messages in as few requests as possible (server 0.2.6+; an older server gets one store
+        per message). Each item is a string or {"content", "timestamp"?, "metadata"?, "memory_type"?}.
+        Same result as storing them one by one in time order; repeats are skipped.
+        Returns {"stored", "skipped_duplicates", "results"}, with `results` in the order of `items`.
+        """
+        rows = [{"content": it} if isinstance(it, str) else dict(it) for it in items]
+        results: List[Dict[str, Any]] = []
+        for start in range(0, len(rows), self.BATCH_SIZE):
+            chunk = rows[start:start + self.BATCH_SIZE]
+            try:
+                out = self.client.request("POST", "/memory/store_batch", data={
+                    "items": chunk, "agent_id": agent_id, "memory_type": memory_type, "user_id": user_id})
+                results.extend(out["results"])
+            except RecallixError as e:
+                if e.status not in (404, 405):
+                    raise
+                for row in sorted(chunk, key=lambda r: (r.get("timestamp") is None, r.get("timestamp") or 0)):
+                    row["_result"] = self.store(row["content"], agent_id=agent_id,
+                                                memory_type=row.get("memory_type") or memory_type, user_id=user_id,
+                                                metadata=row.get("metadata"), timestamp=row.get("timestamp"))
+                results.extend(row.pop("_result") for row in chunk)
+        stored = sum(r.get("status") == "stored" for r in results)
+        return {"stored": stored, "skipped_duplicates": len(results) - stored, "results": results}
 
     def recall(self, query: str, limit: int = 10, agent_id: str = "default_agent",
                user_id: Optional[str] = None, deep: Optional[bool] = None,

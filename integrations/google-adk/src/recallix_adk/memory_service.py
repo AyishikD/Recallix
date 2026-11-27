@@ -64,6 +64,7 @@ class RecallixMemoryService(BaseMemoryService):
 
     def _store_events(self, app_name: str, user_id: str, events: Sequence["Event"],
                       custom_metadata: Optional[Mapping[str, object]] = None) -> None:
+        items = []
         for event in events:
             author = getattr(event, "author", None) or "user"
             if self.store_authors is not None and author not in self.store_authors:
@@ -74,9 +75,11 @@ class RecallixMemoryService(BaseMemoryService):
             metadata = {"speaker": "User" if author == "user" else author}
             if custom_metadata:
                 metadata["adk"] = dict(custom_metadata)
-            # Recallix skips a message it already holds for this user and agent, so re-adding a session is safe
-            self.memory.store(text[:20000], agent_id=app_name, user_id=user_id, metadata=metadata,
-                              timestamp=getattr(event, "timestamp", None))
+            items.append({"content": text[:20000], "metadata": metadata, "timestamp": getattr(event, "timestamp", None)})
+        # one request per 100 events; Recallix skips a message it already holds for this user and agent, so
+        # re-adding a session is safe
+        if items:
+            self.memory.store_many(items, agent_id=app_name, user_id=user_id)
 
     async def add_session_to_memory(self, session: "Session") -> None:
         await asyncio.to_thread(self._store_events, session.app_name, session.user_id, list(session.events or []))
@@ -89,6 +92,7 @@ class RecallixMemoryService(BaseMemoryService):
     async def add_memory(self, *, app_name: str, user_id: str, memories: Sequence[MemoryEntry],
                          custom_metadata: Optional[Mapping[str, object]] = None) -> None:
         def write():
+            items = []
             for entry in memories:
                 text = "\n".join(p.text for p in (entry.content.parts or []) if getattr(p, "text", None)).strip()
                 if not text:
@@ -99,8 +103,11 @@ class RecallixMemoryService(BaseMemoryService):
                         ts = datetime.fromisoformat(entry.timestamp).timestamp()
                     except ValueError:
                         ts = None
-                self.memory.store(text[:20000], agent_id=app_name, user_id=user_id, timestamp=ts,
-                                  metadata={"speaker": entry.author or "User", **({"adk": dict(custom_metadata)} if custom_metadata else {})})
+                items.append({"content": text[:20000], "timestamp": ts,
+                              "metadata": {"speaker": entry.author or "User",
+                                           **({"adk": dict(custom_metadata)} if custom_metadata else {})}})
+            if items:
+                self.memory.store_many(items, agent_id=app_name, user_id=user_id)
         await asyncio.to_thread(write)
 
     # ---------------------------------------------------------------- reading

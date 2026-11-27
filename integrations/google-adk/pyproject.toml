@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "recallix-adk"
-version = "0.1.0"
+version = "0.1.1"
 description = "Recallix as the memory service of Google ADK agents: self-hosted, no LLM calls for memory, says when it has no record."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["google-adk>=2.0", "recallix>=0.2.5"]
+dependencies = ["google-adk>=2.0", "recallix>=0.2.6"]
 
 [project.urls]
 Homepage = "https://github.com/AyishikD/Recallix/tree/main/integrations/google-adk"

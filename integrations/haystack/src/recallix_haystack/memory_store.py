@@ -70,17 +70,20 @@ class RecallixMemoryStore:
         ("stored", or "skipped_duplicate" for a message Recallix already holds). Other keyword arguments (run_id,
         ...) are accepted and ignored.
         """
-        added = []
+        kept = []
         for message in messages:
             role = message.role.value
             if role not in self.store_roles or not message.text:
                 continue
             meta = message.meta or {}
             ts = meta.get("timestamp") if isinstance(meta.get("timestamp"), (int, float)) else None
-            out = self.memory.store(message.text[:20000], agent_id=agent_id or self.agent_id, user_id=user_id,
-                                    metadata={"speaker": "User" if role == "user" else role}, timestamp=ts)
-            added.append({"memory_id": out.get("memory_id"), "memory": message.text, "status": out.get("status")})
-        return added
+            kept.append((message.text, {"content": message.text[:20000], "timestamp": ts,
+                                        "metadata": {"speaker": "User" if role == "user" else role}}))
+        if not kept:
+            return []
+        out = self.memory.store_many([item for _, item in kept], agent_id=agent_id or self.agent_id, user_id=user_id)
+        return [{"memory_id": r.get("memory_id"), "memory": text, "status": r.get("status")}
+                for (text, _), r in zip(kept, out["results"])]
 
     # ---------------------------------------------------------------- reading
 

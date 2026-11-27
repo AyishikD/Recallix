@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "recallix"
-version = "0.2.5"
+version = "0.2.6"
 description = "Python client and MCP server for Recallix, an LLM-free memory layer for AI agents"
 readme = "README.md"
 requires-python = ">=3.9"

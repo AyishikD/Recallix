@@ -166,6 +166,29 @@ class MemoryManager:
                 "promoted": promoted, "indexed": indexed, "conflicts": conflicts,
                 "total_ms": round((time.time() - t0) * 1000, 1), "processing_log": logs}
 
+    _BATCH_EMBED = 256
+
+    def store_many(self, user_id, items, agent_id="default_agent", memory_type="private"):
+        """
+        Stores several messages: [{"content", "timestamp"?, "metadata"?, "memory_type"?, "agent_id"?}].
+        Each goes through store() in time order (stable for equal or missing timestamps), so facts, versions and
+        duplicates come out exactly as if stored one by one; the only difference is that the embeddings of each
+        chunk are computed in one model call. Returns store()'s result for each item, in the input order.
+        """
+        order = sorted(range(len(items)), key=lambda i: (items[i].get("timestamp") is None,
+                                                         items[i].get("timestamp") or 0, i))
+        results = [None] * len(items)
+        for start in range(0, len(order), self._BATCH_EMBED):
+            chunk = order[start:start + self._BATCH_EMBED]
+            self.semantic.embed_many([items[i]["content"] for i in chunk])
+            for i in chunk:
+                it = items[i]
+                mt = it.get("memory_type") if it.get("memory_type") in MEMORY_TYPES else memory_type
+                results[i] = self.store(user_id, it["content"], agent_id=it.get("agent_id") or agent_id,
+                                        memory_type=mt, client_metadata=it.get("metadata"),
+                                        timestamp=it.get("timestamp"))
+        return results
+
     _NO_CONFLICT = ("alias_of",)  # relations where a second value is an addition, not a contradiction
 
     def _conflicts(self, user_id, agent_id, slots, ts):

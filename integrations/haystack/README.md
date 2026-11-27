@@ -56,7 +56,8 @@ Notes:
   memories.
 * Haystack `filters` are not supported (Recallix scopes by user and agent) and are ignored with a warning.
 * A message's original time can be given as `meta={"timestamp": <unix seconds>}`.
-* Needs Recallix server 0.2.5 or newer.
+* Needs Recallix server 0.2.5 or newer. `add_memories` sends the messages in one request per 100 on server 0.2.6
+  or newer, and one request per message before that.
 * Tested with haystack-ai 2.23 + haystack-experimental 0.19 (store and Agent), and with haystack-ai 3.5 (store; the
   experimental Agent does not yet run on Haystack 3.x, which is a Haystack-side pairing, not this package). If the
   Agent import fails, pin `haystack-ai` to the release matching your `haystack-experimental`.

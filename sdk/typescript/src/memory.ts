@@ -1,4 +1,4 @@
-import { MemoryClient, MemoryConfig } from "./client";
+import { MemoryClient, MemoryConfig, RecallixError } from "./client";
 
 export type MemoryType = "private" | "shared";
 
@@ -8,6 +8,23 @@ export interface StoreOptions {
     /** Only honoured for service/admin keys. */
     userId?: string;
     metadata?: Record<string, unknown>;
+    /** When the message was originally said (Unix seconds; server 0.2.5+). Default: now. */
+    timestamp?: number;
+}
+
+export interface BatchItem {
+    content: string;
+    /** Unix seconds; default: now. */
+    timestamp?: number;
+    metadata?: Record<string, unknown>;
+    memoryType?: MemoryType;
+}
+
+export interface StoreManyResult {
+    stored: number;
+    skipped_duplicates: number;
+    /** One store result per item, in the order of the items. */
+    results: Record<string, any>[];
 }
 
 export interface RecallOptions {
@@ -45,9 +62,43 @@ export class Memory {
     store(content: string, opts: StoreOptions = {}) {
         return this.client.request("POST", "/memory/store", {
             content, agent_id: opts.agentId ?? "default_agent", memory_type: opts.memoryType ?? "private",
-            user_id: opts.userId, metadata: opts.metadata,
+            user_id: opts.userId, metadata: opts.metadata, timestamp: opts.timestamp,
         });
     }
+
+    /**
+     * Store several messages in as few requests as possible (server 0.2.6+; an older server gets one store per
+     * message). Same result as storing them one by one in time order; repeats are skipped.
+     */
+    async storeMany(items: (string | BatchItem)[], opts: Omit<StoreOptions, "metadata" | "timestamp"> = {}): Promise<StoreManyResult> {
+        const rows: BatchItem[] = items.map((it) => (typeof it === "string" ? { content: it } : it));
+        const results: Record<string, any>[] = [];
+        for (let start = 0; start < rows.length; start += Memory.BATCH_SIZE) {
+            const chunk = rows.slice(start, start + Memory.BATCH_SIZE);
+            try {
+                const out = await this.client.request("POST", "/memory/store_batch", {
+                    items: chunk.map((r) => ({ content: r.content, timestamp: r.timestamp, metadata: r.metadata, memory_type: r.memoryType })),
+                    agent_id: opts.agentId ?? "default_agent", memory_type: opts.memoryType ?? "private", user_id: opts.userId,
+                });
+                results.push(...out.results);
+            } catch (e) {
+                if (!(e instanceof RecallixError) || (e.status !== 404 && e.status !== 405)) throw e;
+                const byTime = chunk.map((r, i) => ({ r, i }))
+                    .sort((a, b) => (a.r.timestamp ?? Infinity) - (b.r.timestamp ?? Infinity) || a.i - b.i);
+                const done: Record<string, any>[] = new Array(chunk.length);
+                for (const { r, i } of byTime) {
+                    done[i] = await this.store(r.content, { ...opts, memoryType: r.memoryType ?? opts.memoryType,
+                                                            metadata: r.metadata, timestamp: r.timestamp });
+                }
+                results.push(...done);
+            }
+        }
+        const stored = results.filter((r) => r.status === "stored").length;
+        return { stored, skipped_duplicates: results.length - stored, results };
+    }
+
+    /** Server api.max_batch_items. */
+    static BATCH_SIZE = 100;
 
     recall(query: string, opts: RecallOptions = {}) {
         return this.client.request("POST", "/memory/recall", {

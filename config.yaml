@@ -356,8 +356,9 @@ api:
   writes_per_second_per_user: 50   # store requests above this get HTTP 429
   reads_per_second_per_user: 20    # recalls above this get HTTP 429 (a deep recall counts as 4)
   max_request_bytes: 1048576       # larger request bodies get HTTP 413
-  max_import_bytes: 10485760       # POST /memory/import
+  max_import_bytes: 10485760       # POST /memory/import and /memory/store_batch
   max_import_items: 5000           # memories per import; one import per user at a time
+  max_batch_items: 100             # messages per POST /memory/store_batch (one bulk write per user at a time)
   max_metadata_bytes: 16384        # a memory's metadata, as JSON
 
 # ============================================================================

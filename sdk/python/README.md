@@ -29,8 +29,15 @@ mem.recall("Which came first, the Goa trip or the Pune workshop?", mode="helpful
 mem.recall("What dose did the doctor prescribe?", mode="cautious")                     # checks every answer twice
 ```
 
+Storing a whole conversation at once (server 0.2.6 or newer; an older server gets one store per message):
+
+```python
+mem.store_many(["I moved to Pune in March.", {"content": "Mira got married.", "timestamp": 1717200000}])
+```
+
 ## Changes
 
+* **0.2.6**: `store_many(items)` stores many messages in one request per 100 (`POST /memory/store_batch`).
 * **0.2.5**: `recall(..., mode="cautious" | "balanced" | "helpful")`; `store(..., timestamp=...)` keeps when a message was originally said.
 * **0.2.4**: `requests>=2.33.0`.
 

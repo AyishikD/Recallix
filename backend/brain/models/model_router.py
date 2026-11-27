@@ -107,22 +107,46 @@ class ModelRouter:
             return self._get_embedding_local(text)
         return self._get_embedding_openai_compat(text)
 
+    def get_embeddings(self, texts):
+        """Embeddings for several texts, in order ([] for any that failed). One model call where the provider
+        supports it (local, OpenAI-compatible); one call per text otherwise."""
+        texts = list(texts)
+        if not texts:
+            return []
+        if self.embedding_provider == "local":
+            return self._get_embeddings_local(texts)
+        if self.embedding_provider != "ollama":
+            out = self._get_embeddings_openai_compat(texts)
+            if out is not None:
+                return out
+        return [self.get_embedding(t) for t in texts]
+
     _local_models = {}
     _local_lock = __import__("threading").Lock()
+
+    def _local_model(self):
+        with ModelRouter._local_lock:  # load once, even under concurrent requests
+            model = ModelRouter._local_models.get(self.embedding_model)
+            if model is None:
+                from sentence_transformers import SentenceTransformer
+                model = SentenceTransformer(self.embedding_model)
+                ModelRouter._local_models[self.embedding_model] = model
+        return model
 
     def _get_embedding_local(self, text):
         """In-process sentence-transformers model: no server, no API key."""
         try:
-            with ModelRouter._local_lock:  # load once, even under concurrent requests
-                model = ModelRouter._local_models.get(self.embedding_model)
-                if model is None:
-                    from sentence_transformers import SentenceTransformer
-                    model = SentenceTransformer(self.embedding_model)
-                    ModelRouter._local_models[self.embedding_model] = model
-            return model.encode([text])[0].tolist()
+            return self._local_model().encode([text])[0].tolist()
         except Exception as e:
             print(f"Error getting local embedding: {e}")
             return []
+
+    def _get_embeddings_local(self, texts):
+        try:
+            return [v.tolist() for v in self._local_model().encode(texts, batch_size=32)]
+        except Exception as e:
+            print(f"Error getting local embeddings: {e}")
+            return [self._get_embedding_local(t) for t in texts]
 
     def _get_embedding_ollama(self, text):
         try:
@@ -146,3 +170,16 @@ class ModelRouter:
         except Exception as e:
             print(f"Error getting {self.embedding_provider} embedding: {e}")
             return []
+
+    def _get_embeddings_openai_compat(self, texts):
+        """One /embeddings call for many inputs; None (caller falls back to one call per text) on any failure."""
+        try:
+            url = f"{self.embed_base_url}/embeddings"
+            headers = {"Authorization": f"Bearer {self.embed_api_key}", "Content-Type": "application/json"}
+            res = requests.post(url, json={"model": self.embedding_model, "input": texts}, headers=headers, timeout=60)
+            res.raise_for_status()
+            data = sorted(res.json()["data"], key=lambda d: d.get("index", 0))
+            return [d["embedding"] for d in data] if len(data) == len(texts) else None
+        except Exception as e:
+            print(f"Error getting {self.embedding_provider} embeddings in one call ({e}); embedding one by one")
+            return None

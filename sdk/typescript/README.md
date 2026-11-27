@@ -27,8 +27,16 @@ await mem.recall("Which came first, the Goa trip or the Pune workshop?", { mode:
 await mem.recall("What dose did the doctor prescribe?", { mode: "cautious" });                    // checks every answer twice
 ```
 
+Storing a whole conversation at once (server 0.2.6 or newer; an older server gets one store per message):
+
+```ts
+await mem.storeMany(["I moved to Pune in March.", { content: "Mira got married.", timestamp: 1717200000 }]);
+```
+
 ## Changes
 
+* **0.2.6**: `storeMany(items)` stores many messages in one request per 100 (`POST /memory/store_batch`);
+  `store(content, { timestamp })` keeps when a message was originally said.
 * **0.2.5**: `recall(query, { mode: "cautious" | "balanced" | "helpful" })`. (Version aligned with the Python SDK.)
 
 Node 18+ (uses the built-in `fetch`). License: Apache-2.0.

@@ -47,6 +47,32 @@ class SemanticMemory:
                 self._cache.popitem(last=False)
         return v
 
+    def embed_many(self, texts):
+        """
+        Embeds the texts not already cached in one model call and caches them, so the store pipeline's embed()
+        then finds each vector ready. Returns how many were embedded. A failed text is left out (embed() retries
+        it alone).
+        """
+        with self._lock:
+            todo = list(dict.fromkeys(t for t in texts if t not in self._cache))
+        todo = todo[: self._CACHE_SIZE // 2]  # never evict what this batch is about to use
+        if not todo:
+            return 0
+        done = 0
+        for text, raw in zip(todo, self.router.get_embeddings(todo)):
+            if not raw:
+                continue
+            v = np.asarray(raw, dtype=np.float32)
+            norm = float(np.linalg.norm(v))
+            if norm <= 1e-6:
+                continue
+            with self._lock:
+                self._cache[text] = v / norm
+                if len(self._cache) > self._CACHE_SIZE:
+                    self._cache.popitem(last=False)
+            done += 1
+        return done
+
     @staticmethod
     def cosine(a, b):
         if a is None or b is None or len(a) != len(b):

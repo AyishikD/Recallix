@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "recallix-haystack"
-version = "0.1.0"
+version = "0.1.1"
 description = "Recallix as the memory store of Haystack agents: self-hosted, no LLM calls for memory, says when it has no record."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["haystack-ai>=2.18", "recallix>=0.2.5"]
+dependencies = ["haystack-ai>=2.18", "recallix>=0.2.6"]
 
 [project.optional-dependencies]
 agent = ["haystack-experimental>=0.15"]
