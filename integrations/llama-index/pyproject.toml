@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llama-index-memory-recallix"
+version = "0.1.0"
+description = "Recallix as long-term memory of LlamaIndex agents: self-hosted, no LLM calls for memory, says when it has no record."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = ["llama-index-core>=0.12.40", "recallix>=0.2.6"]
+
+[project.urls]
+Homepage = "https://github.com/AyishikD/Recallix/tree/main/integrations/llama-index"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llama_index"]

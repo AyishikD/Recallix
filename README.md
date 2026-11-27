@@ -166,8 +166,9 @@ python server.py                                # API on 127.0.0.1:8000
 Then create a key (`python -m backend.tools.keys create --user alice`) and use the
 [Python SDK](sdk/python) or [TypeScript SDK](sdk/typescript).
 Integrations: [Open WebUI](integrations/open-webui/README.md) (memory for every chat, one filter, no code),
-[Google ADK](integrations/google-adk/README.md) (`RecallixMemoryService`) and
-[Haystack](integrations/haystack/README.md) (`RecallixMemoryStore`). Full walkthrough:
+[Google ADK](integrations/google-adk/README.md) (`RecallixMemoryService`),
+[Haystack](integrations/haystack/README.md) (`RecallixMemoryStore`) and
+[LlamaIndex](integrations/llama-index/README.md) (`RecallixMemoryBlock`). Full walkthrough:
 [`docs/quickstart.md`](docs/quickstart.md). Endpoints: [`docs/api_reference.md`](docs/api_reference.md).
 To try every endpoint from the browser, open **http://localhost:8000/docs**, click **Authorize** and
 paste your key (no SDK needed).
