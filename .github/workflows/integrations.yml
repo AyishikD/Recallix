@@ -1,0 +1,139 @@
+name: Integrations
+
+# Runs every integration's tests against a real Recallix server (engine + API, local embedder):
+# Google ADK, Haystack, LlamaIndex (Python) and the Vercel AI SDK (TypeScript). The Open WebUI filter is
+# tested in the main suite (backend.yml). Weekly as well, so a framework release that breaks an adapter
+# shows up within a week even when nothing here changed.
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "integrations/**"
+      - "sdk/**"
+      - "backend/**"
+      - "server.py"
+      - "config.yaml"
+      - "requirements*.txt"
+      - ".github/workflows/integrations.yml"
+  pull_request:
+    paths:
+      - "integrations/**"
+      - "sdk/**"
+      - "backend/**"
+      - "server.py"
+      - "config.yaml"
+      - "requirements*.txt"
+      - ".github/workflows/integrations.yml"
+  schedule:
+    - cron: "17 4 * * 1"   # Mondays 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integrations:
+    name: Adapters against a live server
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash   # -eo pipefail: a failing test command fails the step even when piped to tee
+    env:
+      RECALLIX_INTERNAL_KEY: ci-integrations-only-not-a-secret
+      RECALLIX_ENGINE_PORT: "18555"
+      RECALLIX_ENGINE_URL: http://127.0.0.1:18555
+      RECALLIX_API_PORT: "8000"
+      RECALLIX_URL: http://127.0.0.1:8000
+      RECALLIX_STORAGE_ROOT: ${{ github.workspace }}/ci-storage
+      HF_HOME: ${{ github.workspace }}/.hf
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Cache models (embedder, reader)
+        uses: actions/cache@v6
+        with:
+          path: .hf
+          key: hf-${{ hashFiles('config.yaml') }}
+          restore-keys: hf-
+
+      - name: Build engine
+        run: |
+          cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release -DRECALLIX_TSAN=OFF
+          cmake --build backend/infra_cpp/build -j 4 --target memory_service
+
+      - name: Install server (CPU-only torch)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install torch --index-url https://download.pytorch.org/whl/cpu
+          .venv/bin/pip install -r requirements-local.txt
+
+      - name: Start Recallix and create keys
+        run: |
+          mkdir -p "$RECALLIX_STORAGE_ROOT"
+          nohup backend/infra_cpp/build/memory_service > engine.log 2>&1 &
+          nohup .venv/bin/python server.py > server.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf "$RECALLIX_URL/health" >/dev/null && break; sleep 2; done
+          curl -sf "$RECALLIX_URL/health"
+          service=$(.venv/bin/python -m backend.tools.keys create --user ci-integrations --role service | grep -Eo 'rx_[A-Za-z0-9_-]+' | tail -1)
+          admin=$(.venv/bin/python -m backend.tools.keys create --user ci-admin --role admin | grep -Eo 'rx_[A-Za-z0-9_-]+' | tail -1)
+          test -n "$service" && test -n "$admin"
+          echo "::add-mask::$service"
+          echo "::add-mask::$admin"
+          echo "RECALLIX_SERVICE_KEY=$service" >> "$GITHUB_ENV"
+          echo "RECALLIX_ADMIN_KEY=$admin" >> "$GITHUB_ENV"
+          # the first recall loads the models; do it once here so no test times out on it
+          curl -sf -X POST "$RECALLIX_URL/memory/recall" -H "X-API-Key: $service" -H "Content-Type: application/json" \
+            -d '{"query": "warm up", "user_id": "ci-warmup"}' > /dev/null
+
+      - name: Google ADK
+        if: ${{ !cancelled() }}
+        run: |
+          python -m venv /tmp/adk
+          /tmp/adk/bin/pip install -q -e sdk/python -e integrations/google-adk pytest
+          /tmp/adk/bin/pip list 2>/dev/null | grep -iE "^google-adk "
+          /tmp/adk/bin/python -m pytest -q -rs integrations/google-adk/tests | tee pytest-adk.txt
+          ! grep -q skipped pytest-adk.txt   # a live test that skipped tested nothing
+
+      - name: Haystack (haystack-ai 2.x; the experimental Agent does not run on 3.x yet)
+        if: ${{ !cancelled() }}
+        run: |
+          python -m venv /tmp/hay
+          /tmp/hay/bin/pip install -q -e sdk/python -e "integrations/haystack[agent]" "haystack-ai<3" pytest
+          /tmp/hay/bin/pip list 2>/dev/null | grep -iE "^haystack"
+          /tmp/hay/bin/python -m pytest -q -rs integrations/haystack/tests | tee pytest-hay.txt
+          ! grep -q skipped pytest-hay.txt   # a live test that skipped tested nothing
+
+      - name: LlamaIndex
+        if: ${{ !cancelled() }}
+        run: |
+          python -m venv /tmp/llx
+          /tmp/llx/bin/pip install -q -e sdk/python -e integrations/llama-index pytest
+          /tmp/llx/bin/pip list 2>/dev/null | grep -iE "^llama-index-core "
+          /tmp/llx/bin/python -m pytest -q -rs integrations/llama-index/tests | tee pytest-llx.txt
+          ! grep -q skipped pytest-llx.txt   # a live test that skipped tested nothing
+
+      - name: Vercel AI SDK (with the TypeScript SDK from this commit)
+        if: ${{ !cancelled() }}
+        working-directory: integrations/vercel-ai
+        run: |
+          (cd ../../sdk/typescript && npm ci && npm run build)
+          npm ci
+          npm install --no-save ../../sdk/typescript
+          npm ls ai recallix
+          npm test | tee node-test.txt
+          ! grep -q '# SKIP' node-test.txt   # the live test must have run
+
+      - name: Server logs
+        if: ${{ failure() }}
+        run: |
+          tail -n 200 server.log
+          tail -n 50 engine.log
