@@ -27,6 +27,7 @@ from ..memory_ranking.reinforcement_learning import MemoryRL
 from ..features.answer_check import AnswerChecker
 from ..features import reranker as rerank_cfg
 from ..features import aggregation_check
+from ..features import answer_verify
 from ..features.reranker import Reranker
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 from ..features.facts import EXTRACTOR_VERSION
@@ -397,6 +398,23 @@ class RecallEngine:
                             "subject": subject,
                             "rejected_as_about_someone_else": [m["id"] for m in read if not m.get("_answer_ok") and
                                                                m.get("subject_contrast") is not None]}
+            if answered:
+                # recall.answer_check.verify: the memory the reader answered from must actually answer the question
+                verifier = answer_verify.AnswerVerifier.from_config()
+                if verifier is not None:
+                    accepted = [m for m in read if m.get("_answer_ok")]
+                    scores = verifier.scores(asked, [answer_verify.premise(m.get("content", ""), memory_speaker(m))
+                                                     for m in accepted])
+                    vt = answer_verify.config()["threshold"]
+                    for m, sc in zip(accepted, scores):
+                        m["answer_verified"] = round(sc, 5)
+                        if sc < vt:
+                            m["_answer_ok"] = False  # the best-answer pick and the receipt skip it
+                    answer_check["verify"] = {"model": verifier.model_name, "threshold": vt,
+                                              "scores": {m["id"]: round(sc, 5) for m, sc in zip(accepted, scores)}}
+                    if accepted and not any(sc >= vt for sc in scores):
+                        answered = False
+                        answer_check["unverified"] = [m["id"] for m in accepted]
             status = "CONSISTENT" if answered else "ABSTAINED"
             if status == "ABSTAINED":
                 inferred = self._answer_by_inference(checker, asked, resolved[:3], t)
@@ -831,6 +849,11 @@ class RecallEngine:
                 reason = (f"answer inferred from memory {src['id']}: \"{src.get('content', '')[:80]}\" implies "
                           f"\"{inf['statement']}\" (commonsense pattern \"{inf['pattern']}\" -> {inf['relation']}; "
                           f"entailment {inf['entailment']})")
+            elif status == "ABSTAINED" and answer_check.get("unverified"):
+                v = answer_check["verify"]
+                reason = (f"the reader found answer-like spans in memories {answer_check['unverified']}, but none of them "
+                          f"answers the question (verifier {v['model']}: best score "
+                          f"{max(v['scores'].values()):.5f} < {v['threshold']})")
             elif status == "ABSTAINED" and rejected:
                 reason = (f"memories {rejected} answer a question like this, but about someone other than "
                           f"{answer_check.get('subject')}; nothing answers it about {answer_check.get('subject')}")

@@ -236,3 +236,12 @@ alone is worse (0.449). Held-out LongMemEval single-session-preference (30 quest
 0.744 -> 0.622. It pulls other "like / usually / avoid" statements (including the assistant's own
 suggestions) into places 6-10 and pushes real evidence out. Removed from the code; result files in
 `eval/results/preference_sweep/`. LongMemEval's preference questions have now been used once for this.
+
+## Bridge hop (MeMo / MDR idea): tried and removed (27 November 2026)
+
+A second search of the whole vector index with the question blended with the top results' meaning, added to
+recall.second_pass. LoCoMo dev (999 questions, `eval/results/bridge_hop/`): with 2 second-search places,
+identical to today (served recall@10 0.7008); with 4, multi-hop 0.375 -> 0.390 but single-hop 0.812 -> 0.775
+and overall 0.701 -> 0.681. Offline probe: the missing multi-hop evidence is already among the first search's
+candidates (first evidence ranked 11-50 for most misses), and LoCoMo "multi-hop" questions are mostly list
+questions ("What has John cooked?"), not chains. Multi-hop is a ranking problem, not a search problem.

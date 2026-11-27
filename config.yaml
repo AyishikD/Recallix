@@ -159,6 +159,15 @@ recall:
     # wrongly declined 52 -> 49 of 760 on LoCoMo dev and 9 -> 5 of 123 on conv-44; trap questions
     # declined unchanged on LoCoMo dev (56/237), the Gemini batches (28/30) and our dev set (8/8).
     calculation_questions: true
+    # Answer verification (features/answer_verify.py): a QNLI cross-encoder (qnli-electra-base, 110M, Apache 2.0)
+    # checks that a memory the reader answered from actually answers the question ("<speaker> said: <message>").
+    # Catches trick answers such as "your new hair color looks amazing" for "Why did Joanna choose her hair color?".
+    # Threshold chosen on LoCoMo dev answered questions: 0.001 keeps 350 of 379 answers from evidence and
+    # declines 53 of 160 answered trick questions. Off until confirmed on held-out data.
+    verify:
+      enabled: false
+      model: cross-encoder/qnli-electra-base
+      threshold: 0.001
     # Answers that are not statements about the asked person: the reader's span lies only inside a
     # question ("Wow, that looks amazing! What inspired it?"), or is a speaker's name used to address
     # them ("Thanks, Melanie!"), or comes from the asked person's own message that speaks only to the
