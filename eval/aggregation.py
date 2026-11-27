@@ -141,6 +141,10 @@ KIND = {
                    "likes, dislikes and constraints. The answer lists the constraints a good suggestion must meet, "
                    "taken from at least two different messages (e.g. 'vegetarian, mild spice, near Koramangala'); "
                    "it NEVER names one specific title, product, place or brand, because many suggestions can fit. "
+                   "The question names only WHAT is wanted and the occasion (\"Any podcast for my cooking tonight?\", "
+                   "\"What should I order for the team lunch?\"); it must NOT state any of the constraints, because "
+                   "finding them in the messages is the test. The answer key holds only lasting preferences the person "
+                   "stated about themselves (a one-off plan or a single choice is not a preference). "
                    "Questions are always about this person's own taste, never a friend's. A trap here asks for a "
                    "suggestion in an area the person never stated any preference about (not even a dislike); "
                    "something they said they dislike is NOT a trap, because the dislike answers it.",
@@ -226,6 +230,8 @@ def problems(s):
     """Machine-checkable problems with one scenario's answer key. A human still reads every scenario."""
     out = []
     msgs, qs = s.get("messages") or [], s.get("questions") or []
+    if not all(isinstance(m, dict) for m in msgs) or not all(isinstance(q, dict) for q in qs):
+        return ["malformed: messages and questions must be objects"]
     days = [_day(m.get("date")) for m in msgs]
     if not 10 <= len(msgs) <= 30:
         out.append(f"{len(msgs)} messages")
@@ -260,6 +266,13 @@ def problems(s):
                 out.append(f"{tag}: counting answer {q['answer']!r} has no number")
             elif int(n) != len(ev):
                 out.append(f"{tag}: answer {q['answer']!r} but {len(ev)} evidence messages")
+        elif cat == "preference":
+            # the question must not hand over its own answer: finding the constraints in the messages is the test
+            parts = [p.strip().lower() for p in re.split(r"[,;]", str(q["answer"])) if p.strip()]
+            asked = q["q"].lower()
+            given = [p for p in parts if p in asked or all(w in asked for w in re.findall(r"[a-z]{4,}", p) or ["\x00"])]
+            if len(given) >= 2 or (parts and len(given) == len(parts)):
+                out.append(f"{tag}: the question states its own constraints ({', '.join(given)})")
         elif cat == "time_between" and len(ev) == 2 and all(days[i] for i in ev):
             gap = abs((days[ev[1]] - days[ev[0]]).days)
             exact = _exact_days(q["answer"])
