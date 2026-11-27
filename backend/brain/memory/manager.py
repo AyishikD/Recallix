@@ -194,10 +194,10 @@ class MemoryManager:
         return relevant(self.episodic, user_id, message, agent_id, limit)
 
     def retrieve(self, user_id, query, agent_id="default_agent", limit=5, return_candidates=False, deep=None,
-                 keep_on_decline=None):
+                 keep_on_decline=None, mode=None):
         return self.recall_engine.multi_stage_recall(user_id, query, agent_id=agent_id, top_k=limit,
                                                      return_candidates=return_candidates, deep=deep,
-                                                     keep_on_decline=keep_on_decline)
+                                                     keep_on_decline=keep_on_decline, mode=mode)
 
     # ------------------------------------------------------------------
     # Deletion (removes every derived copy)

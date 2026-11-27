@@ -371,6 +371,7 @@ def run(args):
             recs.append({"scenario": s["name"], "category": s["category"], "q": text, "trap": bool(q.get("trap")),
                          **({"original": q["q"]} if text != q["q"] else {}),
                          "aggregation_check": agg and {"kind": agg["kind"], "claims": agg["claims"]},
+                         "computed": out.get("computed_answer"),
                          "status": out["status"], "declined": declined,
                          "evidence": sorted(ev), "served": served, "ranked": ranked,
                          # share of the evidence messages among what was served (0 when declined), and in the ranked top k

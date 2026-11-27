@@ -1,0 +1,12 @@
+{"name": "hard3_counting_01", "verdict": "fix", "changes": ["msg 9: removed stray 'anniversary' that made the birthday-cake count ambiguous for Q2"], "reason": ""}
+{"name": "hard3_counting_02", "verdict": "accept", "changes": [], "reason": ""}
+{"name": "hard3_counting_03", "verdict": "accept", "changes": [], "reason": ""}
+{"name": "hard3_counting_04", "verdict": "accept", "changes": [], "reason": ""}
+{"name": "hard3_time_between_01", "verdict": "fix", "changes": ["Q3: answer '134 days' (was '19 weeks 1 day (134 days)')"], "reason": ""}
+{"name": "hard3_time_between_02", "verdict": "fix", "changes": ["Q4: answer '127 days' (was '18 weeks 1 day (127 days)')", "Q6: answerable trap replaced with never-mentioned trap"], "reason": ""}
+{"name": "hard3_time_between_03", "verdict": "accept", "changes": [], "reason": ""}
+{"name": "hard3_time_between_04", "verdict": "fix", "changes": ["Q1: answer '43 days' (was '6 weeks 1 day (43 days)')"], "reason": ""}
+{"name": "hard3_ordering_01", "verdict": "fix", "changes": ["Q6: answerable trap replaced with never-mentioned trap"], "reason": ""}
+{"name": "hard3_ordering_02", "verdict": "fix", "changes": ["Q6: answerable trap replaced with never-mentioned trap"], "reason": ""}
+{"name": "hard3_ordering_03", "verdict": "fix", "changes": ["Q6: answerable trap replaced with never-mentioned trap"], "reason": ""}
+{"name": "hard3_ordering_04", "verdict": "fix", "changes": ["Q6: answerable trap replaced with never-mentioned trap"], "reason": ""}

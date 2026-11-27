@@ -22,6 +22,12 @@ later by meaning, keep facts up to date, and say "I don't know" instead of guess
 * **Deep recall for spread-out answers.** `mem.recall(question, deep=True)` re-reads 50
   candidates with a small local re-ranker: slower, but finds more of the evidence when the
   answer is spread over several memories. Measurements: [`eval/results/retrieval_fixes/`](eval/results/retrieval_fixes/).
+* **You choose how cautious it is.** `mem.recall(question, mode="cautious" | "balanced" | "helpful")`
+  (default `balanced`; server-wide `recall.mode`). `cautious` checks every answer a second time and
+  says "I don't know" far more often; `helpful` answers more counting, ordering and "how long between"
+  questions and, when it can do so safely, returns the worked-out result (`computed_answer`: "41 days",
+  or the order, with the dates in the receipt). Each mode's measured trade-off is in
+  [`eval/results/aggregation_check/`](eval/results/aggregation_check/README.md).
 
 ## Measured results
 
@@ -158,7 +164,10 @@ python server.py                                # API on 127.0.0.1:8000
 ```
 
 Then create a key (`python -m backend.tools.keys create --user alice`) and use the
-[Python SDK](sdk/python) or [TypeScript SDK](sdk/typescript). Full walkthrough:
+[Python SDK](sdk/python) or [TypeScript SDK](sdk/typescript).
+Integrations: [Open WebUI](integrations/open-webui/README.md) (memory for every chat, one filter, no code),
+[Google ADK](integrations/google-adk/README.md) (`RecallixMemoryService`) and
+[Haystack](integrations/haystack/README.md) (`RecallixMemoryStore`). Full walkthrough:
 [`docs/quickstart.md`](docs/quickstart.md). Endpoints: [`docs/api_reference.md`](docs/api_reference.md).
 To try every endpoint from the browser, open **http://localhost:8000/docs**, click **Authorize** and
 paste your key (no SDK needed).

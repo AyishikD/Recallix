@@ -22,6 +22,18 @@ print(mem.recall("What is my brother's name?")["status"])        # ABSTAINED: no
 mem.used(out)                               # one line of feedback: Recallix learns from it on its own
 ```
 
+How readily recall answers is one option (server 0.2.5 or newer; default `"balanced"`):
+
+```python
+mem.recall("Which came first, the Goa trip or the Pune workshop?", mode="helpful")   # fewer refusals, computed_answer
+mem.recall("What dose did the doctor prescribe?", mode="cautious")                     # checks every answer twice
+```
+
+## Changes
+
+* **0.2.5**: `recall(..., mode="cautious" | "balanced" | "helpful")`; `store(..., timestamp=...)` keeps when a message was originally said.
+* **0.2.4**: `requests>=2.33.0`.
+
 ## MCP (Claude Desktop, Cursor, any MCP client)
 
 ```json

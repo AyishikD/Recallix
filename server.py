@@ -59,6 +59,24 @@ def root():
     return {"service": "recallix", "status": "running"}
 
 
+@app.get("/health")
+def health():
+    """
+    For monitors, load balancers and container health checks; no API key. 200 when the API and the vector
+    engine both answer; 503 when the engine does not (recall then falls back to keyword search only). Says
+    nothing about any user's data.
+    """
+    from fastapi.responses import JSONResponse
+    from backend.utils.internal_client import engine_get
+    try:
+        engine_get("/health")
+        engine = "ok"
+    except Exception:  # EngineError, connection refused, timeout
+        engine = "unreachable"
+    body = {"status": "ok" if engine == "ok" else "degraded", "api": "ok", "engine": engine}
+    return JSONResponse(body, status_code=200 if engine == "ok" else 503)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host=os.environ.get("RECALLIX_API_HOST", "127.0.0.1"),

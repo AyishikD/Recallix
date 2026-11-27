@@ -20,4 +20,15 @@ console.log(out.status, out.memories.map((m) => m.content));
 await mem.used(out);                                                  // one line of feedback: Recallix learns from it on its own
 ```
 
+How readily recall answers is one option (server 0.2.5 or newer; default `"balanced"`):
+
+```ts
+await mem.recall("Which came first, the Goa trip or the Pune workshop?", { mode: "helpful" });  // fewer refusals, computed_answer
+await mem.recall("What dose did the doctor prescribe?", { mode: "cautious" });                    // checks every answer twice
+```
+
+## Changes
+
+* **0.2.5**: `recall(query, { mode: "cautious" | "balanced" | "helpful" })`. (Version aligned with the Python SDK.)
+
 Node 18+ (uses the built-in `fetch`). License: Apache-2.0.

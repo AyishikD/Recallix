@@ -71,7 +71,12 @@ python server.py                               # API on 127.0.0.1:8000
 ```
 
 On startup the API rebuilds the engine's in-memory indexes from SQLite, so the
-engine can be restarted at any time.
+engine can be restarted at any time. `curl http://127.0.0.1:8000/health` checks that both are up
+(no key needed).
+
+The first store or recall after starting takes up to a minute: the local models load then
+(and download once, the very first time). Later requests take milliseconds. On a fresh
+MacBook (Apple Silicon) the first store took about 30 seconds.
 
 ### 4. Create keys
 
@@ -121,6 +126,22 @@ local re-ranker (no LLM) then re-reads 50 candidates together with the question.
 more of the evidence for such questions (measurements: `eval/results/retrieval_fixes/`) and
 costs about half a second per recall on a laptop CPU. `recall.rerank.enabled: true` makes every
 recall deep.
+
+**How cautious recall is** is one choice, per request or server-wide (`recall.mode`):
+
+| `mode` | Use it when | What changes |
+|---|---|---|
+| `balanced` (default) | most apps | nothing extra |
+| `cautious` | a wrong answer is far worse than "I don't know" (health, finance, legal) | every answer is checked a second time by a small local model; many more trick questions are declined, and more real questions too |
+| `helpful` | refusals hurt more than the occasional miss | counting, ordering and "how long between" questions the usual check declined are answered when the memories support every event they take for granted; for time and ordering questions `computed_answer` gives the worked-out result ("41 days", or the order) with the dates in `receipt.computed` |
+
+```python
+out = mem.recall("How many days after I booked the flights did I cancel them?", mode="helpful")
+out["computed_answer"]["text"]     # "21 days (3 weeks)", when every event is clearly in memory
+```
+
+`deep` and `keep_on_decline` work in every mode. Measured trade-offs (LoCoMo, LongMemEval):
+[`eval/results/aggregation_check/README.md`](../eval/results/aggregation_check/README.md).
 
 The "does it answer?" decision is made by a small local reading-comprehension model
 (SQuAD 2.0, no LLM) when `requirements-local.txt` is installed

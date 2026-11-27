@@ -33,11 +33,15 @@ _DEFAULT_MODEL = "cross-encoder/nli-deberta-v3-xsmall"
 
 
 def config():
+    from . import modes
     c = settings.get("recall.aggregation_check", {}) or {}
     mode = str(c.get("mode", "rescue")).lower()
-    return {"enabled": bool(c.get("enabled", False)), "mode": mode if mode in ("rescue", "decide") else "rescue",
+    mode = mode if mode in ("rescue", "decide") else "rescue"
+    helpful = modes.current() == "helpful"  # recall.mode helpful: the check on, in rescue mode
+    return {"enabled": bool(c.get("enabled", False)) or helpful, "mode": "rescue" if helpful else mode,
             "model": c.get("model") or _DEFAULT_MODEL,
             "threshold": float(c.get("threshold", 0.5)), "memories": int(c.get("memories", 10)),
+            "compute": bool(c.get("compute", True)), "compute_min_support": float(c.get("compute_min_support", 0.9)),
             "max_length": int(c.get("max_length", 256)), "device": c.get("device")}
 
 
@@ -702,14 +706,91 @@ def check(checker, question, memories, threshold, read=None, speaker=None):
                         owners.append((m.get("id"), statement))
         best, best_memory, best_statement, discounted = 0.0, None, variants[0], None
         text_of = {m.get("id"): t for m, t in usable}
+        support_by_memory = {}
         for (mid, statement), score in zip(owners, checker.entailment(pairs)):
-            if score > best and not _ABOUT_PLANS.search(statement) and plan_only(text_of.get(mid)):
+            plan = not _ABOUT_PLANS.search(statement) and plan_only(text_of.get(mid))
+            if not plan:
+                support_by_memory[mid] = max(score, support_by_memory.get(mid, 0.0))
+            if score > best and plan:
                 discounted = discounted if discounted and discounted[1] >= score else (mid, score)
                 continue
             if score > best:
                 best, best_memory, best_statement = score, mid, statement
-        entry = {"statement": best_statement, "support": round(best, 3), "memory": best_memory}
+        entry = {"statement": best_statement, "support": round(best, 3), "memory": best_memory,
+                 # every memory that supports the event (not only the best): computed answers need to know
+                 # whether the event happened on one date or several
+                 "supporters": {m: round(sc, 3) for m, sc in sorted(support_by_memory.items(), key=lambda x: -x[1])
+                                if sc >= threshold}}
+        ordinal = next((o for v in variants for o in ("first", "last") if re.search(rf"\b{o}\b", v, re.I)), None)
+        if ordinal:
+            entry["ordinal"] = ordinal
         if discounted and discounted[1] > best:
             entry["plan_only"] = {"memory": discounted[0], "support": round(discounted[1], 3)}
         report.append(entry)
     return {"kind": parsed["kind"], "supported": all(c["support"] >= threshold for c in report), "claims": report}
+
+
+# ---------------------------------------------------------------- computed answers
+
+def _day(ts):
+    from datetime import datetime, timezone
+    return datetime.fromtimestamp(float(ts), tz=timezone.utc).date()
+
+
+def _span_text(days, kind_hint=""):
+    """41 -> "41 days (5 weeks 6 days)"; under a week just days; with whole months when 60 days or more."""
+    out = f"{days} day{'s' if days != 1 else ''}"
+    extra = []
+    if days >= 7:
+        w, d = divmod(days, 7)
+        extra.append(f"{w} week{'s' if w != 1 else ''}" + (f" {d} day{'s' if d != 1 else ''}" if d else ""))
+    if days >= 60:
+        extra.append(f"about {days / 30.44:.1f} months")
+    return out + (f" ({'; '.join(extra)})" if extra else "")
+
+
+def compute(result, memories, min_support=0.9):
+    """
+    The answer worked out from the memories the check verified, or None. Only for time-between and ordering
+    questions, and only when every presupposed event is supported at `min_support` by a distinct memory with a
+    timestamp: the arithmetic is exact, choosing the events is the risk, so anything less is left to the caller.
+    Counting is not computed (follow-ups, cancellations and near-misses make the set of occasions uncertain).
+    {"kind", "text", "events": [{"statement", "memory", "date"}], "working"}.
+    """
+    if not result or not result.get("supported") or result.get("kind") not in ("time_between", "ordering"):
+        return None
+    claims = result.get("claims") or []
+    if len(claims) < 2 or any(c.get("support", 0) < min_support or c.get("memory") is None for c in claims):
+        return None
+    events = []
+    for c in claims:
+        # every memory that supports this event strongly; several on different dates make it ambiguous,
+        # unless the question says which one ("first", "last")
+        cands = [m for m, sc in (c.get("supporters") or {c["memory"]: c["support"]}).items()
+                 if sc >= min_support and memories.get(m) is not None and memories[m].get("timestamp") is not None]
+        if not cands:
+            return None
+        by_date = sorted(cands, key=lambda m: memories[m]["timestamp"])
+        if len({_day(memories[m]["timestamp"]) for m in cands}) > 1 and c.get("ordinal") not in ("first", "last"):
+            return None
+        pick = by_date[-1] if c.get("ordinal") == "last" else by_date[0]
+        events.append({"statement": c["statement"], "memory": pick, "date": _day(memories[pick]["timestamp"])})
+    if len({e["memory"] for e in events}) != len(events):
+        return None
+    if result["kind"] == "time_between":
+        if len(events) != 2:
+            return None
+        a, b = events
+        if b["date"] < a["date"]:
+            return None  # "after A ... B" / "between A and B" with B dated before A: these are not the right events
+        days = (b["date"] - a["date"]).days
+        return {"kind": "time_between", "text": _span_text(days),
+                "events": [{**e, "date": e["date"].isoformat()} for e in events],
+                "working": f"{a['date'].isoformat()} (memory {a['memory']}) to {b['date'].isoformat()} (memory {b['memory']})"
+                           f" = {days} days"}
+    ordered = sorted(events, key=lambda e: e["date"])
+    if len({e["date"] for e in events}) != len(events):
+        return None  # two events on one day: the order is not known from dates
+    return {"kind": "ordering", "text": " -> ".join(e["statement"].rstrip(".") for e in ordered),
+            "events": [{**e, "date": e["date"].isoformat()} for e in ordered],
+            "working": "; ".join(f"{e['date'].isoformat()}: {e['statement'].rstrip('.')} (memory {e['memory']})" for e in ordered)}

@@ -25,8 +25,9 @@ _DEFAULT_MODEL = "cross-encoder/qnli-electra-base"
 
 
 def config():
+    from . import modes
     c = ((settings.get("recall.answer_check", {}) or {}).get("verify") or {})
-    return {"enabled": bool(c.get("enabled", False)), "model": c.get("model") or _DEFAULT_MODEL,
+    return {"enabled": bool(c.get("enabled", False)) or modes.current() == "cautious", "model": c.get("model") or _DEFAULT_MODEL,
             "threshold": float(c.get("threshold", 0.001)), "max_length": int(c.get("max_length", 256)),
             "device": c.get("device")}
 

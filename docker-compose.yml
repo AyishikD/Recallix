@@ -1,7 +1,8 @@
 # Self-hosted Recallix: one container (vector engine + API), data in a named volume.
 #   docker compose up -d
 #   docker compose logs recallix | grep -A2 "admin API key"     # printed once, on first start
-#   curl localhost:8000/                                       # {"service": "recallix", ...}
+#   curl localhost:8000/health                                 # {"status": "ok", "api": "ok", "engine": "ok"}
+#   docker compose ps                                          # STATUS shows (healthy) once the models have loaded
 services:
   recallix:
     build: .

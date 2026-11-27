@@ -28,6 +28,7 @@ from ..features.answer_check import AnswerChecker
 from ..features import reranker as rerank_cfg
 from ..features import aggregation_check
 from ..features import answer_verify
+from ..features import modes
 from ..features.reranker import Reranker
 from ..features.implicit import ImplicitInference, rules_config as implicit_config
 from ..features.facts import EXTRACTOR_VERSION
@@ -301,7 +302,19 @@ class RecallEngine:
 
     # ------------------------------------------------------------------
     def multi_stage_recall(self, user_id, query, agent_id="default_agent", top_k=5, return_candidates=False, deep=None,
-                           keep_on_decline=None):
+                           keep_on_decline=None, mode=None):
+        """
+        mode: "cautious" | "balanced" | "helpful" for this recall (features/modes.py); None = config recall.mode.
+        """
+        token = modes.use(mode)
+        try:
+            out = self._recall(user_id, query, agent_id, top_k, return_candidates, deep, keep_on_decline)
+        finally:
+            modes.reset(token)
+        return out
+
+    def _recall(self, user_id, query, agent_id="default_agent", top_k=5, return_candidates=False, deep=None,
+                keep_on_decline=None):
         """
         deep: True reads the candidates with the re-ranker (recall.rerank: better on questions whose
         answer is spread over several memories, slower); False never; None follows the config.
@@ -448,6 +461,17 @@ class RecallEngine:
             if rescue is not None and rescue["supported"]:
                 rescue["rescued"] = True
                 aggregation, status, final = rescue, "CONSISTENT", resolved[:top_k]
+        computed = None
+        agg_cfg = aggregation_check.config()
+        if status == "CONSISTENT" and resolved and not outsider and agg_cfg["enabled"] and agg_cfg["compute"]:
+            # recall.aggregation_check.compute: for time-between and ordering questions, work the answer out from
+            # the memories the check verified (exact dates, shown in the receipt); never changes the decision
+            basis = aggregation
+            if basis is None:
+                parsed = aggregation_check.presuppositions(asked)
+                if parsed is not None and parsed["kind"] in ("time_between", "ordering"):
+                    basis = self._aggregation_check(asked, resolved)
+            computed = aggregation_check.compute(basis, {m["id"]: m for m in resolved}, agg_cfg["compute_min_support"])
 
         if status == "CONSISTENT":
             # recall.second_pass and recall.rerank: applied after the answer-or-decline
@@ -505,9 +529,13 @@ class RecallEngine:
                 "model": Ranker.model().get("source", ""),
                 "answer_check": answer_check,
                 "aggregation_check": aggregation,
+                "mode": modes.current(),
             },
             "latency_ms": round((time.time() - t0) * 1000, 1),
         }
+        if computed is not None:
+            result["computed_answer"] = computed
+            result["receipt"]["computed"] = computed["working"]
         if memories:
             result["receipt"]["trust"] = memories[0].get("trust")
             result["receipt"]["trust_calibration"] = trust.trust_calibration()
@@ -869,6 +897,7 @@ class RecallEngine:
             reason = f"best relevance {resolved[0]['relevance']:.3f} >= threshold {threshold:.3f}"
         return {
             "decision": status,
+            "mode": modes.current(),
             "reason": reason,
             "trust": None,
             "guarantee": (answer_check or {}).get("guarantee"),

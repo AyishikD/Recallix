@@ -22,6 +22,12 @@ export interface RecallOptions {
      * (`answer` stays null). Check `status` before using them as an answer. Default: server setting (off).
      */
     keepOnDecline?: boolean;
+    /**
+     * How readily recall answers: "cautious" verifies every answer (more "I don't know", fewer wrong answers),
+     * "balanced" is the default, "helpful" answers more counting / ordering / time questions (fewer refusals).
+     * Default: server setting (recall.mode).
+     */
+    mode?: "cautious" | "balanced" | "helpful";
 }
 
 const q = (params: Record<string, string | number | undefined>) => {
@@ -46,7 +52,7 @@ export class Memory {
     recall(query: string, opts: RecallOptions = {}) {
         return this.client.request("POST", "/memory/recall", {
             query, limit: opts.limit ?? 10, agent_id: opts.agentId ?? "default_agent", user_id: opts.userId,
-            deep: opts.deep, keep_on_decline: opts.keepOnDecline,
+            deep: opts.deep, keep_on_decline: opts.keepOnDecline, mode: opts.mode,
         });
     }
 

@@ -126,6 +126,14 @@ memory:
 # Recall
 # ============================================================================
 recall:
+  # How readily recall answers (backend/brain/features/modes.py); also per request ("mode" in /memory/recall).
+  #   balanced  default: the answer check as configured.
+  #   cautious  also verify every answer with answer_check.verify. LoCoMo test (held out): trick questions declined
+  #             66 -> 122 of 209, real questions wrongly declined 70 -> 224 of 772; LongMemEval_S 16 -> 20 of 30
+  #             and 78 -> 115 of 470. For high-stakes use where "I don't know" is far better than a wrong answer.
+  #   helpful   also rescue declined counting / ordering / time questions (aggregation_check, rescue). LongMemEval_S
+  #             wrongly declined 78 -> 55 of 470, unanswerable declined 16 -> 17 of 30; LoCoMo dev 60 -> 56 of 760.
+  mode: balanced
   candidate_pool: 200        # max candidates from each of lexical and vector search
   backfill_per_query: 50     # max legacy rows embedded lazily per query
   # Abstention: recall returns nothing when the best match's relevance is below a threshold.
@@ -207,6 +215,11 @@ recall:
   aggregation_check:
     enabled: false
     mode: rescue
+    # compute: for time-between and ordering questions whose every event is supported at compute_min_support by a
+    # distinct memory, return `computed_answer` (days between, or the order) worked out from those memories' dates,
+    # with the working in the receipt. Counting is never computed. Never changes the answer-or-decline decision.
+    compute: true
+    compute_min_support: 0.9
     model: cross-encoder/nli-deberta-v3-base   # 184M parameters; nli-deberta-v3-xsmall is ~4x faster and weaker
     threshold: 0.5         # P(entailment) a presupposed event needs from its best memory
     memories: 10           # how many ranked memories are read

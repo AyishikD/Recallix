@@ -19,16 +19,24 @@ class Memory:
         self.client = MemoryClient(api_key, base_url, timeout)
 
     def store(self, content: str, agent_id: str = "default_agent", memory_type: str = "private",
-              user_id: Optional[str] = None, metadata: Optional[Dict] = None) -> Dict[str, Any]:
-        """memory_type: "private" (only this agent) or "shared" (all of the user's agents)."""
+              user_id: Optional[str] = None, metadata: Optional[Dict] = None,
+              timestamp: Optional[float] = None) -> Dict[str, Any]:
+        """
+        memory_type: "private" (only this agent) or "shared" (all of the user's agents).
+        timestamp: when the message was originally said (Unix seconds; server 0.2.5+). Default: now.
+        """
         return self.client.request("POST", "/memory/store", data={
             "content": content, "agent_id": agent_id, "memory_type": memory_type,
-            "user_id": user_id, "metadata": metadata})
+            "user_id": user_id, "metadata": metadata, "timestamp": timestamp})
 
     def recall(self, query: str, limit: int = 10, agent_id: str = "default_agent",
                user_id: Optional[str] = None, deep: Optional[bool] = None,
-               keep_on_decline: Optional[bool] = None) -> Dict[str, Any]:
+               keep_on_decline: Optional[bool] = None, mode: Optional[str] = None) -> Dict[str, Any]:
         """
+        mode: how readily recall answers. "cautious" verifies every answer (more "I don't know", fewer wrong
+        answers), "balanced" is the default, "helpful" answers more counting / ordering / time questions (fewer
+        refusals). Default: server setting (recall.mode).
+
         deep=True re-reads the candidates with a re-ranker: better when the answer is spread over
         several memories ("what activities has she done with her kids?"), but slower. Default: server setting.
 
@@ -41,6 +49,8 @@ class Memory:
             data["deep"] = deep
         if keep_on_decline is not None:
             data["keep_on_decline"] = keep_on_decline
+        if mode is not None:
+            data["mode"] = mode
         return self.client.request("POST", "/memory/recall", data=data)
 
     def feedback(self, recall_id: str, relevant_memory_ids: List[int], user_id: Optional[str] = None) -> Dict[str, Any]:

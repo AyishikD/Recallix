@@ -48,6 +48,10 @@ class StoreRequest(BaseModel):
     agent_id: AgentId = "default_agent"
     memory_type: Literal["private", "shared"] = "private"
     metadata: Metadata = None
+    # When the message was originally said (Unix seconds). Default: now. Lets clients store a conversation after
+    # the fact (agent frameworks that hand over a whole session) with its real dates, which recency, date answers
+    # and computed answers depend on. Not more than a day in the future.
+    timestamp: Optional[float] = Field(default=None, ge=0)
     # accepted for backward compatibility; no effect (no LLM; writes are searchable immediately)
     skip_llm: Optional[bool] = None
     sync_index: Optional[bool] = None
@@ -64,6 +68,9 @@ class RecallRequest(BaseModel):
     # A decline (status ABSTAINED) still returns the ranked results, low-confidence, answer null. Only for
     # callers that check `status`. None = config (recall.keep_results_on_decline, off by default).
     keep_on_decline: Optional[bool] = None
+    # How readily recall answers: "cautious" (verify every answer; more "I don't know"), "balanced" (default) or
+    # "helpful" (rescue declined counting / ordering / time questions; fewer refusals). None = config recall.mode.
+    mode: Optional[Literal["cautious", "balanced", "helpful"]] = None
 
 
 class ProactiveRequest(BaseModel):
@@ -83,8 +90,11 @@ class FeedbackRequest(BaseModel):
 def store_memory(request: StoreRequest, auth=Depends(verify_api_key)):
     user_id = acting_user(auth, request.user_id)
     rate_limit_writes(user_id)
+    if request.timestamp is not None and request.timestamp > time.time() + 86400:
+        raise HTTPException(status_code=422, detail="timestamp is more than a day in the future")
     result = get_memory_manager().store(user_id, request.content, agent_id=request.agent_id,
-                                        memory_type=request.memory_type, client_metadata=request.metadata)
+                                        memory_type=request.memory_type, client_metadata=request.metadata,
+                                        timestamp=request.timestamp)
     return envelope({k: result.get(k) for k in
                      ("status", "memory_id", "importance", "schemas", "promoted", "indexed", "conflicts", "total_ms", "processing_log")})
 
@@ -94,7 +104,8 @@ def recall_memory(request: RecallRequest, auth=Depends(verify_api_key)):
     user_id = acting_user(auth, request.user_id)
     rate_limit_reads(user_id, deep=bool(request.deep))
     return envelope(get_memory_manager().retrieve(user_id, request.query, agent_id=request.agent_id, limit=request.limit,
-                                                  deep=request.deep, keep_on_decline=request.keep_on_decline))
+                                                  deep=request.deep, keep_on_decline=request.keep_on_decline,
+                                                  mode=request.mode))
 
 
 @router.post("/proactive")

@@ -245,3 +245,69 @@ identical to today (served recall@10 0.7008); with 4, multi-hop 0.375 -> 0.390 b
 and overall 0.701 -> 0.681. Offline probe: the missing multi-hop evidence is already among the first search's
 candidates (first evidence ranked 11-50 for most misses), and LoCoMo "multi-hop" questions are mostly list
 questions ("What has John cooked?"), not chains. Multi-hop is a ranking problem, not a search problem.
+
+## Answer verification and recall modes (27 November 2026)
+
+`recall.answer_check.verify` (features/answer_verify.py): a QNLI cross-encoder (cross-encoder/qnli-electra-base,
+110M) checks that the memory the reader answered from actually answers the question, read as "<speaker> said:
+<message>". Offline on LoCoMo dev the threshold 0.001 kept 350 of 379 answers from evidence and declined 53 of 160
+answered trick questions. Through the full recall path (`eval/results/answer_verify/`):
+
+| | off | verify on |
+|---|---|---|
+| LoCoMo dev: traps declined / answerable wrongly declined | 77/237, 60/760 | 128/237, 200/760 |
+| **LoCoMo test (held out)**: traps declined / wrongly declined | 66/209, 70/772 | 122/209, 224/772 |
+| LoCoMo test served recall@10 | 0.659 | 0.563 |
+| **LongMemEval_S**: unanswerable declined / wrongly declined | 16/30, 78/470 | 20/30, 115/470 |
+| LongMemEval_S served recall@10 | 0.726 | 0.669 |
+
+The offline estimate missed that many real questions are answered from memories not labelled as evidence; the
+verifier declines many of those too. Not a default: it roughly doubles trick-question declines on held-out LoCoMo
+but refuses about a quarter of real questions. It is the `cautious` mode.
+
+**Recall modes** (`recall.mode`, or `mode` per request; features/modes.py): `balanced` (default, unchanged),
+`cautious` (verifier on), `helpful` (aggregation check in rescue mode). Checked: `helpful` reproduces the rescue
+results on all 239 dev questions and `cautious` reproduces the verifier's LoCoMo dev numbers exactly
+(`eval/results/modes/`). Deep recall and keep_on_decline stay per request in every mode.
+
+## Computed answers (27 November 2026)
+
+`recall.aggregation_check.compute` (on whenever the check is on, i.e. in `helpful` mode): for time-between and
+ordering questions, `computed_answer` works the answer out from the memories the check verified (days between, or
+the order), with the working in `receipt.computed`. It never changes the answer-or-decline decision and never
+computes counts. It is offered only when every event is supported at 0.9 or more by one date (several dates need
+"first"/"last" in the question), the events are distinct, and for time-between the second event is not dated
+before the first. Graded against the answer keys (`eval/results/computed/`; grading script compares day totals,
+and for ordering the first item, so "which came later" questions and named-vs-venue answers were checked by hand
+on the dev set):
+
+| Set | time-between: offered / right | ordering: offered / first item right (by script) | on traps |
+|---|---|---|---|
+| Dev originals | 25 of 56 / 23 | 41 of 67 / 35 (39 after reading the 6 misses) | 1 |
+| Reworded A | 37 of 58 / 34 | 37 of 68 / 32 | 0 |
+| Hard set | 7 of 16 / 6 | 10 of 16 / 9 | 0 |
+| Reworded B (totals) | 14 of 54 / 12 | 35 of 66 / 31 | 2 |
+| Hard2 (totals) | 4 of 16 / 4 | 12 of 16 / 7 | 0 |
+
+Before the two safeguards (one date per event; second event not before the first) it was offered for most
+questions but right only about 80% of the time: the arithmetic was never wrong, the event picked sometimes was
+(a later gym visit for "first hit the gym", a jog dated before the cancellation it was "after").
+
+## Third hard batch, unread: confirmation of the modes and computed answers (27 November 2026)
+
+12 scenarios from the same external prompt with new themes (hard3_scenarios.jsonl; keys audited by a separate
+agent that reported counts only: 4 accepted, 8 fixed, 5 answerable traps replaced). Nobody working on the code
+has read its questions. Measured once per mode with the code as committed for this README (`eval/results/hard3/`).
+
+| Mode | answerable wrongly declined | all evidence served | traps declined |
+|---|---|---|---|
+| balanced (default) | 12 of 48 | 35 of 48 | 9 of 24 |
+| helpful | **3 of 48** | **44 of 48** | 8 of 24 |
+| cautious | 22 of 48 | 26 of 48 | **16 of 24** |
+
+Computed answers (helpful): time-between offered for 7 of 16, all 7 right (day totals match the keys and the
+events match the key's evidence dates); ordering offered for 10 of 16, events match the key's evidence dates in
+8 (the order then follows from the dates). One computed answer on a trap.
+
+This matches the earlier sets: helpful cuts wrong refusals sharply and lets about one more trap through;
+cautious declines many more traps and refuses many more real questions; balanced is unchanged.

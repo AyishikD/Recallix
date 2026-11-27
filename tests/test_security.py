@@ -155,3 +155,28 @@ def test_one_import_at_a_time_per_user():
             pass
     with one_import_at_a_time("u1"):       # released afterwards
         pass
+
+
+def test_health_needs_no_key_and_reports_the_engine(client, monkeypatch):
+    out = client.get("/health")
+    assert out.status_code == 200 and out.json() == {"status": "ok", "api": "ok", "engine": "ok"}
+    import backend.utils.internal_client as ic
+
+    def down(path):
+        raise ic.EngineError("GET /health -> connection refused")
+    monkeypatch.setattr(ic, "engine_get", down)
+    out = client.get("/health")
+    assert out.status_code == 503 and out.json()["engine"] == "unreachable"
+
+
+def test_store_keeps_the_original_time_and_refuses_the_far_future(client, api_keys):
+    import time
+    h = api_keys["alice"]
+    then = time.time() - 30 * 86400
+    out = client.post("/memory/store", json={"content": "Signed the lease for the flat in Pune.", "timestamp": then}, headers=h)
+    assert out.status_code == 200
+    mid = out.json()["data"]["memory_id"]
+    rec = client.post("/memory/recall", json={"query": "Signed the lease for the flat in Pune?", "keep_on_decline": True}, headers=h).json()["data"]
+    m = next(m for m in rec["memories"] if m["id"] == mid)
+    assert abs(m["timestamp"] - then) < 1
+    assert client.post("/memory/store", json={"content": "x", "timestamp": time.time() + 3 * 86400}, headers=h).status_code == 422

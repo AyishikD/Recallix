@@ -288,3 +288,50 @@ def test_mode_defaults_to_rescue_and_rejects_unknown_values(monkeypatch):
         monkeypatch.setattr(settings, "get", lambda key, default=None, cfg=cfg: cfg if key == "recall.aggregation_check"
                             else real(key, default))
         assert ac.config()["mode"] == expected
+
+
+def _mem(i, day):
+    from datetime import datetime, timezone
+    return {"id": i, "timestamp": datetime(2025, 1, 1, 12, tzinfo=timezone.utc).timestamp() + (day - 1) * 86400}
+
+
+def _claims(*items, kind="time_between"):
+    return {"kind": kind, "supported": True,
+            "claims": [{"statement": s, "support": 0.99, "memory": m, "supporters": sup, **({"ordinal": o} if o else {})}
+                       for s, m, sup, o in items]}
+
+
+def test_computed_days_between_two_verified_events():
+    mems = {1: _mem(1, 10), 2: _mem(2, 51)}
+    out = ac.compute(_claims(("I signed the lease.", 1, {1: 0.99}, None), ("I moved in.", 2, {2: 0.98}, None)), mems)
+    assert out["kind"] == "time_between" and out["text"] == "41 days (5 weeks 6 days)"
+    assert "2025-01-10 (memory 1) to 2025-02-20 (memory 2) = 41 days" == out["working"]
+
+
+def test_no_computed_answer_when_the_events_are_uncertain():
+    mems = {1: _mem(1, 10), 2: _mem(2, 51), 3: _mem(3, 70)}
+    lease, moved = ("I signed the lease.", 1, {1: 0.99}, None), ("I moved in.", 2, {2: 0.98}, None)
+    # the second event dated before the first
+    assert ac.compute(_claims(("I moved in.", 2, {2: 0.98}, None), lease), mems) is None
+    # an event supported on two different dates, and the question does not say which
+    assert ac.compute(_claims(lease, ("I moved in.", 2, {2: 0.98, 3: 0.97}, None)), mems) is None
+    # weak support, counting, or a check that did not pass
+    assert ac.compute(_claims(lease, ("I moved in.", 2, {2: 0.6}, None)), mems) is None
+    assert ac.compute({**_claims(lease, moved), "kind": "counting"}, mems) is None
+    assert ac.compute({**_claims(lease, moved), "supported": False}, mems) is None
+
+
+def test_first_and_last_choose_among_several_dates():
+    mems = {1: _mem(1, 5), 2: _mem(2, 30), 3: _mem(3, 60)}
+    out = ac.compute(_claims(("My first gym visit happened.", 2, {2: 0.99, 1: 0.95}, "first"),
+                             ("I did the bench press.", 3, {3: 0.99}, None)), mems)
+    assert out["text"].startswith("55 days") and out["events"][0]["memory"] == 1
+
+
+def test_computed_order_and_same_day_events():
+    mems = {1: _mem(1, 40), 2: _mem(2, 10), 3: _mem(3, 10)}
+    out = ac.compute(_claims(("I visited Hampi.", 1, {1: 0.99}, None), ("I visited Gokarna.", 2, {2: 0.99}, None),
+                             kind="ordering"), mems)
+    assert out["text"] == "I visited Gokarna -> I visited Hampi"
+    assert ac.compute(_claims(("I visited Gokarna.", 2, {2: 0.99}, None), ("I visited Coorg.", 3, {3: 0.99}, None),
+                              kind="ordering"), mems) is None

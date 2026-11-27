@@ -30,5 +30,6 @@ RUN rm -rf backend/infra_cpp/build backend/storage && chmod +x /usr/local/bin/re
 USER recallix
 VOLUME /data
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=120s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')" || exit 1
+# /health is 200 only when the API and the vector engine both answer (503 otherwise, which urlopen raises on)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')" || exit 1
 ENTRYPOINT ["recallix-entrypoint"]
