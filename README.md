@@ -167,8 +167,9 @@ Then create a key (`python -m backend.tools.keys create --user alice`) and use t
 [Python SDK](sdk/python) or [TypeScript SDK](sdk/typescript).
 Integrations: [Open WebUI](integrations/open-webui/README.md) (memory for every chat, one filter, no code),
 [Google ADK](integrations/google-adk/README.md) (`RecallixMemoryService`),
-[Haystack](integrations/haystack/README.md) (`RecallixMemoryStore`) and
-[LlamaIndex](integrations/llama-index/README.md) (`RecallixMemoryBlock`). Full walkthrough:
+[Haystack](integrations/haystack/README.md) (`RecallixMemoryStore`),
+[LlamaIndex](integrations/llama-index/README.md) (`RecallixMemoryBlock`) and the
+[Vercel AI SDK](integrations/vercel-ai/README.md) (`recallixMemory()` middleware). Full walkthrough:
 [`docs/quickstart.md`](docs/quickstart.md). Endpoints: [`docs/api_reference.md`](docs/api_reference.md).
 To try every endpoint from the browser, open **http://localhost:8000/docs**, click **Authorize** and
 paste your key (no SDK needed).

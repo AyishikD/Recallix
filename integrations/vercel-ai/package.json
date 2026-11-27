@@ -1,0 +1,44 @@
+{
+    "name": "recallix-ai-sdk",
+    "version": "0.1.0",
+    "description": "Recallix memory for the Vercel AI SDK: self-hosted, no LLM calls for memory, says when it has no record",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "test": "npm run build && node --test test/memory.test.mjs",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "ai",
+        "ai-sdk",
+        "vercel",
+        "memory",
+        "middleware",
+        "ai-agents"
+    ],
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/AyishikD/Recallix",
+        "directory": "integrations/vercel-ai"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "dependencies": {
+        "recallix": "^0.2.7"
+    },
+    "peerDependencies": {
+        "ai": ">=6"
+    },
+    "devDependencies": {
+        "ai": "^7.0.0",
+        "zod": "^4.0.0",
+        "typescript": "^5.4.0"
+    }
+}
