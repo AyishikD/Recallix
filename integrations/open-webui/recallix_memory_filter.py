@@ -2,10 +2,9 @@
 title: Recallix Memory
 author: Recallix
 author_url: https://github.com/AyishikD/Recallix
-version: 0.1.0
+version: 0.1.1
 license: Apache-2.0
 required_open_webui_version: 0.6.0
-requirements: requests
 description: Long-term memory for every chat, from a self-hosted Recallix server. No LLM calls for memory: it recalls what each user told any model before, says when it has no record instead of guessing, and stores new messages. Your data stays on your server.
 """
 # Open WebUI filter (Admin Panel > Functions > Import from URL, or paste this file). For each chat turn:
