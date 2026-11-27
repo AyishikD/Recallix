@@ -20,7 +20,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-REPO = "AyishikD/Recallix"
+REPO = "Recallic/Recallic"
 DEST = Path(__file__).resolve().parents[1] / "infra_cpp" / "build" / "memory_service"
 
 

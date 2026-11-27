@@ -13,8 +13,8 @@ license = { text = "Apache-2.0" }
 keywords = ["memory", "ai-agents", "llm", "mcp", "rag"]
 
 [project.urls]
-Homepage = "https://github.com/AyishikD/Recallix"
-Source = "https://github.com/AyishikD/Recallix"
+Homepage = "https://github.com/Recallic/Recallic"
+Source = "https://github.com/Recallic/Recallic"
 
 [project.scripts]
 recallix-mcp = "recallix.mcp_server:main"

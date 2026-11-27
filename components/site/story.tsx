@@ -376,7 +376,7 @@ export function ClosingCTA() {
                 <p className="type-lede mx-auto mt-5 max-w-[620px] text-night-ink-2">Free to self-host. Source available. A few lines of code.</p>
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
                     <Link href="/sdk" className="inline-flex h-10 items-center rounded-full px-5 text-[15px] font-medium bg-cta text-cta-ink hover:bg-cta-hover transition-colors">Get started</Link>
-                    <a href="https://github.com/AyishikD/Recallix" className="text-[17px] text-accent hover:underline">View on GitHub <span aria-hidden="true">›</span></a>
+                    <a href="https://github.com/Recallic/Recallic" className="text-[17px] text-accent hover:underline">View on GitHub <span aria-hidden="true">›</span></a>
                 </div>
             </div>
         </section>

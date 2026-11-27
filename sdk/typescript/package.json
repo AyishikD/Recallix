@@ -22,7 +22,7 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/AyishikD/Recallix",
+        "url": "https://github.com/Recallic/Recallic",
         "directory": "sdk/typescript"
     },
     "engines": {

@@ -3,7 +3,7 @@
 ## Fastest: Docker (one command)
 
 ```bash
-git clone https://github.com/AyishikD/Recallix && cd Recallix
+git clone https://github.com/Recallic/Recallic && cd Recallic
 docker compose up -d
 docker compose logs recallix | grep -A1 "admin API key"     # printed once, on first start: save it
 docker compose exec recallix python -m backend.tools.keys create --user alice   # a key for your app
@@ -33,7 +33,7 @@ python -m backend.tools.get_engine         # prebuilt vector engine for this mac
 ```
 
 `get_engine` downloads the engine built for your machine from the latest
-[GitHub release](https://github.com/AyishikD/Recallix/releases) (Linux x86-64 with or without
+[GitHub release](https://github.com/Recallic/Recallic/releases) (Linux x86-64 with or without
 AVX2, Linux ARM64, macOS on Apple Silicon), checks it against the release's `SHA256SUMS`, and
 installs it as `backend/infra_cpp/build/memory_service`. The Linux builds need glibc 2.35 or
 newer (Ubuntu 22.04+, Debian 12+). On other platforms, or to compile it yourself:

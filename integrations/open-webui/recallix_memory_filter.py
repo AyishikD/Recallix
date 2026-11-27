@@ -1,7 +1,7 @@
 """
 title: Recallix Memory
 author: Recallix
-author_url: https://github.com/AyishikD/Recallix
+author_url: https://github.com/Recallic/Recallic
 version: 0.1.1
 license: Apache-2.0
 required_open_webui_version: 0.6.0

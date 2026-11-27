@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 dependencies = ["llama-index-core>=0.12.40", "recallix>=0.2.6"]
 
 [project.urls]
-Homepage = "https://github.com/AyishikD/Recallix/tree/main/integrations/llama-index"
+Homepage = "https://github.com/Recallic/Recallic/tree/main/integrations/llama-index"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/llama_index"]

@@ -134,7 +134,7 @@ Diagrams: [`docs/architecture_high_level.puml`](docs/architecture_high_level.pum
 **Docker (recommended):**
 
 ```bash
-git clone https://github.com/AyishikD/Recallix && cd Recallix
+git clone https://github.com/Recallic/Recallic && cd Recallic
 docker compose up -d                                       # engine + API on localhost:8000
 docker compose logs recallix | grep -A1 "admin API key"    # printed once: save it
 docker compose exec recallix python -m backend.tools.keys create --user alice

@@ -25,7 +25,7 @@ If Recallix is down or slow, the chat carries on without memory and shows a stat
 2. **Add the filter** in Open WebUI: *Admin Panel → Functions → Import from URL*, and paste
 
    ```
-   https://github.com/AyishikD/Recallix/blob/main/integrations/open-webui/recallix_memory_filter.py
+   https://github.com/Recallic/Recallic/blob/main/integrations/open-webui/recallix_memory_filter.py
    ```
 
    (or *Create*, and paste the file's contents). Open WebUI installs its one requirement, `requests`.

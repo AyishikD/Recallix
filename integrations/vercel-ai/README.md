@@ -1,7 +1,7 @@
 # recallix-ai-sdk: Recallix memory for the Vercel AI SDK
 
 `recallixMemory()` is AI SDK middleware that gives any model a self-hosted
-[Recallix](https://github.com/AyishikD/Recallix) memory. Wrap the model once and use it as usual.
+[Recallix](https://github.com/Recallic/Recallic) memory. Wrap the model once and use it as usual.
 
 * **No LLM calls for memory.** Storing and searching use Recallix's local models.
 * **Before each call**, it recalls what this user said before that bears on their latest message and gives it to

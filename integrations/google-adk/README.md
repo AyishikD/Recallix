@@ -1,6 +1,6 @@
 # recallix-adk: Recallix memory for Google ADK agents
 
-`RecallixMemoryService` plugs a self-hosted [Recallix](https://github.com/AyishikD/Recallix) server into
+`RecallixMemoryService` plugs a self-hosted [Recallix](https://github.com/Recallic/Recallic) server into
 [Google's Agent Development Kit](https://google.github.io/adk-docs/) as the agent's memory service.
 
 * **No LLM calls for memory.** Storing and searching use Recallix's local models; your agent's model is the

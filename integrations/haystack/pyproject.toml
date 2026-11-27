@@ -15,7 +15,7 @@ dependencies = ["haystack-ai>=2.18", "recallix>=0.2.6"]
 agent = ["haystack-experimental>=0.15"]
 
 [project.urls]
-Homepage = "https://github.com/AyishikD/Recallix/tree/main/integrations/haystack"
+Homepage = "https://github.com/Recallic/Recallic/tree/main/integrations/haystack"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/recallix_haystack"]

@@ -1,6 +1,6 @@
 # recallix (Python)
 
-Client and MCP server for [Recallix](https://github.com/AyishikD/Recallix): an LLM-free memory
+Client and MCP server for [Recallix](https://github.com/Recallic/Recallic): an LLM-free memory
 layer for AI agents. Recallix runs on your own machine, needs no LLM calls, and declines
 instead of guessing.
 
@@ -9,7 +9,7 @@ pip install recallix
 ```
 
 You need a running Recallix server. The quickest way is
-`docker compose up -d` in the [repository](https://github.com/AyishikD/Recallix); see the quickstart there.
+`docker compose up -d` in the [repository](https://github.com/Recallic/Recallic); see the quickstart there.
 
 ```python
 from recallix import Memory

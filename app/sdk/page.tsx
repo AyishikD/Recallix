@@ -165,7 +165,7 @@ $ python -m backend.tools.audit verify`,
 ];
 
 const SETUP = [
-    { t: "Run it (Docker)", c: `git clone https://github.com/AyishikD/Recallix && cd Recallix
+    { t: "Run it (Docker)", c: `git clone https://github.com/Recallic/Recallic && cd Recallic
 docker compose up -d                 # vector engine + API on localhost:8000` },
     { t: "Get your keys", c: `docker compose logs recallix | grep -A1 "admin API key"   # printed once
 docker compose exec recallix python -m backend.tools.keys create --user alice` },
@@ -304,8 +304,8 @@ export default function DevelopersPage() {
                     ))}
                 </div>
                 <div className="mt-8 flex flex-wrap gap-6">
-                    <ButtonLink href="https://github.com/AyishikD/Recallix/blob/main/docs/api_reference.md" variant="link">Full API reference</ButtonLink>
-                    <ButtonLink href="https://github.com/AyishikD/Recallix/blob/main/docs/quickstart.md" variant="link">Quickstart</ButtonLink>
+                    <ButtonLink href="https://github.com/Recallic/Recallic/blob/main/docs/api_reference.md" variant="link">Full API reference</ButtonLink>
+                    <ButtonLink href="https://github.com/Recallic/Recallic/blob/main/docs/quickstart.md" variant="link">Quickstart</ButtonLink>
                 </div>
             </Section>
 

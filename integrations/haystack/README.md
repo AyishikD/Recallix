@@ -1,6 +1,6 @@
 # recallix-haystack: Recallix memory for Haystack agents
 
-`RecallixMemoryStore` plugs a self-hosted [Recallix](https://github.com/AyishikD/Recallix) server into
+`RecallixMemoryStore` plugs a self-hosted [Recallix](https://github.com/Recallic/Recallic) server into
 [Haystack](https://haystack.deepset.ai) agents as their memory store. It follows Haystack's `MemoryStore`
 protocol (`haystack_experimental.memory_stores`), so it drops in where the Mem0 store goes.
 

@@ -1,6 +1,6 @@
 # llama-index-memory-recallix: Recallix memory for LlamaIndex agents
 
-`RecallixMemoryBlock` plugs a self-hosted [Recallix](https://github.com/AyishikD/Recallix) server into
+`RecallixMemoryBlock` plugs a self-hosted [Recallix](https://github.com/Recallic/Recallic) server into
 [LlamaIndex](https://www.llamaindex.ai)'s `Memory` as a long-term memory block.
 
 * **No LLM calls for memory.** Storing and searching use Recallix's local models.
