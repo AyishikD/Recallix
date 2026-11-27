@@ -103,11 +103,11 @@ jobs:
           /tmp/adk/bin/python -m pytest -q -rs integrations/google-adk/tests | tee pytest-adk.txt
           ! grep -q skipped pytest-adk.txt   # a live test that skipped tested nothing
 
-      - name: Haystack (haystack-ai 2.x; the experimental Agent does not run on 3.x yet)
+      - name: Haystack (haystack-ai 2.23 + haystack-experimental 0.19, the pair whose Agent runs)
         if: ${{ !cancelled() }}
         run: |
           python -m venv /tmp/hay
-          /tmp/hay/bin/pip install -q -e sdk/python -e "integrations/haystack[agent]" "haystack-ai<3" pytest
+          /tmp/hay/bin/pip install -q -e sdk/python -e "integrations/haystack[agent]" "haystack-ai==2.23.*" "haystack-experimental==0.19.*" pytest
           /tmp/hay/bin/pip list 2>/dev/null | grep -iE "^haystack"
           /tmp/hay/bin/python -m pytest -q -rs integrations/haystack/tests | tee pytest-hay.txt
           ! grep -q skipped pytest-hay.txt   # a live test that skipped tested nothing
