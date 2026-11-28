@@ -216,3 +216,55 @@ def test_the_later_answer_wins_for_my_current_state_and_the_confident_one_otherw
     assert RecallEngine._best_answer(final, mems, "Who is my manager?")["text"] == "rohan"
     third_person = RecallEngine._best_answer(final, mems, "Who is Caroline's manager?")
     assert third_person["text"] == "priya" and third_person["later_answer"] == "rohan"   # unchanged behaviour
+
+
+# --- updates without cue words, ended facts and possessives (eval/data/dev/updates) -------------------------
+
+def test_someone_elses_possession_is_not_read_as_the_users():
+    from backend.brain.memory.updates import without_other_people as w
+    assert w("my sister's manager is rohan, she says he's strict", "Who is my manager?") == ""
+    assert w("my sister chloe is moving to austin", "Where is Chloe moving?") == "my sister chloe is moving to austin"
+
+
+def test_ended_values_are_read_per_clause():
+    from backend.brain.memory.updates import ended_values
+    words = lambda c: set().union(*[w for _, w in ended_values([{"content": c, "timestamp": 1}])] or [set()])
+    assert "honda" in words("sold the honda, bought a hyundai creta last week")
+    assert "creta" not in words("sold the honda, bought a hyundai creta last week")
+    assert "infosys" in words("accepted the offer from swiggy, resigned from infosys")
+    assert words("i live in delhi with my parents") == set()
+
+
+def test_for_my_present_the_latest_answer_wins_and_third_person_questions_are_unchanged():
+    from backend.brain.memory.recall_engine import RecallEngine
+    final = [_accepted(1, "delhi", 1.0, timestamp=1, content="i live in delhi"),
+             _accepted(2, "pune", -0.3, timestamp=3, content="found a flat in pune near my new office")]
+    mems = [{"id": 1}, {"id": 2}]
+    assert RecallEngine._best_answer(final, mems, "Where do I live?")["text"] == "pune"
+    assert RecallEngine._best_answer(final, mems, "Where does Caroline live?")["text"] == "delhi"
+
+
+def test_no_answer_rather_than_a_value_that_ended():
+    from backend.brain.memory.recall_engine import RecallEngine
+    final = [_accepted(1, "infosys", 4.2, timestamp=1, content="working at infosys as a backend dev"),
+             {"id": 2, "answer": None, "_answer_ok": False, "timestamp": 2,
+              "content": "accepted the offer from swiggy, resigned from infosys"}]
+    assert RecallEngine._best_answer(final, [{"id": 1}, {"id": 2}], "Where do I work?") is None
+
+
+def test_about_the_user():
+    from backend.brain.memory.updates import about_the_user
+    for c in ("found a flat in pune near my new office", "sold the honda, bought a hyundai creta", "got moved to the search team",
+              "I moved to Mumbai in March."):
+        assert about_the_user(c), c
+    assert not about_the_user("Anita lives in Bangalore.")
+
+
+def test_a_later_answer_about_someone_else_or_barely_accepted_does_not_override():
+    from backend.brain.memory.recall_engine import RecallEngine
+    live = [_accepted(1, "Mumbai", 3.9, timestamp=1, content="I moved to Mumbai in March."),
+            _accepted(2, "Bangalore", -0.9, timestamp=2, content="Anita lives in Bangalore.")]
+    assert RecallEngine._best_answer(live, [{"id": 1}, {"id": 2}], "Where do I live now?")["text"] == "Mumbai"
+    work = [_accepted(1, "Zomato", 8.4, timestamp=1, content="I work at Zomato as a data analyst."),
+            _accepted(2, "Mumbai", -1.1, timestamp=2, content="I moved to Mumbai in March.")]
+    assert RecallEngine._best_answer(work, [{"id": 1}, {"id": 2}], "Where do I work?")["text"] == "Zomato"

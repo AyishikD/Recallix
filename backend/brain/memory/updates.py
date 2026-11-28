@@ -172,6 +172,40 @@ def asks_about_now(query):
     return bool(_FIRST_PERSON.search(q) and _PRESENT.search(q) and not _HISTORY.search(q) and not asks_for_earlier(q))
 
 
+_ENDED = re.compile(r"\b(?:resigned|quit|left|closed|sold|cancel+ed|stopped|broke up|got rid of|gave (?:away|up)|"
+                    r"no longer|not anymore|anymore|is dead|died|went to my|moved out of|ended|switched from)\b", re.I)
+
+
+def ended_values(memories):
+    """
+    Words of things a memory says have ended for the user, with that memory's time: "resigned from infosys",
+    "closed the hdfc account", "sold the honda", "cancelled cult", "the xps is dead", "the iphone went to my mom".
+    [(timestamp, {words})]. Read per clause, so "bought a hyundai creta" next to "sold the honda" is not ended.
+    """
+    out = []
+    for m in memories:
+        for clause in _CLAUSE.split(str(m.get("content") or "")):
+            if _ENDED.search(clause):
+                words = {w for w in _WORD.findall(clause.lower()) if len(w) >= 3 and w not in _stopwords() and w not in _GENERIC}
+                if words:
+                    out.append((float(m.get("timestamp") or 0), words))
+    return out
+
+
+_FIRST_PERSON_TEXT = re.compile(r"\b(?:i|i'm|im|i've|i'd|my|me|mine|we|our|us)\b", re.I)
+_VERB_FIRST = re.compile(r"^\W*(?:\w+ed|sold|bought|went|got|found|joined|took|left|made|quit|began|became|broke|gave|"
+                         r"spent|switched|shifted|started|signed|moved|spilled|accepted|closed|cancel+ed|sent|paid|sat)\b", re.I)
+
+
+def about_the_user(content):
+    """
+    The memory states something about the user: "I/my/me/we" in it, or a texting-style sentence with the subject left
+    out ("sold the honda, bought a hyundai creta", "got moved to the search team"). "Anita lives in Bangalore" is not.
+    """
+    c = str(content or "")
+    return bool(_FIRST_PERSON_TEXT.search(c) or _VERB_FIRST.match(c))
+
+
 def _named_in(query):
     first = re.match(r"\s*(\w+)", query)
     return {_stem(w.lower()) for w in re.findall(r"\b[A-Z][a-z]+\b", query) if not (first and w == first.group(1))}
@@ -328,7 +362,11 @@ def without_other_people(context, question):
         rel = words[0] if words and (_rel(words[0]) in _RELATIONS or words[0] in _RELATIONS) else None  # subject position
         other = False
         if rel is not None:
-            name = words[words.index(rel) + 1] if words.index(rel) + 1 < len(words) else None
+            # "my sister chloe": the word after the relation is a name; "my sister's manager": a possessive relation
+            # is followed by what that person has (their manager, not a name), which a question about the user's
+            # manager must not be taken to ask about
+            possessive = rel.endswith(("'s", "’s"))
+            name = words[words.index(rel) + 1] if not possessive and words.index(rel) + 1 < len(words) else None
             asked_about = _rel(rel) in q_words or (name and name in q_words)
             other = not asked_about
         elif prev_other and _PERSON_PRONOUN.match(body):

@@ -35,7 +35,7 @@ from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
 from ..features import dates as date_resolution
-from .updates import asks_about_now, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
+from .updates import _norm_answer, about_the_user, asks_about_now, ended_values, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok", "_counts")
@@ -745,6 +745,31 @@ class RecallEngine:
         accepted = [(m, out) for m, out in accepted if m.get("id", out.get("id")) not in outdated]
         if not accepted:
             return None
+        if asks_about_now(query):
+            # a value a later message says has ended ("resigned from infosys", "sold the honda") is not the user's
+            # present: no answer rather than the outdated one
+            ended = ended_values(final)
+            def still_current(m):
+                words = {w for w in re.findall(r"[a-z0-9]+", str(m.get("answer") or "").lower()) if len(w) >= 3}
+                ts = float(m.get("timestamp") or 0)
+                return not any(t >= ts and words & e for t, e in ended)
+            accepted = [(m, out) for m, out in accepted if still_current(m)]
+            if not accepted:
+                return None
+            # "Where do I live?": when memories give different answers, the user's latest statement is their present,
+            # even when the two share no words to be paired as an update ("i live in delhi" ... "found a flat in pune
+            # near my new office"). eval/results/update_set
+            # Only answers stated about the user, and confident enough to replace an earlier one, can override it
+            # (recall.answer_conflicts.override_min_margin; acceptance alone is a much lower bar): "I moved to Mumbai"
+            # does not answer "Where do I work?" over "I work at Zomato", nor "Anita lives in Bangalore" "Where do I live?".
+            answers = {_norm_answer(m.get("answer")) for m, _ in accepted}
+            floor = float((settings.get("recall.answer_conflicts", {}) or {}).get("override_min_margin", -0.5))
+            confident = max(accepted, key=lambda p: p[0].get("answer_margin", float("-inf")))
+            pool = [p for p in accepted if p is confident or
+                    (about_the_user(p[0].get("content")) and float(p[0].get("answer_margin") or -99) >= floor)]
+            if len(answers) > 1 and len(pool) > 1:
+                m, out = max(pool, key=lambda p: float(p[0].get("timestamp") or 0))
+                return {"text": m["answer"], "memory_id": out.get("id"), "margin": m.get("answer_margin")}
         conflict = next((p for p in accepted if p[0].get("answer_conflict_with")), None)
         policy = (settings.get("recall.answer_conflicts", {}) or {}).get("best_answer", "confidence")
         if conflict and policy == "confidence" and asks_about_now(query):

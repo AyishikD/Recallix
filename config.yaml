@@ -317,6 +317,11 @@ recall:
     # later answer. LoCoMo dev answer token-F1 0.339 (conflict) -> 0.375 (confidence); dev set and
     # Gemini batches identical either way (eval/results/retrieval_fixes).
     best_answer: confidence
+    # First-person questions about now ("Where do I live?"): a later answer replaces the reader's most confident one
+    # only if it is stated about the user and its margin is at least this (acceptance is answer_check's threshold,
+    # much lower). Set on development data (eval/results/update_set): -0.5 keeps "found a flat in pune" (-0.34) and
+    # rejects "I moved to Mumbai" for "Where do I work?" (-1.10).
+    override_min_margin: -0.5
   # Fact half-lives: every fact in a recall receipt carries the probability it is still true,
   # from how often this user's facts of the same kind were replaced (exponential survival model,
   # Gamma prior: prior_events replacements per prior_days; see backend/brain/memory/freshness.py).
