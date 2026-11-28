@@ -1,0 +1,864 @@
+{
+ "summary": {
+  "conflicts": 94,
+  "confident_better": 52,
+  "later_better": 11,
+  "tie": 31,
+  "mean_f1_confident": 0.454,
+  "mean_f1_later": 0.153,
+  "by_cat": {
+   "1": 9,
+   "2": 23,
+   "3": 4,
+   "4": 58
+  }
+ },
+ "rows": [
+  {
+   "q": "When did Caroline go to the LGBTQ support group?",
+   "cat": 2,
+   "gold": "7 May 2023",
+   "confident": "7 May 2023",
+   "later": "20 July, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.333
+  },
+  {
+   "q": "When did Melanie paint a sunrise?",
+   "cat": 2,
+   "gold": "2022",
+   "confident": "2022",
+   "later": "25 August, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When is Melanie planning on going camping?",
+   "cat": 2,
+   "gold": "June 2023",
+   "confident": "June 2023",
+   "later": "25 August, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.4
+  },
+  {
+   "q": "When did Caroline give a speech at a school?",
+   "cat": 2,
+   "gold": "The week before 9 June 2023",
+   "confident": "9 June, 2023",
+   "later": "17 July, 2023",
+   "f1_confident": 0.75,
+   "f1_later": 0.25
+  },
+  {
+   "q": "When did Caroline meet up with her friends, family, and mentors?",
+   "cat": 2,
+   "gold": "The week before 9 June 2023",
+   "confident": "9 June, 2023",
+   "later": "13 September, 2023",
+   "f1_confident": 0.75,
+   "f1_later": 0.25
+  },
+  {
+   "q": "When did Caroline go to the adoption meeting?",
+   "cat": 2,
+   "gold": "The friday before 15 July 2023",
+   "confident": "14 July 2023",
+   "later": "23 August, 2023",
+   "f1_confident": 0.5,
+   "f1_later": 0.25
+  },
+  {
+   "q": "When did Melanie go to the pottery workshop?",
+   "cat": 2,
+   "gold": "The Friday before 15 July 2023",
+   "confident": "Last Fri",
+   "later": "24 August 2023",
+   "f1_confident": 0.0,
+   "f1_later": 0.25
+  },
+  {
+   "q": "When did Melanie go camping in June?",
+   "cat": 2,
+   "gold": "The week before 27 June 2023",
+   "confident": "9 June, 2023",
+   "later": "the week before 27 June 2023",
+   "f1_confident": 0.5,
+   "f1_later": 1.0
+  },
+  {
+   "q": "What has Melanie painted?",
+   "cat": 1,
+   "gold": "Horse, sunset, sunrise",
+   "confident": "lake sunrise",
+   "later": "abstract painting",
+   "f1_confident": 0.4,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What transgender-specific events has Caroline attended?",
+   "cat": 1,
+   "gold": "Poetry reading, conference",
+   "confident": "an LGBTQ+ pride parade",
+   "later": "LGBTQ conference",
+   "f1_confident": 0.0,
+   "f1_later": 0.4
+  },
+  {
+   "q": "When did Melanie's family go on a roadtrip?",
+   "cat": 2,
+   "gold": "The weekend before 20 October 2023",
+   "confident": "the weekend before 20 October 2023",
+   "later": "20 October, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.75
+  },
+  {
+   "q": "Would Melanie go on another roadtrip soon?",
+   "cat": 3,
+   "gold": "Likely no; since this one went badly",
+   "confident": "Melanie is off to go swimming with the kids",
+   "later": "Thankfully it's over now",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What did the charity race raise awareness for?",
+   "cat": 4,
+   "gold": "mental health",
+   "confident": "mental health",
+   "later": "the LGBTQ community",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What did Melanie realize after the charity race?",
+   "cat": 4,
+   "gold": "self-care is important",
+   "confident": "taking care of our minds",
+   "later": "self-care is really important",
+   "f1_confident": 0.25,
+   "f1_later": 0.889
+  },
+  {
+   "q": "What is Caroline excited about in the adoption process?",
+   "cat": 4,
+   "gold": "creating a family for kids who need one",
+   "confident": "inclusivity and support",
+   "later": "thankful",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What was grandma's gift to Caroline?",
+   "cat": 4,
+   "gold": "necklace",
+   "confident": "This necklace",
+   "later": "a clock",
+   "f1_confident": 0.667,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What does Melanie say running has been great for?",
+   "cat": 4,
+   "gold": "Her mental health",
+   "confident": "Melanie's headspace",
+   "later": "mental health",
+   "f1_confident": 0.0,
+   "f1_later": 1.0
+  },
+  {
+   "q": "What did Mel and her kids make during the pottery workshop?",
+   "cat": 4,
+   "gold": "pots",
+   "confident": "pots",
+   "later": "something with clay",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What did Caroline see at the council meeting for adoption?",
+   "cat": 4,
+   "gold": "many people wanting to create loving homes for children in need",
+   "confident": "inspiring and emotional",
+   "later": "applied to adoption agencies",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Why are flowers important to Melanie?",
+   "cat": 4,
+   "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+   "confident": "They represent growth, beauty and reminding us to appreciate the small moments",
+   "later": "The colors are so bright and the flowers are so pretty",
+   "f1_confident": 0.444,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What advice does Caroline give for getting started with adoption?",
+   "cat": 4,
+   "gold": "Do research, find an adoption agency or lawyer, gather necessary documents, and prepare emotionally.",
+   "confident": "applied to adoption agencies",
+   "later": "Caroline is ready to be a mom",
+   "f1_confident": 0.133,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What happened to Melanie's son on their road trip?",
+   "cat": 4,
+   "gold": "He got into an accident",
+   "confident": "got into an accident",
+   "later": "The kids loved it and it was a nice way to relax",
+   "f1_confident": 0.857,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When Jon has lost his job as a banker?",
+   "cat": 2,
+   "gold": "19 January, 2023",
+   "confident": "19 January 2023",
+   "later": "9 July, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.333
+  },
+  {
+   "q": "Why did Jon decide to start his dance studio?",
+   "cat": 4,
+   "gold": "He lost his job and decided to start his own business to share his passion.",
+   "confident": "Losing Jon's job",
+   "later": "Jon is prepping",
+   "f1_confident": 0.154,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When did Gina open her online clothing store?",
+   "cat": 2,
+   "gold": "16 March, 2023",
+   "confident": "16 March, 2023",
+   "later": "16 June, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.667
+  },
+  {
+   "q": "When did Jon start expanding his studio's social media presence?",
+   "cat": 2,
+   "gold": "April, 2023",
+   "confident": "16 June, 2023",
+   "later": "21 July, 2023",
+   "f1_confident": 0.4,
+   "f1_later": 0.4
+  },
+  {
+   "q": "What was Gina's favorite dancing memory?",
+   "cat": 4,
+   "gold": "Winning first place at a regionals dance competition",
+   "confident": "when Gina's team won first place at a regionals",
+   "later": "tattoo",
+   "f1_confident": 0.5,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What do the dancers in the photo represent?",
+   "cat": 4,
+   "gold": "They are performing at the festival",
+   "confident": "white dresses",
+   "later": "skeleton and a trophy",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What did Jon and Gina compare their entrepreneurial journeys to?",
+   "cat": 4,
+   "gold": "dancing together and supporting each other",
+   "confident": "scary",
+   "later": "inspiring",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What is Jon working on opening?",
+   "cat": 4,
+   "gold": "a dance studio",
+   "confident": "dance studio",
+   "later": "the biz",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What type of volunteering have John and Maria both done?",
+   "cat": 1,
+   "gold": "Volunteering at a homeless shelter",
+   "confident": "helping others",
+   "later": "events for any other causes",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When did Maria go to the beach?",
+   "cat": 2,
+   "gold": "December 2022",
+   "confident": "December 2022",
+   "later": "9 January, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What items des John mention having as a child?",
+   "cat": 1,
+   "gold": "A doll, a film camera",
+   "confident": "support and believing in John",
+   "later": "belief in yourself",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When did Maria's grandmother pass away?",
+   "cat": 2,
+   "gold": "The week before 6 March 2023",
+   "confident": "the week before 6 March 2023",
+   "later": "3 August, 2023",
+   "f1_confident": 1.0,
+   "f1_later": 0.25
+  },
+  {
+   "q": "What causes does John feel passionate about supporting?",
+   "cat": 1,
+   "gold": "Veterans, schools, infrastructure",
+   "confident": "improving education and infrastructure in our community",
+   "later": "veterans",
+   "f1_confident": 0.25,
+   "f1_later": 0.5
+  },
+  {
+   "q": "What is John's main focus in local politics?",
+   "cat": 4,
+   "gold": "Improving education and infrastructure",
+   "confident": "helping the community and making it a better place",
+   "later": "talking to community leaders, and getting to know the needs and hopes of our neighborhood",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How did the extra funding help the school shown in the photo shared by John?",
+   "cat": 4,
+   "gold": "Enabled needed repairs and renovations, making the learning environment safer and more modern for students.",
+   "confident": "after they got the funding",
+   "later": "lack of resources affects these kids' dreams",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Who inspired Maria to start volunteering?",
+   "cat": 4,
+   "gold": "Her aunt",
+   "confident": "Maria's aunt",
+   "later": "chatting to people",
+   "f1_confident": 0.5,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What event did John volunteer at last weekend?",
+   "cat": 4,
+   "gold": "career fair at a local school",
+   "confident": "career fair",
+   "later": "community event",
+   "f1_confident": 0.571,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Why did John start blogging about politics and policies?",
+   "cat": 4,
+   "gold": "raise awareness and start conversations to create positive change",
+   "confident": "It's been a really satisfying experience and John care about making a real impact",
+   "later": "hard work",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How has John's fitness improved since starting boot camps with his family?",
+   "cat": 4,
+   "gold": "More energy, gains in strength and endurance",
+   "confident": "bonding",
+   "later": "It's been amazing witnessing us come together and be there for each other",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What emotions did John feel during the small party with the veterans?",
+   "cat": 4,
+   "gold": "heartwarming",
+   "confident": "heartwarming",
+   "later": "community and togetherness",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What important values does John want to teach his kids through adopting a rescue dog?",
+   "cat": 4,
+   "gold": "Responsibility and compassion",
+   "confident": "responsibility and compassion",
+   "later": "veterans",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What motivated Maria and John to discuss potential solutions for their community on 7 July, 2023?",
+   "cat": 4,
+   "gold": "Flood in John's old area",
+   "confident": "Your offer",
+   "later": "Maria is down to join the meeting and contribute to making our community better",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What does John appreciate about the veteran's hospital visit?",
+   "cat": 4,
+   "gold": "the resilience of the veterans and their inspiring stories",
+   "confident": "what we have and the need to give back",
+   "later": "Showing them how to respect and appreciate those who served our country",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Why does Maria think it's important for younger generations to visit military memorials?",
+   "cat": 4,
+   "gold": "To remember and appreciate those who served",
+   "confident": "to remember and appreciate those who served",
+   "later": "teach kids about veterans",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What is the name of Maria's puppy she got two weeks before August 11, 2023?",
+   "cat": 4,
+   "gold": "Coco",
+   "confident": "Coco",
+   "later": "Shadow",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Why does John say he feels stuck and questioning his decisions and goals?",
+   "cat": 4,
+   "gold": "Not feeling like making much of an impact",
+   "confident": "Don't feel like John is making much of an impact here",
+   "later": "John need to find a better way to focus John's passion and enthusiasm",
+   "f1_confident": 0.5,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What is the name of Maria's second puppy?",
+   "cat": 4,
+   "gold": "Shadow",
+   "confident": "Coco",
+   "later": "Shadow",
+   "f1_confident": 0.0,
+   "f1_later": 1.0
+  },
+  {
+   "q": "When did Nate win his first video game tournament?",
+   "cat": 2,
+   "gold": "the week before 21Janury, 2022",
+   "confident": "the week before 21 January 2022",
+   "later": "3 June 2022",
+   "f1_confident": 0.667,
+   "f1_later": 0.286
+  },
+  {
+   "q": "What emotions is Joanna feeling about  the screenplay she submitted?",
+   "cat": 1,
+   "gold": "Relief, excitement,worry, hope,anxiety.",
+   "confident": "relief, excitement and worry",
+   "later": "can't stop thinking about the screenplay, so Joanna just started writing another one while Joanna wait to hear back about how the first one did",
+   "f1_confident": 0.75,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What underlying condition might Joanna have based on her allergies?",
+   "cat": 3,
+   "gold": "asthma",
+   "confident": "Joanna is too lazy to research alternative pets",
+   "later": "Joanna got allergic",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When is Nate hosting a gaming party?",
+   "cat": 2,
+   "gold": "The weekend after 3June, 2022.",
+   "confident": "two weekends",
+   "later": "9 November, 2022",
+   "f1_confident": 0.0,
+   "f1_later": 0.286
+  },
+  {
+   "q": "When did Nate make vegan icecream and share it with a vegan diet group?",
+   "cat": 2,
+   "gold": "The Friday before 24June, 2022.",
+   "confident": "17 June 2022",
+   "later": "12 September 2022",
+   "f1_confident": 0.286,
+   "f1_later": 0.286
+  },
+  {
+   "q": "When did Nate win a lot of money in a video game tournament?",
+   "cat": 2,
+   "gold": "September 2022",
+   "confident": "Friday",
+   "later": "the week before 6 October 2022",
+   "f1_confident": 0.0,
+   "f1_later": 0.286
+  },
+  {
+   "q": "When did Joanna finish up the writing for her book?",
+   "cat": 2,
+   "gold": "The week before 6October, 2022",
+   "confident": "21 April, 2022",
+   "later": "12 May, 2022",
+   "f1_confident": 0.286,
+   "f1_later": 0.286
+  },
+  {
+   "q": "What is something Nate gave to Joanna that brings her a lot of joy?",
+   "cat": 1,
+   "gold": "stuffed toy pup",
+   "confident": "desserts",
+   "later": "These little guys",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When was Joanna's second movie script shown on the big screens?",
+   "cat": 2,
+   "gold": "The Sunday before 25October, 2022.",
+   "confident": "23 October 2022",
+   "later": "9 November, 2022",
+   "f1_confident": 0.286,
+   "f1_later": 0.286
+  },
+  {
+   "q": "When did Nate win his second tournament?",
+   "cat": 2,
+   "gold": "The week before 2 May, 2022.",
+   "confident": "the week before 2 May 2022",
+   "later": "6 October, 2022",
+   "f1_confident": 1.0,
+   "f1_later": 0.25
+  },
+  {
+   "q": "How many tournaments has Nate won?",
+   "cat": 1,
+   "gold": "seven",
+   "confident": "second",
+   "later": "21 August 2022",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Was the first half of September 2022 a good month career-wise for Nate and Joanna? Answer yes or no.",
+   "cat": 3,
+   "gold": "No; because both of them faced setbacks in their career",
+   "confident": "long time no see",
+   "later": "Nate will. Bye",
+   "f1_confident": 0.182,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Which dairy-free dessert flavors does Nate enjoy?",
+   "cat": 4,
+   "gold": "chocolate and mixed berry",
+   "confident": "chocolate and mixed berry",
+   "later": "whipped cream and chocolate sauce",
+   "f1_confident": 1.0,
+   "f1_later": 0.286
+  },
+  {
+   "q": "What is \"Little Women\" about according to Joanna?",
+   "cat": 4,
+   "gold": "Sisterhood, love, and reaching for your dreams",
+   "confident": "sisterhood, love, and reaching for your dreams",
+   "later": "a thirty year old woman on a journey of self-discovery after a loss",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Why does Nate like turtles as pets?",
+   "cat": 4,
+   "gold": "Their slow pace and calming nature",
+   "confident": "for times of stress",
+   "later": "Nate know all about them",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How does Nate describe the process of taking care of turtles?",
+   "cat": 4,
+   "gold": "Not tough; keep their area clean, feed them properly, give them enough light.",
+   "confident": "slow pace",
+   "later": "Nate love turtles",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How does Nate describe the stuffed animal he got for Joanna?",
+   "cat": 4,
+   "gold": "A stuffed animal to remind you of the good vibes",
+   "confident": "It's great",
+   "later": "It's a nice reminder",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What event is Nate organizing in June 2022?",
+   "cat": 4,
+   "gold": "A gaming party",
+   "confident": "gaming party",
+   "later": "Definitely! And some old friends and teamates from other tournaments",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How did Nate celebrate winning the international tournament?",
+   "cat": 4,
+   "gold": "Taking time off to chill with pets",
+   "confident": "So proud",
+   "later": "helping some friends reset their high scores",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Why is Joanna experimenting with dairy-free options in her dessert recipes?",
+   "cat": 4,
+   "gold": "lactose intolerance",
+   "confident": "lactose intolerant",
+   "later": "Dairy-free is a must",
+   "f1_confident": 0.5,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What dessert did Joanna share a photo of that has an almond flour crust, chocolate ganache, and fresh raspberries?",
+   "cat": 4,
+   "gold": "chocolate raspberry tart",
+   "confident": "chocolate raspberry tart",
+   "later": "chocolate cake",
+   "f1_confident": 1.0,
+   "f1_later": 0.4
+  },
+  {
+   "q": "What game has Nate been playing nonstop with a futuristic setting and gameplay on October 9, 2022?",
+   "cat": 4,
+   "gold": "Cyberpunk 2077",
+   "confident": "Cyberpunk 2077",
+   "later": "tournemant",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Why did Joanna name the stuffed animal dog Tilly?",
+   "cat": 4,
+   "gold": "after a dog she had in Michigan",
+   "confident": "Joanna got allergic",
+   "later": "helps Joanna stay focused",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How did Joanna feel on October 25, 2022 about seeing her characters come alive on the big screen?",
+   "cat": 4,
+   "gold": "surreal and cool",
+   "confident": "surreal",
+   "later": "Thanks, Nate!",
+   "f1_confident": 0.667,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What does Nate want to do when he goes over to Joanna's place?",
+   "cat": 4,
+   "gold": "Watch one of Joanna's movies together or go to the park",
+   "confident": "Big projects",
+   "later": "DIYs",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When did John meet with his teammates after returning from Chicago?",
+   "cat": 2,
+   "gold": "August 15, 2023",
+   "confident": "15th",
+   "later": "6 December, 2023",
+   "f1_confident": 0.0,
+   "f1_later": 0.333
+  },
+  {
+   "q": "What does John like about Lebron James?",
+   "cat": 1,
+   "gold": "His heart, determination, skills, and leadership.",
+   "confident": "skills and leadership",
+   "later": "moments of determination and heart",
+   "f1_confident": 0.667,
+   "f1_later": 0.571
+  },
+  {
+   "q": "When did John and his wife go on a European vacation?",
+   "cat": 2,
+   "gold": "November, 2023.",
+   "confident": "6 November, 2023",
+   "later": "11 November, 2023",
+   "f1_confident": 0.8,
+   "f1_later": 0.8
+  },
+  {
+   "q": "What kind of yoga for building core strength might John benefit from?",
+   "cat": 3,
+   "gold": "Hatha Yoga",
+   "confident": "Yoga",
+   "later": "John typically hold it",
+   "f1_confident": 0.667,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What kind of articles has Tim been writing about for the online magazine?",
+   "cat": 4,
+   "gold": "different fantasy novels, characters, themes, and book recommendations",
+   "confident": "fantasy novels",
+   "later": "more",
+   "f1_confident": 0.444,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How did John describe the team bond?",
+   "cat": 4,
+   "gold": "Awesome",
+   "confident": "awesome",
+   "later": "It's a great reminder",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What organization is John teaming up with for his charity work?",
+   "cat": 4,
+   "gold": "A local organization helping disadvantaged kids with sports and school",
+   "confident": "a local organization",
+   "later": "foundation",
+   "f1_confident": 0.4,
+   "f1_later": 0.0
+  },
+  {
+   "q": "When did John meet back up with his teammates after his trip in August 2023?",
+   "cat": 4,
+   "gold": "Aug 15th",
+   "confident": "15th",
+   "later": "6:59 pm",
+   "f1_confident": 0.667,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What is the main intention behind Tim wanting to attend the book conference?",
+   "cat": 4,
+   "gold": "to learn more about literature and create a stronger bond to it",
+   "confident": "help Tim learn more about literature and create a stronger bond to it",
+   "later": "reading this book",
+   "f1_confident": 0.889,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What tradition does Tim mention they love during Thanksgiving?",
+   "cat": 4,
+   "gold": "Prepping the feast and talking about what they're thankful for",
+   "confident": "prepping the feast",
+   "later": "watch a few movies",
+   "f1_confident": 0.364,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Where are John and his teammates planning to explore on a team trip?",
+   "cat": 4,
+   "gold": "a new city",
+   "confident": "a new city",
+   "later": "The Wolves",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How does John describe the game season for his team?",
+   "cat": 4,
+   "gold": "intense with tough losses and great wins",
+   "confident": "excited",
+   "later": "The Wolves",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "Who is one of Tim's sources of inspiration for writing?",
+   "cat": 4,
+   "gold": "J.K. Rowling",
+   "confident": "authors",
+   "later": "her",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What was Tim's huge writing issue last week,as mentioned on November 6, 2023?",
+   "cat": 4,
+   "gold": "He got stuck on a plot twist",
+   "confident": "got stuck on a plot twist",
+   "later": "a setback",
+   "f1_confident": 0.889,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How did John describe the views during their road trip out on the European coastline?",
+   "cat": 4,
+   "gold": "Spectacular",
+   "confident": "spectacular",
+   "later": "It's hard to describe how beautiful",
+   "f1_confident": 1.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What did Tim say about his injury on 16 November, 2023?",
+   "cat": 4,
+   "gold": "The doctor said it's not too serious",
+   "confident": "Tim hope your injury heals soon",
+   "later": "Tim bet",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "What motivated Tim to keep pushing himself to get better in writing and reading?",
+   "cat": 4,
+   "gold": "Love for writing and reading",
+   "confident": "dreams",
+   "later": "Books, movies, and real-life experiences",
+   "f1_confident": 0.0,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How did John overcome a mistake he made during a big game in basketball?",
+   "cat": 4,
+   "gold": "Worked hard to get better and focused on growth",
+   "confident": "worked hard to get better",
+   "later": "you did your best. By the way, John had a career-high in assists",
+   "f1_confident": 0.8,
+   "f1_later": 0.0
+  },
+  {
+   "q": "How did \"The Alchemist\" impact John's perspective on following dreams?",
+   "cat": 4,
+   "gold": "made him think again about following dreams and searching for personal legends",
+   "confident": "It made John think again",
+   "later": "It really helped motivate John to keep chasing John's dreams and to trust the process",
+   "f1_confident": 0.375,
+   "f1_later": 0.087
+  },
+  {
+   "q": "Why does John like Aragorn from Lord of the Rings?",
+   "cat": 4,
+   "gold": "brave, selfless, down-to-earth attitude",
+   "confident": "he grows so much throughout the story",
+   "later": "brave, selfless, down-to-earth attitude",
+   "f1_confident": 0.0,
+   "f1_later": 1.0
+  }
+ ]
+}

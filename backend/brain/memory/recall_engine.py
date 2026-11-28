@@ -35,7 +35,7 @@ from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
 from ..features import dates as date_resolution
-from .updates import promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
+from .updates import asks_about_now, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok", "_counts")
@@ -514,7 +514,7 @@ class RecallEngine:
             "recall_id": recall_id,
             "intent": self.classify_query(analysis),
             "status": status,
-            "answer": self._best_answer(final, memories) if status == "CONSISTENT" else None,
+            "answer": self._best_answer(final, memories, asked) if status == "CONSISTENT" else None,
             "memories": memories,
             "receipt": self._recall_receipt(status, resolved, final, threshold, answer_check, outsider, aggregation),
             "debug": {
@@ -724,7 +724,7 @@ class RecallEngine:
         return False
 
     @staticmethod
-    def _best_answer(final, memories):
+    def _best_answer(final, memories, query=""):
         """
         The answer to show: the span the reader was most confident in among the memories it accepted.
         Measured on LoCoMo dev (eval/results/retrieval_fixes): answer token-F1 0.339 -> 0.375 and
@@ -747,6 +747,8 @@ class RecallEngine:
             return None
         conflict = next((p for p in accepted if p[0].get("answer_conflict_with")), None)
         policy = (settings.get("recall.answer_conflicts", {}) or {}).get("best_answer", "confidence")
+        if conflict and policy == "confidence" and asks_about_now(query):
+            policy = "conflict"  # "who is MY manager?": the later answer is the current fact (see asks_about_now)
         m, out = conflict if conflict and policy == "conflict" else max(
             accepted, key=lambda p: p[0].get("answer_margin", float("-inf")))
         best = {"text": m["answer"], "memory_id": out.get("id"), "margin": m.get("answer_margin")}

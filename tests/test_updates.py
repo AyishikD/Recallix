@@ -196,3 +196,23 @@ def test_without_updates_the_most_confident_answer_is_unchanged():
     from backend.brain.memory.recall_engine import RecallEngine
     final = [_accepted(2, "fridays", 1.0), _accepted(1, "tuesdays 4pm", 10.1)]
     assert RecallEngine._best_answer(final, [{"id": 2}, {"id": 1}])["text"] == "tuesdays 4pm"
+
+
+# --- a first-person question about now takes the later of two different answers ---------------------------
+
+def test_which_questions_ask_about_the_users_present():
+    from backend.brain.memory.updates import asks_about_now
+    for q in ("Who is my manager?", "Where do I live?", "What car do I drive?", "Who is my dentist now?"):
+        assert asks_about_now(q), q
+    for q in ("Who was my first manager?", "What did I eat yesterday?", "What is Caroline excited about?",
+              "Where does Melanie live?", "When was my appointment originally?", "Have I ever been to Goa?"):
+        assert not asks_about_now(q), q
+
+
+def test_the_later_answer_wins_for_my_current_state_and_the_confident_one_otherwise():
+    from backend.brain.memory.recall_engine import RecallEngine
+    final = [_accepted(2, "rohan", 2.4, answer_conflict_with=[1]), _accepted(1, "priya", 7.6)]
+    mems = [{"id": 2}, {"id": 1}]
+    assert RecallEngine._best_answer(final, mems, "Who is my manager?")["text"] == "rohan"
+    third_person = RecallEngine._best_answer(final, mems, "Who is Caroline's manager?")
+    assert third_person["text"] == "priya" and third_person["later_answer"] == "rohan"   # unchanged behaviour

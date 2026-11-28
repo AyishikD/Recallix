@@ -154,6 +154,24 @@ def asks_for_earlier(query):
     return bool(_EARLIER.search(str(query or "")))
 
 
+_FIRST_PERSON = re.compile(r"\b(?:i|my|me|mine|i'm|i've)\b", re.I)
+_PRESENT = re.compile(r"\b(?:is|are|am|do|does|'s|currently|now|these days|right now)\b", re.I)
+_HISTORY = re.compile(r"\b(?:was|were|did|had|used to|ever|before|first|last time|previous(?:ly)?|originally|initially|"
+                      r"earlier|history|in \d{4}|ago)\b", re.I)
+
+
+def asks_about_now(query):
+    """
+    "Who is my manager?", "Where do I live?": a first-person question about the user's current state. When two
+    memories give different answers to it (recall.answer_conflicts), the later one is the user's current fact.
+    Third-person and history questions ("What is Caroline excited about?", "Who was my first manager?") are not:
+    for those the reader's most confident answer stays (LoCoMo dev: later answers matched the gold far less
+    often, eval/results/later_answer).
+    """
+    q = str(query or "")
+    return bool(_FIRST_PERSON.search(q) and _PRESENT.search(q) and not _HISTORY.search(q) and not asks_for_earlier(q))
+
+
 def _named_in(query):
     first = re.match(r"\s*(\w+)", query)
     return {_stem(w.lower()) for w in re.findall(r"\b[A-Z][a-z]+\b", query) if not (first and w == first.group(1))}
