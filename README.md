@@ -152,6 +152,16 @@ mem.store("I moved to Pune last month.")
 print(mem.recall("Where do I live?")["memories"][0]["content"])
 ```
 
+**On a server, in one click:**
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Recallic/Recallic)
+
+It runs in your own Render account, and you pay Render for it directly. It uses a 2 GB instance (Recallic needs
+about 0.75 GB measured, so the 512 MB instances are too small) and a 5 GB disk for your data and the models.
+The admin API key appears once in the service's Logs after the first start. On **Railway**: New project →
+Deploy from GitHub repo → add a volume mounted at `/data` → set the variable `PORT=8000` → generate a domain.
+On any VPS with 2 GB of memory, the Docker commands above work as they are.
+
 **Without Docker:**
 
 ```bash

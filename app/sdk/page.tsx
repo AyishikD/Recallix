@@ -306,6 +306,7 @@ export default function DevelopersPage() {
                 <div className="mt-8 flex flex-wrap gap-6">
                     <ButtonLink href="https://github.com/Recallic/Recallic/blob/main/docs/api_reference.md" variant="link">Full API reference</ButtonLink>
                     <ButtonLink href="https://github.com/Recallic/Recallic/blob/main/docs/quickstart.md" variant="link">Quickstart</ButtonLink>
+                    <ButtonLink href="https://render.com/deploy?repo=https://github.com/Recallic/Recallic" variant="link">Deploy to Render (your account, one click)</ButtonLink>
                 </div>
             </Section>
 

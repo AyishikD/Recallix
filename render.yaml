@@ -1,0 +1,24 @@
+# One-click deploy to Render (https://render.com/deploy?repo=https://github.com/Recallic/Recallic).
+# Builds the same Docker image as docker-compose.yml: vector engine + API in one container, all state on a
+# persistent disk at /data (databases, keys, downloaded models).
+#
+# Sizing (measured): about 0.75 GB of memory with every recall mode in use, so a 2 GB instance; 512 MB
+# instances are too small. Disk: ~1 GB of models plus your data.
+#
+# After the first deploy, the admin API key is printed once in the service's Logs ("Recallic admin API key").
+# Create keys for your app with Render's Shell:  python -m backend.tools.keys create --user my-app --role service
+services:
+  - type: web
+    name: recallic
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: standard            # 2 GB memory
+    healthCheckPath: /health
+    autoDeploy: false         # update when you choose (Manual Deploy), not on every commit upstream
+    disk:
+      name: recallic-data
+      mountPath: /data
+      sizeGB: 5
+    envVars:
+      - key: PORT             # the port Render routes traffic to; the API listens on it
+        value: "8000"

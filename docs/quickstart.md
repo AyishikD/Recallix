@@ -21,6 +21,22 @@ reverse proxy (Caddy, nginx) in front of port 8000 and set `CORS_ALLOWED_ORIGINS
 
 Then skip to [5. Use](#5-use).
 
+## On a server (Render, Railway, a VPS)
+
+Recallic is one Docker image with its state on a volume at `/data`, so any host that runs a Dockerfile works.
+**Memory:** about 0.75 GB measured with every recall mode in use (default recall alone ~0.63 GB), so plan
+**1 GB minimum, 2 GB comfortable**. **Disk:** ~1 GB of models (downloaded on the first start) plus your data;
+the vector engine adds roughly 1.5–3.5 KB per stored memory.
+
+* **Render, one click:** <https://render.com/deploy?repo=https://github.com/Recallic/Recallic> uses
+  [render.yaml](../render.yaml): a 2 GB web service with a 5 GB disk at `/data`. The admin key is printed once in
+  the Logs; create keys in the Shell: `python -m backend.tools.keys create --user my-app --role service`.
+* **Railway:** New project → Deploy from GitHub repo (it reads [railway.json](../railway.json)) → add a volume
+  at `/data` → variable `PORT=8000` → Settings → Networking → generate a domain on port 8000.
+* **A VPS:** the Docker commands above.
+
+You run it in your own account and pay the host directly; nothing goes through us.
+
 ## Without Docker
 
 ### 1. Install
