@@ -1,0 +1,24 @@
+{
+ "keep": 0.9234828496042217,
+ "answered_questions": 859,
+ "results": {
+  "cross-encoder/qnli-electra-base": {
+   "threshold": 0.0011335089802742004,
+   "real_from_evidence_kept": "382/414",
+   "answered_traps_declined": "56/160",
+   "other_real_answers_declined": "114/285"
+  },
+  "cross-encoder/qnli-distilroberta-base": {
+   "threshold": 0.022280527278780937,
+   "real_from_evidence_kept": "382/414",
+   "answered_traps_declined": "36/160",
+   "other_real_answers_declined": "90/285"
+  },
+  "cross-encoder/ms-marco-MiniLM-L-6-v2": {
+   "threshold": -1.377687931060791,
+   "real_from_evidence_kept": "382/414",
+   "answered_traps_declined": "83/160",
+   "other_real_answers_declined": "73/285"
+  }
+ }
+}

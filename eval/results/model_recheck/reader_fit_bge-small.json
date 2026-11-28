@@ -1,0 +1,65 @@
+{
+  "model": "deepset/roberta-base-squad2",
+  "threshold": -2.323,
+  "selection": "dev only: our dev scenarios + LoCoMo dev conversations; threshold = 5% quantile of margins of answerable questions whose evidence is served; model = most unanswerable declined",
+  "embedder": "st:BAAI/bge-small-en-v1.5",
+  "candidates": {
+    "deepset/roberta-base-squad2": {
+      "auc": 0.7316717982857618,
+      "native": {
+        "refused": 0.10136452241715399,
+        "unanswerable_declined": 0.5142857142857142
+      },
+      "policy_threshold": -2.323,
+      "policy": {
+        "refused": 0.04873294346978557,
+        "unanswerable_declined": 0.33877551020408164
+      },
+      "n_answerable_with_evidence_served": 513,
+      "n_unanswerable": 245
+    },
+    "deepset/deberta-v3-base-squad2": {
+      "auc": 0.7579782807689107,
+      "native": {
+        "refused": 0.10526315789473684,
+        "unanswerable_declined": 0.6285714285714286
+      },
+      "policy_threshold": -8.215,
+      "policy": {
+        "refused": 0.04873294346978557,
+        "unanswerable_declined": 0.27755102040816326
+      },
+      "n_answerable_with_evidence_served": 513,
+      "n_unanswerable": 245
+    },
+    "deepset/tinyroberta-squad2": {
+      "auc": 0.6988589082133644,
+      "native": {
+        "refused": 0.1189083820662768,
+        "unanswerable_declined": 0.43673469387755104
+      },
+      "policy_threshold": -4.42,
+      "policy": {
+        "refused": 0.04873294346978557,
+        "unanswerable_declined": 0.27755102040816326
+      },
+      "n_answerable_with_evidence_served": 513,
+      "n_unanswerable": 245
+    },
+    "deepset/minilm-uncased-squad2": {
+      "auc": 0.6797505617042523,
+      "native": {
+        "refused": 0.04093567251461988,
+        "unanswerable_declined": 0.1469387755102041
+      },
+      "policy_threshold": 1.091,
+      "policy": {
+        "refused": 0.04873294346978557,
+        "unanswerable_declined": 0.19183673469387755
+      },
+      "n_answerable_with_evidence_served": 513,
+      "n_unanswerable": 245
+    }
+  },
+  "fitted_at": 1795887313.589795
+}
