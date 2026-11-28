@@ -297,3 +297,16 @@ def test_a_purpose_in_the_question_narrows_which_memories_compete():
     assert not matches_purpose("got sbi cashback card today specifically for swiggy and amazon orders", s)
     assert purpose_stems("Where do I live?") == set()
     assert purpose_stems("How do I commute to Hitec City for work now?") == {"work"}
+
+
+def test_someone_elses_thing_ended_values_and_stated_changes():
+    from backend.brain.memory.updates import asks_about_now, ended_values, someone_elses, states_change
+    assert someone_elses("priya got her lab reports, her blood group is b negative", "What is my blood group?")
+    assert not someone_elses("donated blood today, my blood group is o positive", "What is my blood group?")
+    gave_up = "metro station parking fee increased to 50 rs, gave up and booked quick ride carpool from tomorrow"
+    assert "metro" in ended_values([{"content": gave_up, "timestamp": 1}])[0][1]
+    assert ended_values([{"content": "terminated eagle contract, hired tiger force", "timestamp": 1}])[0][1] == {"eagle", "contract"}
+    assert ended_values([{"content": "sold the honda and bought a hyundai creta", "timestamp": 1}])[0][1] == {"honda"}
+    assert asks_about_now("How much do we pay the cook per month?")
+    assert states_change("issued revised circular postponing agm to 29th september", "When is our society AGM scheduled?")
+    assert not states_change("I moved to Mumbai in March.", "Where do I work?")

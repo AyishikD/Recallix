@@ -35,7 +35,7 @@ from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
 from ..features import dates as date_resolution
-from .updates import _norm_answer, about_the_user, asks_about_now, ended_values, matches_purpose, promote_updates, purpose_stems, resolve_answer_conflicts, states_a_change, user_perspective, without_other_people
+from .updates import _norm_answer, about_the_user, asks_about_now, ended_values, matches_purpose, promote_updates, purpose_stems, resolve_answer_conflicts, someone_elses, states_a_change, states_change, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok", "_counts")
@@ -753,7 +753,8 @@ class RecallEngine:
                 words = {w for w in re.findall(r"[a-z0-9]+", str(m.get("answer") or "").lower()) if len(w) >= 3}
                 ts = float(m.get("timestamp") or 0)
                 return not any(t >= ts and words & e for t, e in ended)
-            accepted = [(m, out) for m, out in accepted if still_current(m)]
+            # "her blood group is b negative" does not answer "What is my blood group?"
+            accepted = [(m, out) for m, out in accepted if still_current(m) and not someone_elses(m.get("content"), query)]
             if not accepted:
                 return None
             # "Where do I live?": when memories give different answers, the user's latest statement is their present,
@@ -765,8 +766,11 @@ class RecallEngine:
             answers = {_norm_answer(m.get("answer")) for m, _ in accepted}
             floor = float((settings.get("recall.answer_conflicts", {}) or {}).get("override_min_margin", -0.5))
             confident = max(accepted, key=lambda p: p[0].get("answer_margin", float("-inf")))
+            # a memory that says the fact changed ("issued revised circular postponing agm to 29th september") may replace
+            # it without the margin floor; it still has to be accepted by the reader
             pool = [p for p in accepted if p is confident or
-                    (about_the_user(p[0].get("content")) and float(p[0].get("answer_margin") or -99) >= floor)]
+                    (about_the_user(p[0].get("content")) and (float(p[0].get("answer_margin") or -99) >= floor
+                                                              or states_change(p[0].get("content"), query)))]
             # "Which credit card do I use for booking flights?": when the question narrows the topic and some memories
             # match it ("hdfc regalia for all flight bookings"), a later one that does not ("sbi cashback card for
             # swiggy orders") is a different fact, not an update. eval/results/update_set_fresh

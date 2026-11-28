@@ -154,7 +154,7 @@ def asks_for_earlier(query):
     return bool(_EARLIER.search(str(query or "")))
 
 
-_FIRST_PERSON = re.compile(r"\b(?:i|my|me|mine|i'm|i've)\b", re.I)
+_FIRST_PERSON = re.compile(r"\b(?:i|my|me|mine|i'm|i've|we|our|us)\b", re.I)
 _PRESENT = re.compile(r"\b(?:is|are|am|do|does|'s|currently|now|these days|right now)\b", re.I)
 _HISTORY = re.compile(r"\b(?:was|were|did|had|used to|ever|before|first|last time|previous(?:ly)?|originally|initially|"
                       r"earlier|history|in \d{4}|ago)\b", re.I)
@@ -192,7 +192,36 @@ def matches_purpose(content, stems):
 
 
 _FIRST_PERSON_WORDS = {"i", "my", "me", "mine", "we", "our", "us", "now", "currently", "today", "these", "days", "right"}
-_CHANGED = re.compile(r"\b(?:shift(?:ed|ing)|switch(?:ed|ing)|transferr(?:ed|ing)|moved|changed|instead)\b", re.I)
+_CHANGED = re.compile(r"\b(?:shift(?:ed|ing)|switch(?:ed|ing)|transferr(?:ed|ing)|moved|changed|instead|"
+                      r"postpon(?:ed|ing)|preponed|reschedul(?:ed|ing)|revised)\b", re.I)
+
+
+def states_change(content, query):
+    """
+    The memory says something changed (shifted, switched, moved, postponed, rescheduled, revised, instead ...) about
+    what the question asks: it shares a word with the question ("postponing agm to 29th" for "When is our society AGM
+    scheduled?", but not "I moved to Mumbai" for "Where do I work?").
+    """
+    content = str(content or "")
+    if not _CHANGED.search(content):
+        return False
+    stop = _stopwords() | _FIRST_PERSON_WORDS
+    asked = {w[:4] for w in _WORD.findall(str(query or "").lower()) if len(w) >= 3 and w not in stop}
+    return any(w[:4] in asked for w in _WORD.findall(content.lower()) if len(w) >= 3 and w not in stop)
+
+
+_OTHERS_OWN = r"\b(?:her|his|their|[a-z]+'s|[a-z]+’s)\s+(?:\w+\s+)?"
+
+
+def someone_elses(content, query):
+    """
+    "her blood group is b negative" for "What is my blood group?": the memory gives the asked thing as someone else's
+    (her/his/their/<name>'s + the thing named after "my"/"our" in the question).
+    """
+    m = re.search(r"\b(?:my|our)\s+([a-z]+)", str(query or "").lower())
+    if not m or m.group(1) in _stopwords():
+        return False
+    return bool(re.search(_OTHERS_OWN + re.escape(m.group(1)[:4]), str(content or "").lower()))
 
 
 def states_a_change(later, earlier, query):
@@ -215,7 +244,7 @@ def states_a_change(later, earlier, query):
 
 
 _ENDED = re.compile(r"\b(?:resigned|quit|left|closed|sold|cancel+ed|stopped|broke up|got rid of|gave (?:away|up)|"
-                    r"no longer|not anymore|anymore|is dead|died|went to my|moved out of|ended|switched from)\b", re.I)
+                    r"no longer|not anymore|anymore|is dead|died|went to my|moved out of|ended|switched from|terminated)\b", re.I)
 
 
 def ended_values(memories):
@@ -225,12 +254,18 @@ def ended_values(memories):
     [(timestamp, {words})]. Read per clause, so "bought a hyundai creta" next to "sold the honda" is not ended.
     """
     out = []
+    content_words = lambda c: {w for w in _WORD.findall(c.lower()) if len(w) >= 3 and w not in _stopwords() and w not in _GENERIC}
     for m in memories:
+        previous = set()
         for clause in _CLAUSE.split(str(m.get("content") or "")):
+            words = content_words(_ENDED.sub(" ", clause))  # the ended thing, not the word that ends it
             if _ENDED.search(clause):
-                words = {w for w in _WORD.findall(clause.lower()) if len(w) >= 3 and w not in _stopwords() and w not in _GENERIC}
+                # "metro parking fee increased to 50 rs, gave up and booked quick ride": a bare "gave up" (nothing named
+                # in its own clause) ends what the clause before it named
+                words = words or previous
                 if words:
                     out.append((float(m.get("timestamp") or 0), words))
+            previous = words
     return out
 
 
