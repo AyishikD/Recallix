@@ -4,10 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Eyebrow, Headline, Lede, Section } from "@/components/site/ui";
-import { DEMO_API } from "@/lib/demo";
+import { DEMO_API, TURNSTILE_SITE_KEY } from "@/lib/demo";
 
-/* The public demo: messages go to the real Recallic pipeline running on Modal (deploy/modal/demo.py), under a
-   per-tab session id. Nothing is shared between visitors and everything is gone when the demo server sleeps. */
+/* The public demo: the page passes Cloudflare's human check (Turnstile) once, gets a session from the gate
+   (deploy/cloudflare/demo-gate) and talks only to it; the gate applies the limits and forwards to the real Recallic
+   pipeline on Modal (deploy/modal/demo.py). Nothing is shared between visitors and everything is gone when the demo
+   server sleeps. */
+
+declare global {
+    interface Window { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => string } }
+}
 
 const EXAMPLES = [
     "uff moved to pune last month, new job at infosys hinjewadi",
@@ -18,30 +24,34 @@ const EXAMPLES = [
 const QUESTIONS = ["Where do I live?", "When is Meera's ballet?", "What am I allergic to?", "What is my brother's name?"];
 
 type Result = { status: string; answer?: string | null; replaced?: string | null; memories: { content: string; answer?: { text?: string } | null }[]; reason?: string; latency_ms?: number };
-type Server = "waking" | "ready" | "down";
+type Server = "checking" | "waking" | "ready" | "down";
+const TOKEN_KEY = "recallic-demo-token";
 
-function sessionId(): string {
-    const fresh = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+function savedToken(): string {
     try {
-        const s = sessionStorage.getItem("recallic-demo-session") || fresh();
-        sessionStorage.setItem("recallic-demo-session", s);
-        return s;
+        const t = sessionStorage.getItem(TOKEN_KEY) || "";
+        return Number(t.split(".")[1] || 0) > Date.now() / 1000 + 60 ? t : "";   // still valid for a minute or more
     } catch {
-        return fresh();
+        return "";
     }
 }
 
-async function call(path: string, body?: object) {
-    const r = await fetch(`${DEMO_API}${path}`, body
-        ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
-        : { method: "GET" });
+function saveToken(t: string) {
+    try { if (t) sessionStorage.setItem(TOKEN_KEY, t); else sessionStorage.removeItem(TOKEN_KEY); } catch { /* private mode */ }
+}
+
+async function call(path: string, token: string, body?: object) {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const r = await fetch(`${DEMO_API}${path}`, body ? { method: "POST", headers, body: JSON.stringify(body) } : { method: "GET", headers });
     const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(typeof data.detail === "string" ? data.detail : `The demo server answered ${r.status}.`);
+    if (r.status === 401) saveToken("");
+    if (!r.ok) throw new Error(typeof data.detail === "string" ? data.detail : `The demo answered ${r.status}.`);
     return data;
 }
 
 export default function DemoPage() {
-    const [server, setServer] = useState<Server>("waking");
+    const [server, setServer] = useState<Server>("checking");
     const [messages, setMessages] = useState<string[]>([]);
     const [draft, setDraft] = useState("");
     const [question, setQuestion] = useState("");
@@ -49,18 +59,48 @@ export default function DemoPage() {
     const [asked, setAsked] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
-    const session = useRef("");
+    const token = useRef("");
+    const check = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        session.current = sessionId();
         let cancelled = false;
-        (async () => {
+        const wake = async (t: string) => {
+            token.current = t;
+            setServer("waking");
             for (let i = 0; i < 30 && !cancelled; i++) {          // a cold start takes up to about a minute
-                try { await call("/health"); if (!cancelled) setServer("ready"); return; }
-                catch { await new Promise((r) => setTimeout(r, 3000)); }
+                try { await call("/health", t); if (!cancelled) setServer("ready"); return; }
+                catch (e) {
+                    if (!savedToken()) { if (!cancelled) { setServer("down"); setError((e as Error).message); } return; }
+                    await new Promise((r) => setTimeout(r, 3000));
+                }
             }
             if (!cancelled) setServer("down");
-        })();
+        };
+        const saved = savedToken();
+        if (saved) { wake(saved); return () => { cancelled = true; }; }
+        const render = () => {
+            if (!window.turnstile || !check.current) return;
+            window.turnstile.render(check.current, {
+                sitekey: TURNSTILE_SITE_KEY,
+                appearance: "interaction-only",            // invisible unless Cloudflare wants a click
+                callback: async (human: string) => {
+                    try {
+                        const { token: t } = await call("/session", "", { turnstile: human });
+                        saveToken(t);
+                        if (!cancelled) wake(t);
+                    } catch (e) { if (!cancelled) { setServer("down"); setError((e as Error).message); } }
+                },
+                "error-callback": () => { if (!cancelled) { setServer("down"); setError("The human check could not load. Please reload the page."); } },
+            });
+        };
+        if (window.turnstile) render();
+        else {
+            const tag = document.createElement("script");
+            tag.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+            tag.async = true;
+            tag.onload = render;
+            document.head.appendChild(tag);
+        }
         return () => { cancelled = true; };
     }, []);
 
@@ -68,7 +108,7 @@ export default function DemoPage() {
         setBusy(true); setError("");
         try {
             for (const t of texts) {
-                await call("/store", { session: session.current, content: t });
+                await call("/store", token.current, { content: t });
                 setMessages((m) => [...m, t]);
             }
         } catch (e) { setError((e as Error).message); }
@@ -78,7 +118,7 @@ export default function DemoPage() {
     async function ask(q: string) {
         if (!q.trim()) return;
         setBusy(true); setError(""); setAsked(q);
-        try { setResult(await call("/recall", { session: session.current, query: q })); }
+        try { setResult(await call("/recall", token.current, { query: q })); }
         catch (e) { setError((e as Error).message); }
         setBusy(false);
     }
@@ -93,10 +133,12 @@ export default function DemoPage() {
                 <Headline as="h1">Tell it a few things. Then ask.</Headline>
                 <Lede className="mt-6">This is the real Recallic, no LLM involved. It answers from what you told it, and when nothing answers, it says so instead of guessing.</Lede>
                 <p className="mt-6 text-[14px] text-ink-2" aria-live="polite">
-                    {server === "waking" && "Waking the demo server (about 30 seconds the first time)…"}
+                    {server === "checking" && "Checking you're a person (Cloudflare)…"}
+                    {server === "waking" && "Waking the demo server (about 20 seconds the first time)…"}
                     {server === "ready" && "Demo server ready."}
                     {server === "down" && "The demo server is not answering right now. Please try again in a few minutes."}
                 </p>
+                <div ref={check} className="mt-4" />
             </Section>
 
             <Section tone="cloud">

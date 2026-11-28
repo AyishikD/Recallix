@@ -54,8 +54,7 @@ image = (
 
 app = modal.App("recallic-demo", image=image)
 
-ALLOWED_ORIGINS = ["https://www.recallic.com", "https://recallic.com", "https://recallix.vercel.app",
-                   "http://localhost:3000"]
+ALLOWED_ORIGINS: list = []   # browsers never call this directly: only the Cloudflare Worker does (server to server)
 MAX_MESSAGES = 5           # per visitor: per session AND per IP, per 24 hours
 MAX_CHARS = 400            # per message or question
 PER_MINUTE = 20            # requests per visitor (IP) per minute
@@ -63,7 +62,8 @@ DAILY_REQUESTS = 3000      # all visitors together per UTC day, so nobody can ru
 DAY_ZERO = 1_767_225_600   # 2026-01-01 UTC: demo messages are dated one day apart from here
 
 
-@app.cls(cpu=2.0, memory=2048, scaledown_window=300, timeout=60, max_containers=1)
+@app.cls(cpu=2.0, memory=2048, scaledown_window=300, timeout=60, max_containers=1,
+         secrets=[modal.Secret.from_name("recallic-demo-gate")])  # GATE_SECRET, shared with the Cloudflare Worker
 @modal.concurrent(max_inputs=20)
 class Demo:
     @modal.enter()
@@ -118,10 +118,18 @@ class Demo:
         lock = threading.Lock()
         mm = self.mm
 
+        import hmac
+        import os
+        gate = os.environ["GATE_SECRET"]
+
+        def gated(request: Request):
+            # only the Cloudflare Worker at demo-api.recallic.com knows the secret: everything else is refused,
+            # including wake-up pings, so nobody can keep this container running
+            if not hmac.compare_digest(request.headers.get("x-demo-gate") or "", gate):
+                raise HTTPException(403, "Use the demo at https://www.recallic.com/demo")
+
         def client_ip(request: Request) -> str:
-            # the proxy in front appends the real address last; earlier entries can be sent by the client
-            fwd = [p.strip() for p in (request.headers.get("x-forwarded-for") or "").split(",") if p.strip()]
-            return fwd[-1] if fwd else (request.client.host if request.client else "?")
+            return request.headers.get("x-demo-client") or "?"  # the visitor's IP, as the Worker saw it
 
         def limit(request: Request):
             ip = client_ip(request)
@@ -154,11 +162,13 @@ class Demo:
             query: str = Field(min_length=1, max_length=MAX_CHARS)
 
         @api.get("/health")
-        def health():
+        def health(request: Request):
+            gated(request)
             return {"status": "ok"}
 
         @api.post("/store")
         def store(body: Store, request: Request):
+            gated(request)
             limit(request)
             uid = user(body.session)
             ip = client_ip(request)
@@ -181,6 +191,7 @@ class Demo:
 
         @api.post("/recall")
         def recall(body: Recall, request: Request):
+            gated(request)
             limit(request)
             out = mm.retrieve(user(body.session), body.query, agent_id="demo", limit=3)
             best = out.get("answer") or {}

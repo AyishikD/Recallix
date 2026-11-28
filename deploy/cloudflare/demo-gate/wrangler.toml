@@ -1,0 +1,11 @@
+# The gate in front of the public demo (src/index.js). Deploy from this folder: npx wrangler@4 deploy
+name = "recallic-demo-gate"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+workers_dev = false
+
+# demo-api.recallic.com: Cloudflare creates the DNS record for this custom domain itself.
+routes = [{ pattern = "demo-api.recallic.com", custom_domain = true }]
+
+[vars]
+DEMO_ORIGIN = "https://recallicc--recallic-demo-demo-web.us-east.modal.run"
