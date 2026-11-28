@@ -86,3 +86,28 @@ Gates: LoCoMo dev identical (0 of 999 answers changed); dev set and Gemini retri
 made after looking at both batches and need a third unseen batch to be confirmed. Files: upd1_after_ended.json,
 upd2_after_ended.json, dev_after_ended.json, locomo_dev_after_ended.json, dev_set_after_ended.json,
 gemini_batches_after_ended.json.
+
+## Unseen Gemini batch 3 (confirmation)
+
+eval/data/fresh/updates/gemini_upd3.jsonl (a resident doctor in Delhi), scored once with the code at 8cb3eeb3 before any
+scenario was looked at; then with older code for comparison.
+
+| code | correct | wrong | declined | other |
+|---|---|---|---|---|
+| before the day's update fixes (db109d48) | 14 | 6 | 8 | 2 |
+| after the first fixes and the purpose rule (42e0c258) | 16 | 4 | 8 | 2 |
+| after the batch 1-2 fixes (8cb3eeb3), first score | 16 | 4 | 8 | 2 |
+
+Confirmed: the day's fixes up to 42e0c258 turn two wrong answers into correct ones (update_mumbai_flight "akasa air",
+update_tiffin_service "annapurna tiffin service") with no new wrong answer. The batch 1-2 fixes (8cb3eeb3) did not change
+any answer here: neither confirmed nor refuted.
+
+All three unseen batches, first scores (90 scenarios): wrong 13 with the code before the fixes, 10 with the code at the
+time of each score (4 -> 4, 3 -> 2, 6 -> 4).
+
+Still wrong: update_ward_posting ("emergency medicine"; later "shifted to pediatric icu", which shares no word with
+"Which department or ward am I currently posted in?"), update_stethoscope, update_air_purifier (both "What ... did I
+order / buy?": past-tense questions, where the latest purchase is the answer), update_scrubs_color ("navy blue").
+Declines are high in the unrelated group (5 of 9).
+
+Files: gemini_upd3.json (first score), gemini_upd3_before_fixes.json, gemini_upd3_at_42e0c258.json.

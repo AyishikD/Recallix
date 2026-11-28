@@ -1,0 +1,331 @@
+{
+ "summary": {
+  "update": {
+   "wrong": 6,
+   "declined": 2,
+   "other": 1,
+   "correct": 3,
+   "n": 12
+  },
+  "both_true": {
+   "correct": 8,
+   "declined": 1,
+   "n": 9
+  },
+  "unrelated": {
+   "declined": 5,
+   "correct": 3,
+   "other": 1,
+   "n": 9
+  },
+  "all": {
+   "wrong": 6,
+   "declined": 8,
+   "other": 2,
+   "correct": 14,
+   "n": 30
+  }
+ },
+ "rows": [
+  {
+   "name": "update_ward_posting",
+   "group": "update",
+   "question": "Which department or ward am I currently posted in?",
+   "status": "CONSISTENT",
+   "answer": "emergency medicine",
+   "first_memory_answer": "emergency medicine",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_duty_shift",
+   "group": "update",
+   "question": "On which day is my 24hr casualty duty scheduled this week?",
+   "status": "CONSISTENT",
+   "answer": null,
+   "first_memory_answer": "wednesday night",
+   "result": "declined",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_protein_powder",
+   "group": "update",
+   "question": "What brand of whey protein powder am I using?",
+   "status": "CONSISTENT",
+   "answer": "biozyme whey cafe mocha",
+   "first_memory_answer": "biozyme whey cafe mocha",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "update_mumbai_flight",
+   "group": "update",
+   "question": "Which airline is my flight to Mumbai booked with?",
+   "status": "CONSISTENT",
+   "answer": "spicejet",
+   "first_memory_answer": "spicejet",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_tiffin_service",
+   "group": "update",
+   "question": "Where do my flatmates and I get our daily meals from now?",
+   "status": "CONSISTENT",
+   "answer": "geeta bai cook",
+   "first_memory_answer": "annapurna tiffin service",
+   "result": "wrong",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_stethoscope",
+   "group": "update",
+   "question": "What stethoscope model did I order for rounds?",
+   "status": "CONSISTENT",
+   "answer": "mbbs littmann classic iii",
+   "first_memory_answer": "mbbs littmann classic iii",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_lucknow_train",
+   "group": "update",
+   "question": "Which train am I taking to Lucknow for Diwali?",
+   "status": "CONSISTENT",
+   "answer": "vande bharat express",
+   "first_memory_answer": "vande bharat express",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_scooter_tire",
+   "group": "update",
+   "question": "What tire brand is now fitted on my Jupiter scooter?",
+   "status": "CONSISTENT",
+   "answer": "ceat tubeless",
+   "first_memory_answer": "ceat tubeless",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_scrubs_color",
+   "group": "update",
+   "question": "What color scrub suit am I required to wear in OT?",
+   "status": "CONSISTENT",
+   "answer": "navy blue",
+   "first_memory_answer": "blue",
+   "result": "wrong",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "update_gym_membership",
+   "group": "update",
+   "question": "Which gym do I go to now?",
+   "status": "CONSISTENT",
+   "answer": "cult fit gautam nagar center",
+   "first_memory_answer": "cult fit gautam nagar center",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_air_purifier",
+   "group": "update",
+   "question": "What air purifier brand did I buy for my bedroom?",
+   "status": "CONSISTENT",
+   "answer": "philips",
+   "first_memory_answer": "philips",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_coffee_maker",
+   "group": "update",
+   "question": "What coffee maker do I use in the resident lounge?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "both_true_shoes",
+   "group": "both_true",
+   "question": "What footwear do I wear for hospital rounds?",
+   "status": "CONSISTENT",
+   "answer": "crocs",
+   "first_memory_answer": "crocs",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_devices",
+   "group": "both_true",
+   "question": "What device do I carry during hospital rounds for reviewing scans?",
+   "status": "CONSISTENT",
+   "answer": "ipad air",
+   "first_memory_answer": "ipad air",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_transport",
+   "group": "both_true",
+   "question": "What vehicle do I ride for my daily hospital commute?",
+   "status": "CONSISTENT",
+   "answer": "tvs jupiter scooter",
+   "first_memory_answer": "tvs jupiter scooter",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_partner_calls",
+   "group": "both_true",
+   "question": "What app do Rohit and I use for our quick video call post-shift?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "both_true_flatmates_specialty",
+   "group": "both_true",
+   "question": "What specialty is my flatmate Aman specializing in?",
+   "status": "CONSISTENT",
+   "answer": "pediatrics",
+   "first_memory_answer": "pediatrics",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_coffee_types",
+   "group": "both_true",
+   "question": "What coffee do I drink pre-workout before the morning gym session?",
+   "status": "CONSISTENT",
+   "answer": "double shot black coffee",
+   "first_memory_answer": "double shot black coffee",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_study_apps",
+   "group": "both_true",
+   "question": "Which question bank am I solving for the exit exam?",
+   "status": "CONSISTENT",
+   "answer": "mksap",
+   "first_memory_answer": "mksap",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_gifting",
+   "group": "both_true",
+   "question": "What did I buy for my nephew's second birthday?",
+   "status": "CONSISTENT",
+   "answer": "wooden building blocks",
+   "first_memory_answer": "wooden building blocks",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_breakfast",
+   "group": "both_true",
+   "question": "What breakfast do I prepare at the flat before morning rounds?",
+   "status": "CONSISTENT",
+   "answer": "overnight oats with chia seeds",
+   "first_memory_answer": "overnight oats with chia seeds",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_resident_specialty",
+   "group": "unrelated",
+   "question": "What is my residency specialty?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "unrelated_partner_workplace",
+   "group": "unrelated",
+   "question": "Which company does Rohit work for in Mumbai?",
+   "status": "CONSISTENT",
+   "answer": "razorpay",
+   "first_memory_answer": "razorpay",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_family_locations",
+   "group": "unrelated",
+   "question": "In which city do my parents live?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "unrelated_rent_share",
+   "group": "unrelated",
+   "question": "How much is my individual monthly share of the flat rent?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "unrelated_partner_stay",
+   "group": "unrelated",
+   "question": "Where is Rohit staying during his Delhi visit?",
+   "status": "CONSISTENT",
+   "answer": "janpath",
+   "first_memory_answer": "janpath",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "unrelated_nephew_name",
+   "group": "unrelated",
+   "question": "What is my nephew's name?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "unrelated_workout_routine",
+   "group": "unrelated",
+   "question": "What workout split did I complete today at the gym?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "unrelated_sweets_origin",
+   "group": "unrelated",
+   "question": "Which sweets did Papa pack for me from Lucknow?",
+   "status": "CONSISTENT",
+   "answer": "ram asrey malai paan",
+   "first_memory_answer": "ram asrey malai paan",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_fitness_tracker",
+   "group": "unrelated",
+   "question": "What smartwatch tracks my sleep?",
+   "status": "CONSISTENT",
+   "answer": "apple watch series 8",
+   "first_memory_answer": "apple watch series 8",
+   "result": "correct",
+   "first_memory_result": "correct"
+  }
+ ]
+}
