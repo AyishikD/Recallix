@@ -172,6 +172,28 @@ def asks_about_now(query):
     return bool(_FIRST_PERSON.search(q) and _PRESENT.search(q) and not _HISTORY.search(q) and not asks_for_earlier(q))
 
 
+_CHANGED = re.compile(r"\b(?:shift(?:ed|ing)|switch(?:ed|ing)|transferr(?:ed|ing)|moved|changed|instead)\b", re.I)
+
+
+def states_a_change(later, earlier, query):
+    """
+    "Which school does Meera go to?" with "meera goes to dps whitefield" and, later, "shifted meera to inventure
+    academy this term": for a present question about someone else, the later answer replaces the earlier one only
+    when its memory says something changed (shifted, switched, transferred, moved, changed, instead) and both
+    memories name the same word of the question ("meera"). Without such a word the most confident answer stays
+    (third person, see asks_about_now). eval/results/update_set
+    """
+    q = str(query or "")
+    if _FIRST_PERSON.search(q) or not _PRESENT.search(q) or _HISTORY.search(q) or asks_for_earlier(q):
+        return False
+    later, earlier = str(later or ""), str(earlier or "")
+    if not _CHANGED.search(later):
+        return False
+    stop = _stopwords()
+    words = lambda t: {w for w in _WORD.findall(t.lower()) if len(w) >= 3 and w not in stop}
+    return bool(words(q) & words(later) & words(earlier))
+
+
 _ENDED = re.compile(r"\b(?:resigned|quit|left|closed|sold|cancel+ed|stopped|broke up|got rid of|gave (?:away|up)|"
                     r"no longer|not anymore|anymore|is dead|died|went to my|moved out of|ended|switched from)\b", re.I)
 

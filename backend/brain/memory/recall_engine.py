@@ -35,7 +35,7 @@ from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
 from ..features import dates as date_resolution
-from .updates import _norm_answer, about_the_user, asks_about_now, ended_values, promote_updates, resolve_answer_conflicts, user_perspective, without_other_people
+from .updates import _norm_answer, about_the_user, asks_about_now, ended_values, promote_updates, resolve_answer_conflicts, states_a_change, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok", "_counts")
@@ -774,6 +774,11 @@ class RecallEngine:
         policy = (settings.get("recall.answer_conflicts", {}) or {}).get("best_answer", "confidence")
         if conflict and policy == "confidence" and asks_about_now(query):
             policy = "conflict"  # "who is MY manager?": the later answer is the current fact (see asks_about_now)
+        if conflict and policy == "confidence":
+            by_id = {out.get("id"): m for m, out in zip(final, memories)}
+            earlier = [by_id.get(i, {}).get("content") for i in conflict[0].get("answer_conflict_with") or []]
+            if any(states_a_change(conflict[0].get("content"), e, query) for e in earlier if e):
+                policy = "conflict"  # "shifted meera to inventure academy": a stated change for the person asked about
         m, out = conflict if conflict and policy == "conflict" else max(
             accepted, key=lambda p: p[0].get("answer_margin", float("-inf")))
         best = {"text": m["answer"], "memory_id": out.get("id"), "margin": m.get("answer_margin")}

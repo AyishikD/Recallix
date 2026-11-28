@@ -279,3 +279,12 @@ def test_someone_telling_the_user_is_theirs_unless_asked_about_them():
     assert w("the doctor told me to take vitamin d", "What supplement should I take?") != ""
     assert w("my gym is cult fit", "Which gym do I go to?") == "my gym is cult fit"
     assert w("it reminds me of goa", "Where does it remind me of?") != ""
+
+
+def test_a_stated_change_for_the_person_asked_about():
+    from backend.brain.memory.updates import states_a_change as s
+    q = "Which school does Meera go to?"
+    assert s("shifted meera to inventure academy this term", "meera goes to dps whitefield", q)
+    assert not s("arjun goes to inventure academy", "meera goes to dps whitefield", q)  # no change stated
+    assert not s("tara moved to inventure academy", "meera goes to dps whitefield", q)  # someone else
+    assert not s("shifted meera to inventure academy", "meera goes to dps whitefield", "Which school did Meera go to first?")

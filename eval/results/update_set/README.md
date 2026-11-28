@@ -63,3 +63,20 @@ Update set: 1 wrong left (of 39), from 2; no other scenario changed. The friend'
 
 Gates (development data): LoCoMo dev identical (0 of 999 answers changed); dev set and Gemini batches identical apart
 from timings. Files: after_attr.json, locomo_dev_after_attr.json, dev_set_after_attr.json, gemini_batches_after_attr.json.
+
+## A stated change for someone else (same day)
+
+For a present question about someone else ("Which school does Meera go to?"), the later conflicting answer now replaces
+the more confident earlier one only when its memory says something changed (shifted, switched, transferred, moved,
+changed, instead) and both memories name the same word of the question (`states_a_change` in updates.py, used in
+recall_engine.py `_best_answer`). "shifted meera to inventure academy this term" (margin -0.92) now answers over "meera
+goes to dps whitefield" (8.23). Without a change word ("arjun goes to inventure academy") or without the person ("tara
+moved to inventure academy") the most confident answer stays.
+
+| group | correct | wrong | declined | other |
+|---|---|---|---|---|
+| update | 10 -> **11** | 1 -> **0** | 3 -> 3 | 0 -> 0 |
+
+Update set: 0 wrong of 39 (from 1); no other scenario changed. Gates (development data): LoCoMo dev identical (0 of 999
+answers changed: the rule did not fire there); dev set and Gemini batches identical. Files: after_change.json,
+locomo_dev_after_change.json, dev_set_after_change.json, gemini_batches_after_change.json.
