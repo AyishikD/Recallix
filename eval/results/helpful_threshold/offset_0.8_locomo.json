@@ -1,0 +1,8015 @@
+{
+ "summary": {
+  "recall@10": 0.7108,
+  "recall@10_by_cat": {
+   "1": 0.3827,
+   "2": 0.8269,
+   "3": 0.2803,
+   "4": 0.8242
+  },
+  "adversarial_declined": 0.2869,
+  "answerable_wrongly_declined": 0.0591,
+  "answer_f1": 0.3753,
+  "answer_f1_by_cat": {
+   "1": 0.2084,
+   "2": 0.561,
+   "3": 0.0543,
+   "4": 0.398
+  },
+  "temporal_reader_answer_matches_gold": "67/156"
+ },
+ "rows": [
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "7 May 2023",
+   "gold": "7 May 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "2022",
+   "gold": 2022,
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "career options",
+   "gold": "Psychology, counseling certification",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Adoption agencies",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Caroline",
+   "gold": "Transgender woman",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "20 May 2023",
+   "gold": "The sunday before 25 May 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "June 2023",
+   "gold": "June 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Single",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "9 June, 2023",
+   "gold": "The week before 9 June 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "9 June, 2023",
+   "gold": "The week before 9 June 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2023",
+   "gold": "4 years",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Caroline's home country",
+   "gold": "Sweden",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2023",
+   "gold": "10 years ago",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "counseling and mental health",
+   "gold": "counseling or mental health for Transgender people",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Caroline is still looking into counseling and mental health jobs",
+   "gold": "Likely no",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.25,
+   "answer": "pottery class",
+   "gold": "pottery, camping, painting, swimming",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2 July 2023",
+   "gold": "2 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "July 2023",
+   "gold": "July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "beach, mountains, forest",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "had a blast",
+   "gold": "dinosaurs, nature",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "5 July 2023",
+   "gold": "5 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 6 July 2023",
+   "gold": "The week before 6 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Yes, since she collects classic children's books",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2022",
+   "gold": "\"Nothing is Impossible\", \"Charlotte's Web\"",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "running",
+   "gold": "Running, pottery",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "10 July 2023",
+   "gold": "10 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2022",
+   "gold": 2022,
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Gonna continue Caroline's edu and check out career options",
+   "gold": "LIkely no; though she likes reading, she wants to be a counselor",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "14 July 2023",
+   "gold": "The friday before 15 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Last Fri",
+   "gold": "The Friday before 15 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": null,
+   "answer": "Melanie is so proud of you for spreading awareness and getting others involved in the LGBTQ community",
+   "gold": "Likely no, she does not refer to herself as part of it",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "9 June, 2023",
+   "gold": "The week before 27 June 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.25,
+   "answer": "pride parade",
+   "gold": "Pride parade, school speech, support group",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "11 August 2023",
+   "gold": "The week before 3 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Events like these",
+   "gold": "Mentoring program, school speech",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "20 July, 2023",
+   "gold": "two weekends before 17 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the weekend before 17 July 2023",
+   "gold": "The weekend before 17 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "horse",
+   "gold": "sunset",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Family time",
+   "gold": "Pottery, painting, camping, museum, swimming, hiking",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.75,
+   "answer": "mentorship program",
+   "gold": "Joining activist group, going to pride parades, participating in an art show, mentoring program",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "once or twice a year",
+   "gold": 2,
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "last Tues",
+   "gold": "The Tuesday before 20 July 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "park",
+   "gold": "National park; she likes the outdoors",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Art",
+   "gold": "abstract art",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "13 August 2023",
+   "gold": "13 August",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "11 August 2023",
+   "gold": "The Friday before 14 August 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": null,
+   "answer": "Melanie is so proud of you for spreading awareness and getting others involved in the LGBTQ community",
+   "gold": "Yes, she is supportive",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Mel",
+   "gold": "Her mentors, family, and friends",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "clay sculptures",
+   "gold": "bowls, cup",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "11 August 2023",
+   "gold": 2022,
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Liberal",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.6666666666666666,
+   "answer": "lake sunrise",
+   "gold": "Horse, sunset, sunrise",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "pup and a kitty",
+   "gold": "Oliver, Luna, Bailey",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "25 May, 2023",
+   "gold": "The week of 23 August 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 23 August 2023",
+   "gold": "The week before 23 August 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "LGBTQ center. Caroline wanted to capture everyone's unity and strength",
+   "gold": "Sunsets",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "The rainbow flag mural",
+   "gold": "Rainbow flag, transgender symbol",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "17 August, 2023",
+   "gold": "The week before 25 August 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "24 August 2023",
+   "gold": "24 August 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Caroline will be ok",
+   "gold": "Somewhat, but not extremely religious",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "clarinet",
+   "gold": "clarinet and violin",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Summer Sounds, Matt Patterson",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "27 August 2023",
+   "gold": "27 August 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "September 2023",
+   "gold": "September 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Melanie: We enjoy hiking in the mountains and exploring forests",
+   "gold": "Yes; it's classical music",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "struggles",
+   "gold": "Changes to her body, losing unsupportive friends",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "walking",
+   "gold": "Roast marshmallows, tell stories",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the weekend before 13 September 2023",
+   "gold": "The weekend before 13 September 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2023",
+   "gold": "Since 2016",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Books",
+   "gold": "Thoughtful, authentic, driven",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "an LGBTQ+ pride parade",
+   "gold": "Poetry reading, conference",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "2022",
+   "gold": "\"Becoming Nicole\"",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "9 June, 2023",
+   "gold": 2022,
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "September 2023",
+   "gold": "September 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the weekend before 20 October 2023",
+   "gold": "The weekend before 20 October 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "two",
+   "gold": 3,
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "19 October 2023",
+   "gold": "19 October 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Melanie is off to go swimming with the kids",
+   "gold": "Likely no; since this one went badly",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "figurines",
+   "gold": "Figurines, shoes",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "20 October 2023",
+   "gold": "The Friday before 22 October 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "21 October 2023",
+   "gold": "21 October 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Caroline want them to experience it",
+   "gold": "No; she's in the process of adopting children.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "mental health",
+   "gold": "mental health",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "taking care of our minds",
+   "gold": "self-care is important",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "important",
+   "gold": "by carving out some me-time each day for activities like running, reading, or playing the violin",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "researching adoption agencies",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "LGBTQ+",
+   "gold": "LGBTQ+ individuals",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "giving back and showing love and acceptance",
+   "gold": "because of their inclusivity and support for LGBTQ+ individuals",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "inclusivity and support",
+   "gold": "creating a family for kids who need one",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "awesome",
+   "gold": "she thinks Caroline is doing something amazing and will be an awesome mom",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "many happy years",
+   "gold": "Mel and her husband have been married for 5 years.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "love, faith and strength",
+   "gold": "love, faith, and strength",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Sweden",
+   "gold": "Sweden",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "This necklace",
+   "gold": "necklace",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie is pretty proud",
+   "gold": "art and self-expression",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "went on another camping trip in the forest",
+   "gold": "explored nature, roasted marshmallows, and went on a hike",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "jobs",
+   "gold": "working with trans people, helping them accept themselves and supporting their mental health",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "LGBTQ+ counseling workshop",
+   "gold": "LGBTQ+ counseling workshop",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "different therapeutic methods and how to best work with trans people",
+   "gold": "therapeutic methods and how to best work with trans people",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Talking to the community",
+   "gold": "her own journey and the support she received, and how counseling improved her life",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "safe, inviting",
+   "gold": "a safe and inviting place for people to grow",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie made this bowl in Melanie's class",
+   "gold": "Yes",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "kids' books",
+   "gold": "kids' books - classics, stories from different cultures, educational books",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Charlotte's Web",
+   "gold": "\"Charlotte's Web\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Becoming Nicole",
+   "gold": "\"Becoming Nicole\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Lessons on self-acceptance and finding support",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Luna and Oliver",
+   "gold": "Running",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "to de-stress",
+   "gold": "To de-stress and clear her mind",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie's headspace",
+   "gold": "Her mental health",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "pots",
+   "gold": "pots",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "incredible",
+   "gold": "a cup with a dog face on it",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "imagination come to life, they made this",
+   "gold": "painting",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a sunset with a palm tree",
+   "gold": "a sunset with a palm tree",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "inspiring and emotional",
+   "gold": "many people wanting to create loving homes for children in need",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "nature",
+   "gold": "warmth and happiness",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "They represent growth, beauty and reminding us to appreciate the small moments",
+   "gold": "They remind her to appreciate the small moments and were a part of her wedding decor",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "colors",
+   "gold": "visiting an LGBTQ center and wanting to capture unity and strength",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "recently",
+   "gold": "once or twice a year",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Perseid meteor shower",
+   "gold": "Perseid meteor shower",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "it felt like we were part of something huge and awe-inspiring",
+   "gold": "in awe of the universe",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Caroline! Last night [13 August 2023] was amazing! We celebrated Melanie's daughter",
+   "gold": "Melanie's daughter",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Caroline",
+   "gold": "Matt Patterson",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "That bowl",
+   "gold": "She wanted to catch the eye and make people smile.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "They've been there through everything, Caroline has known these friends",
+   "gold": "guinea pig",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a pup and a kitty",
+   "gold": "Two cats and a dog",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie's slipper",
+   "gold": "In Melanie's slipper",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "horseback riding",
+   "gold": "Horseback riding",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "stained glass window",
+   "gold": "a stained glass window",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "rainbow sidewalk",
+   "gold": "a rainbow sidewalk",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Brave\"",
+   "gold": "Brave by Sara Bareilles",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Bach and Mozart",
+   "gold": "Bach and Mozart",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Ed Sheeran",
+   "gold": "Ed Sheeran",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2023",
+   "gold": "7 years",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The sign was just a precaution",
+   "gold": "A sign stating that someone is not being able to leave",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "applied to adoption agencies",
+   "gold": "Do research, find an adoption agency or lawyer, gather necessary documents, and prepare emotionally.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "She got hurt and had to take a break from pottery.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "painting",
+   "gold": "Read a book and paint.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "blue streaks",
+   "gold": "A painting inspired by sunsets with a pink sky.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "abstract",
+   "gold": "An abstract painting with blue streaks on a wall.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "transgender",
+   "gold": "It was a transgender poetry reading where transgender people shared their stories.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "trans lives matter",
+   "gold": "\"Trans Lives Matter\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "flowers",
+   "gold": "Freedom and being true to herself.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "They've been there through everything",
+   "gold": "An ongoing adventure of learning and growing.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "got into an accident",
+   "gold": "He got into an accident",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "ok",
+   "gold": "He was scared but reassured by his family",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "super important to Melanie. Especially after the accident, Melanie has thought a lot about how much Melanie need them",
+   "gold": "They are important and mean the world to her",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie was really scared",
+   "gold": "They were scared but resilient",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "so thankful to have them",
+   "gold": "Grateful and thankful for her family",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "eyes light up",
+   "gold": "She was happy and thankful",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "love",
+   "gold": "Strength and motivation",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "lucky",
+   "gold": "She appreciated them a lot",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Painting",
+   "gold": "Went on a nature walk or hike",
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "mental health",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie want to be couragous for Melanie's family",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie love being a mom",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "their new kid",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "self-acceptance",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "posters",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "This necklace",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "art and self-expression",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "taking care of our minds",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "pottery",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "couragous for Melanie's family",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "couragous",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "hand-painted bowl",
+   "gold": "No",
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "purple color",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Caroline accept and grow into Caroline's true self",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "figurines",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "nature",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "posters",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Cool",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "happy you found something that makes you happy",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "they're good- we got another cat named Bailey",
+   "gold": "No",
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Melanie's slipper",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Family time",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "plate",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "that sign",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Summer Sounds",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "piano",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Mel",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "that sign looks serious",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "learning the piano",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Sorry that happened to you. It's tough when those things happen, but it's great you apologized",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Caroline will do Caroline's best to make sure these kids have a safe and loving home",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The kids look so cute, Mel! Caroline bet they bring lots of joy",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The kids look so cute, Mel! Caroline bet they bring lots of joy",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "joy",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "So glad you bonded over our love of nature",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "R&R",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "family love and support",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "19 January 2023",
+   "gold": "19 January, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "starting your own business",
+   "gold": "January, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "dance it out",
+   "gold": "by dancing",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "passions",
+   "gold": "They lost their jobs and decided to start their own businesses.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Losing Jon's job",
+   "gold": "He lost his job and decided to start his own business to share his passion.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.6666666666666666,
+   "answer": "by the water",
+   "gold": "By the water, with natural light and Marley flooring",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "February 2023",
+   "gold": "February, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "29 January, 2023",
+   "gold": "29 January, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "28 January 2023",
+   "gold": "28 January 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Rome",
+   "gold": "Rome",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "8 February, 2023",
+   "gold": "February, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a few years ago",
+   "gold": "A few years ago",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 16 March 2023",
+   "gold": "March, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "16 March, 2023",
+   "gold": "16 March, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "16 June, 2023",
+   "gold": "April, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "May 2023",
+   "gold": "May, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "May 2023",
+   "gold": "24 April, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Gina lost Gina's job",
+   "gold": "She always loved fashion trends and finding unique pieces and she lost her job so decided it was time to start her own business.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Jon to take the plunge",
+   "gold": "Yes",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "10 May 2023",
+   "gold": "10 May, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "10 May 2023",
+   "gold": "27 May, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "27 May, 2023",
+   "gold": "May, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "13 June, 2023",
+   "gold": "June, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "ad campaign",
+   "gold": "worked with an artist to make unique fashion pieces, made limited-edition sweatshirts, got some new offers and promotions for online store, developed a video presentation showing how to style her pieces",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "networking events",
+   "gold": "fair, networking events, dance competition",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "workshops and classes",
+   "gold": "one-on-one metoring and training to dancers,  workshops and classes to local schools and centers",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "11 May, 2023",
+   "gold": "15 June, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.4,
+   "answer": "Gina used to compete in a few dance competitions and shows",
+   "gold": "Yes",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 19 June 2023",
+   "gold": "June 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Paris, Rome",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "13 June, 2023",
+   "gold": "20 June, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "It's been bumpy",
+   "gold": "six months",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 21 June 2023",
+   "gold": "June 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "20 June 2023",
+   "gold": "20 June, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Last week [the week before 9 July 2023",
+   "gold": "July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "9 July 2023",
+   "gold": "July, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "11 May, 2023",
+   "gold": "21 July 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "23 July, 2023",
+   "gold": " 23 July, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "21 July 2023",
+   "gold": "21 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Contemporary",
+   "gold": "Contemporary",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Marley flooring",
+   "gold": "Contemporary",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "when Gina's team won first place at a regionals",
+   "gold": "Winning first place at a regionals dance competition",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "contemporary",
+   "gold": "\"Finding Freedom\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "white dresses",
+   "gold": "They are performing at the festival",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Shure, Gina will send it to you later. Starting this studio isn't just a business, it's a place for dancers to grow",
+   "gold": "They look graceful",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "joy",
+   "gold": "Glad",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Marley",
+   "gold": "Marley flooring",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "wholesalers",
+   "gold": "The perfect spot for her store",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "unique pieces",
+   "gold": "the space, furniture, and decor",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "they're in a cool oasis",
+   "gold": "cozy and comfortable",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "It's been great",
+   "gold": "hard work's paying off",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "looks great and is comfy",
+   "gold": "personal style and customer comfort",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the key to making them feel welcome and coming back. Jon think you can create that space you're imagining",
+   "gold": "It's the key to making them feel welcome and coming back",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "hard work and effort",
+   "gold": "making them want to come back",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "great",
+   "gold": "The store is doing great.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "freedom",
+   "gold": "Freedom and expressing herself through dance",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Wow, Gina! You did great taking that leap",
+   "gold": "dancing together and supporting each other",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "staying positive",
+   "gold": "build relationships with customers, create a strong brand image, stay positive",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Jon's biz",
+   "gold": "for his business",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "lets Gina show Gina's creativity",
+   "gold": "she is passionate about dance and fashion",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "magic",
+   "gold": "happy",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "trophies",
+   "gold": "a trophy",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "reminding Gina of Gina's successes and progress",
+   "gold": "By reminding herself of her successes and progress, having a support system, and focusing on why she started",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fashion internship",
+   "gold": "fashion internship",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "an international company",
+   "gold": "fashion department of an international company",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The Lean Startup",
+   "gold": "The Lean Startup",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "mentoring and training",
+   "gold": "One-on-one mentoring and training",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "to stay organized and motivated",
+   "gold": "To set goals, track achievements, and find areas for improvement",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "quit",
+   "gold": "quit",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "to clear Jon's mind",
+   "gold": "To clear his mind",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "dance studio",
+   "gold": "a dance studio",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The dance studio looks awesome",
+   "gold": "amazing",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It's a bit scary",
+   "gold": "excited",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "magical",
+   "gold": "magical",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "make everything just right",
+   "gold": "savor all the good vibes",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Let's make some awesome memories",
+   "gold": "Let's live it up and make some great memories",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Woohoo! Tomorrow [20 June 2023]'s opening will be so much fun",
+   "gold": "excitement",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "hoodie",
+   "gold": "Hoodies",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "positivity and determination",
+   "gold": "His positivity and determination",
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "banker",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "go after Jon's goals",
+   "gold": "Sprucing up his business plan, tweaking his pitch to investors, and working on an online platform.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Let's create some cool content and manage your social media accounts",
+   "gold": "Helping with making content and managing his social media accounts.",
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "contemporary",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "it's been Jon's passion and escape",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "contemporary to hip-hop",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Wow, they look great! Can't wait to see them rock the festival. Gonna be awesome",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "something awesome",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "something awesome",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "welcome and coming back",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Jon's biz",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It's been great! And hey, you're awesome with your store. How's it going",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Jon's dreams",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "starting your own business",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Jon is passionate about it",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "trophies",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Taking a risk",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fashion",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Paris",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Jon's dreams",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Door Dash",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Gina would love to join in and show Gina's support",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maria's mom",
+   "gold": "her mother",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "21 December 2022",
+   "gold": "21 December 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "weight training",
+   "gold": "Kickboxing, Taekwondo",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "helping others",
+   "gold": "Volunteering at a homeless shelter",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 1 January 2023",
+   "gold": "The week before 1 January 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "December 2022",
+   "gold": "December 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.25,
+   "answer": "Maria's place",
+   "gold": "homeless shelter, gym, church",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "support and believing in John",
+   "gold": "A doll, a film camera",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "John's family",
+   "gold": "Middle-class or wealthy",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "aunt",
+   "gold": "Her aunt",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "24 February 2023",
+   "gold": "February 24, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.25,
+   "answer": "Jean",
+   "gold": "David, Jean, Cindy, Laura",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "aptitude test",
+   "gold": "The military aptitude test",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 6 March 2023",
+   "gold": "The week before 6 March 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Will do",
+   "gold": "Yes",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "creative",
+   "gold": "Poetry, creative writing",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2 April, 2023",
+   "gold": "The week before 2 April 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "policymaking",
+   "gold": "Political science, Public administration, Public affairs",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a colleague",
+   "gold": "Rob",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "broken windshield and a broken windshield",
+   "gold": "Broken windshield, Car broke down",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "10 April, 2023",
+   "gold": "2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "East Coast",
+   "gold": "Pacific northwest, east coast",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "March 2023",
+   "gold": "March 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "peach cobbler",
+   "gold": "Banana split sundae, Peach cobbler",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "April 2023",
+   "gold": "April.2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Spain, England",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bought a cross necklace",
+   "gold": "Join a local church, buy a cross necklace",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "20 May, 2023",
+   "gold": "The Friday before 20 May 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.25,
+   "answer": "improving education and infrastructure in our community",
+   "gold": "Veterans, schools, infrastructure",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "ring-toss tournament",
+   "gold": "Chili cook-off, ring-toss tournament",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "homeless",
+   "gold": "The homeless shelter, the dog shelter",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "11 August, 2023",
+   "gold": "In 2013",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "weight training",
+   "gold": "Hiking, mountaineering",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "kundalini",
+   "gold": "Aerial, kundalini",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 16 June 2023",
+   "gold": "The week before 16 June 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Oregon, Florida",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "violin concert",
+   "gold": "Live music event, violin concert",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.2,
+   "answer": "marching",
+   "gold": "Petition, march, party, visiting veterans hospital, 5K charity run",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "3 July, 2023",
+   "gold": "July 2, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "3 July",
+   "gold": "Independence Day",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "two",
+   "gold": "Kyle, Sara",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "beach",
+   "gold": "beach",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "John's old area",
+   "gold": "West County",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 7 July 2023",
+   "gold": "The week before 7 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.6666666666666666,
+   "answer": "community work",
+   "gold": "Hiking, picnic, volunteer work",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Yeah, totally",
+   "gold": "No, he has goals specifically in the U.S. like joining the military and running for office.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the weekend before 22 July 2023",
+   "gold": "The weekend before 22 July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "weight training",
+   "gold": "Weight training, Circuit training, Kickboxing, yoga",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "30 July 2023",
+   "gold": "The sunday before 3` July 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Maria baked",
+   "gold": "Cakes",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "incredible",
+   "gold": "Selfless, family-oriented, passionate, rational",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "27 June, 2023",
+   "gold": "Around August 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Cindy",
+   "gold": "Cindy, Laura",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2022",
+   "gold": "2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "5 May 2023",
+   "gold": "August 4, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Last week [the week before 9 August 2023",
+   "gold": "The week before 9 August 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "9 August, 2023",
+   "gold": "first weekend of August 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Toy drive, Community food drive, veterans, domestic violence",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "28 July 2023",
+   "gold": "Two weeks before 11 August 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "last summer",
+   "gold": "The summer of 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Coco",
+   "gold": "Coco, Shadow",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "13 August, 2023",
+   "gold": "The week before 13 August 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "There are so many",
+   "gold": "two",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "two",
+   "gold": "two weeks",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "helping out at future events",
+   "gold": "Shelter coordinator, Counselor",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "helping the community and making it a better place",
+   "gold": "Improving education and infrastructure",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "education reform",
+   "gold": "Seeing how lack of education and crumbling infrastructure affected his neighborhood while growing up.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "after they got the funding",
+   "gold": "Enabled needed repairs and renovations, making the learning environment safer and more modern for students.",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "aerial yoga",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maria's old car",
+   "gold": "old car",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "pizza",
+   "gold": "pizza",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "service-focused",
+   "gold": "service-focused online group",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "5K charity run",
+   "gold": "gave out food and supplies at a homeless shelter, organized a toy drive for kids in need",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maria's aunt",
+   "gold": "Her aunt",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Maria is passionate about charity work",
+   "gold": "The girl seemed sad and had no other family",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a lot",
+   "gold": "divorce, job loss, homelessness",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "John haven't been successful before",
+   "gold": "saw the impact he could make in the community through politics",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a beginner's yoga class",
+   "gold": "beginner's yoga class",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Kyle",
+   "gold": "Kyle",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a few times a week",
+   "gold": "A few times a week",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "painting",
+   "gold": "painting of a castle on a hill",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "England",
+   "gold": "England",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "completion of a university degree",
+   "gold": "completion of a university degree",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Improving education and infrastructure",
+   "gold": "education and infrastructure",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "a 5K charity run",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "career fair",
+   "gold": "career fair at a local school",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "John's car broke down",
+   "gold": "His car broke down",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Pacific Northwest",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "politics and the government",
+   "gold": "politics and the government",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It's been a really satisfying experience and John care about making a real impact",
+   "gold": "raise awareness and start conversations to create positive change",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "policies",
+   "gold": "education reform and infrastructure development",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "convention",
+   "gold": "a tech-for-good convention",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Three times a week",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bonding",
+   "gold": "More energy, gains in strength and endurance",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "variety",
+   "gold": "Salads, sandwiches, homemade desserts",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "dinner",
+   "gold": "Made dinner together",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bought a cross necklace",
+   "gold": "joined a nearby church",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maria wanted to feel closer to a community and Maria's faith",
+   "gold": "to feel closer to a community and her faith",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a small party",
+   "gold": "a small party to share their stories",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "share their stories",
+   "gold": "share stories and make connections",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "heartwarming",
+   "gold": "heartwarming",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fundraiser",
+   "gold": "fundraiser",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "chili cook-off",
+   "gold": "chili cook-off",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Max",
+   "gold": "Max",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "10 years",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Let's make sure we make progress in the coming weeks",
+   "gold": "By considering adopting a rescue dog",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "responsibility and compassion",
+   "gold": "Responsibility and compassion",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "creative writing class",
+   "gold": "volunteering at a local dog shelter once a month",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fairy tale",
+   "gold": "Like being in a fairy tale",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "free and light",
+   "gold": "Free and light",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maria joined a gym",
+   "gold": "joined a gym",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "kundalini",
+   "gold": "kundalini yoga",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "at work",
+   "gold": "assistant manager",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "self-doubt",
+   "gold": "self-doubt",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "It's been amazing",
+   "gold": "having support at home and his own grit",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "lively",
+   "gold": "live music event",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Things have been tough for her lately. She had to leave and find a new place in a hurry, which has been really stressful",
+   "gold": "Her cousin had to leave and find a new place in a hurry.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "marching",
+   "gold": "marching event",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "it was awesome",
+   "gold": "Respect for the military and the desire to show support",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "plenty of times",
+   "gold": "At least once a week",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "flood",
+   "gold": "Flood",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "lots of homes were ruined",
+   "gold": "Lots of homes were ruined.",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Your offer",
+   "gold": "Flood in John's old area",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "have dinner",
+   "gold": "have dinner with friends from the gym",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "played games, and ate yummy food",
+   "gold": "played games like charades and a scavenger hunt",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "what we have and the need to give back",
+   "gold": "the resilience of the veterans and their inspiring stories",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "quality time",
+   "gold": "appreciation for giving back",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "hope",
+   "gold": "seeing the resilience of the veterans",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "picnic",
+   "gold": "hiking",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Trying new stuff is a great way to push yourself and mix things up",
+   "gold": "Trying new classes is a fun way to switch up the exercise routine.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "weight training",
+   "gold": "weight training",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "volunteered at a homeless shelter",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "it's really rewarding",
+   "gold": "Witnessed a family struggling on the streets and reached out to the shelter",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "we had a meaningful experience at a military memorial",
+   "gold": "Had a meaningful experience at a military memorial",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Wow",
+   "gold": "awestruck and humbled",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "to remember and appreciate those who served",
+   "gold": "To remember and appreciate those who served",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "stand up for what we believe in",
+   "gold": "Teaching them to respect and appreciate those who served",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "John lost John's job",
+   "gold": "John lost his job at the mechanical engineering company.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "community work",
+   "gold": "community work",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "renovate a rundown community center",
+   "gold": "Helped renovate a rundown community center.",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "veterans and their families",
+   "gold": "veterans and their families",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a local organization",
+   "gold": "a local organization",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "gratitude",
+   "gold": "a medal for volunteering",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Coco",
+   "gold": "Coco",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "camping",
+   "gold": "Camping",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "peaceful and awesome experience",
+   "gold": "Peaceful and awesome",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Don't feel like John is making much of an impact here",
+   "gold": "Not feeling like making much of an impact",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Coco",
+   "gold": "Shadow",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "adorable",
+   "gold": "doing great - learning commands and house training",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "mentoring students at a local school",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "climbing, sliding, and playing games",
+   "gold": "going for hikes, hanging out at the park, having picnics, playing board games, having movie nights",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a brand new fire truck",
+   "gold": "a brand new fire truck",
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "positively affect people",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "The motivated people around John",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maria has been volunteering at a homeless shelter",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Shadow",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Improving education and infrastructure",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "serving John's country",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "when we were struggling",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bonding and getting fit",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "variety",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Running for office",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "John has been exploring options",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "10 years",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "It's a great way",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "little things",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "taking the time to hear what they're saying",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Helping those in need",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "charity",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "improving",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "John's decisions and goals",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "quality time",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maria love volunteering",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "humble",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It's just not right",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Sorry to hear about your job, John",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a homeless shelter",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a local organization that helps victims of domestic abuse",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Max",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Sounds thrilling",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Shadow",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "They're doing great",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "They actually didn't share a whole lot in common with Nate besides the love of animals",
+   "gold": "Yesteammates on hisvideo game team.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.42857142857142855,
+   "answer": "similar",
+   "gold": "Watching movies, making desserts",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "3 years ago [2019",
+   "gold": "2019",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 21 January 2022",
+   "gold": "the week before 21Janury, 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Hairless cats or pigs,since they don't have fur, which is one of the main causes of Joanna's allergy.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Writing and creative projects",
+   "gold": "Writing, watchingmovies, exploringnature, hanging withfriends.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "2022",
+   "gold": "three years",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "21 January 2022",
+   "gold": "The Friday before 23January, 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "11 November, 2022",
+   "gold": "2019",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "great job",
+   "gold": "finished her screenplay and printed it",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "relief, excitement and worry",
+   "gold": "Relief, excitement,worry, hope,anxiety.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "most reptiles and animals with fur",
+   "gold": "Most reptiles,animals with fur,cockroaches, dairy",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Joanna is too lazy to research alternative pets",
+   "gold": "asthma",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "23 January, 2022",
+   "gold": "23 March, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Bye Nate",
+   "gold": "Jo",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "The week before 15April, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Dyed Nate's hair",
+   "gold": "dyed his hair purple",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Lord of the Rings",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "trails",
+   "gold": "Whispering Falls waterfall",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "3:35 pm on 12 May, 2022",
+   "gold": "twice",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "20 May, 2022",
+   "gold": "May 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Max",
+   "gold": "Max",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "2022",
+   "gold": "May 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.6,
+   "answer": "Joanna",
+   "gold": "first screenplay on drama and romance, third screenplay on loss identity and connection",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "two weekends",
+   "gold": "The weekend after 3June, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "3 June 2022",
+   "gold": "The weekend after 3June, 2022.",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "2 May, 2022",
+   "gold": "The week before 3June, 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "a few more",
+   "gold": "film contest, film festival.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "17 June 2022",
+   "gold": "The Friday before 24June, 2022.",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "5 November 2022",
+   "gold": "The weekend of 24June, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "about a thirty year old woman on a journey of self-discovery after a loss",
+   "gold": "Screenplays,books, online blog posts, journal",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Friday",
+   "gold": "The Friday before 10July, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Woodhaven",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 14 August 2022",
+   "gold": "The week before 14August, 2022.",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "stories that tackle important issues",
+   "gold": "\"Little Women\",'A Court of Thorns andRoses'.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "22 August 2022",
+   "gold": "The weekend of 22August, 2022.",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "last week [the week before 22 August 2022",
+   "gold": "The week before 22August, 2022.",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "21 August 2022",
+   "gold": "21 August, 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "9 September 2022",
+   "gold": "The Friday before 14September, 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Last Monday [12 September 2022",
+   "gold": "The Monday before 14September, 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 14 September 2022",
+   "gold": "The week before 14September, 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "14 September, 2022",
+   "gold": "5 October, 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "movies",
+   "gold": "\"Little Women\", \"Lord of the Rings\"",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "21 January 2022",
+   "gold": "four months",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Friday",
+   "gold": "September 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "21 April, 2022",
+   "gold": "The week before 6October, 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Catan",
+   "gold": "Chess, Catan.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "game convention",
+   "gold": "A tournament and agaming convention.",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "9 October, 2022",
+   "gold": "The Friday before 9October, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "A few times",
+   "gold": "Twice",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "desserts",
+   "gold": "stuffed toy pup",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "6 October, 2022",
+   "gold": "25 May, 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "few bits",
+   "gold": "two",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "three",
+   "gold": "Twice.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "23 October 2022",
+   "gold": "The Sunday before 25October, 2022.",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.16666666666666666,
+   "answer": "personal experiences",
+   "gold": "Personal experiences,her own journey ofself discovery, Nate,nature, validation,stories about findingcourage and takingrisks, people she knows, stuff she sees, imagination",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "stuffed animal",
+   "gold": "Turtles.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "5 September, 2022",
+   "gold": "5 November, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Keep doing what you love",
+   "gold": "A pet,\"The Lord of the Rings\" movies,a dragon book series,coconut flavoring,\"Project Hail Mary\" book,Xenoblade Chronicles, dairy-free margarine, coconut oil",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "cute notes",
+   "gold": "Hangs them on a corkboard, writes themin a notebook.",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "laptop",
+   "gold": "A Nintendo Switch; since the game \"Xenoblade 2\" is made for this console.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "movies",
+   "gold": "Gamecube, PC,Playstation.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "2022",
+   "gold": "Two",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.2,
+   "answer": "watching movies",
+   "gold": "Valorant, Counter Strike:Global Offensive,Xenoblade Chronicles, StreetFighter, Cyberpunk 2077",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "5 November 2022",
+   "gold": "The Saturday before 7November, 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "video game tournament",
+   "gold": "Valorant",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "a new gaming team",
+   "gold": "an animalkeeper at a localzoo and workingwith turtles; as heknows a great dealabout turtles andhow to care for them,and he enjoys it.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Pets",
+   "gold": "A dog and threeturtles.",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "12 May, 2022",
+   "gold": "Four",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "small",
+   "gold": "Three",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "slowly walk around",
+   "gold": "takes them onwalks, holds them,feeds themstrawberries, givesthem baths.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "nature",
+   "gold": "Nature",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "17 April, 2022",
+   "gold": "10 November, 2022",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Indiana",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Keep doing what you love",
+   "gold": "\"Eternal Sunshine of the Spotless Mind\" movie, \"A Court of Thorns and Roses\" book, pointers for making living room comfy, starting a cork board for memories, \"Little Women\" movie",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.25,
+   "answer": "Nate is all about these desserts",
+   "gold": "coconut milk icecream, dairy-free chocolate cake with berries, chocolate and mixed-berry icecream, dairy-free chocolate mousse",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "shared it with some people in Nate's vegan diet group",
+   "gold": "teaching others, cooking show",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 2 May 2022",
+   "gold": "The week before 2 May, 2022.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5555555555555556,
+   "answer": "2022",
+   "gold": "nine",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.4,
+   "answer": "10 July, 2022",
+   "gold": "three",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5714285714285714,
+   "answer": "second",
+   "gold": "seven",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.2222222222222222,
+   "answer": "cookies, pies, cakes",
+   "gold": "dairy free vanilla cake with strawberry filling and coconut cream frosting, parfait, strawberry chocolate cake, chocolate coconut cupcakes, chocolate raspberry tart, chocolate cake with raspberries, blueberry cheesecake bars",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "vegan ice cream",
+   "gold": "coconut milk icecream, chocolate and vanilla swirl",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "gaming",
+   "gold": "coconut milk ice cream recipe, reset high scores, tips to improve gaming skills",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "long time no see",
+   "gold": "No; because both of them faced setbacks in their career",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Anytime! Joanna is always down to give movie reccomendations",
+   "gold": "filmmaker.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "10 November 2022",
+   "gold": "10 November, 2022",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Dyed Nate's hair",
+   "gold": "Florida",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "\"Eternal Sunshineof the Spotless Mind\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bright and bold",
+   "gold": "purple",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "action and sci-fi",
+   "gold": "Lord of the Rings",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It has adventures, magic, and great characters",
+   "gold": "dragons",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "enough light",
+   "gold": "red and purple lighting",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "video game",
+   "gold": "Street Fighter",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "loss, identity, and connection",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Playing video games and watching movies",
+   "gold": "Xenoblade Chronicles",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "movies",
+   "gold": "action and sci-fi",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Joanna's first full screenplay",
+   "gold": "screenplay",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "drama and romance",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Hoping Joanna's screenplay gets noticed and makes it to the screen",
+   "gold": "submit it to film festivals and get producers and directors to check it out",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "since Nate was a boy",
+   "gold": "3 years",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "It was actually pretty good",
+   "gold": "Super good, rich and creamy",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "chocolate and mixed berry",
+   "gold": "chocolate and mixed berry",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "stories",
+   "gold": "\"Little Women\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "sisterhood, love, and reaching for your dreams",
+   "gold": "Sisterhood, love, and reaching for your dreams",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "chocolate and vanilla",
+   "gold": "chocolate and vanilla swirl",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "personal experiences",
+   "gold": "personal experiences and her own journey of self-discovery",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "for times of stress",
+   "gold": "Their slow pace and calming nature",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "slow pace",
+   "gold": "Not tough; keep their area clean, feed them properly, give them enough light.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a writing gig",
+   "gold": "writing gig",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "it's bright and bold",
+   "gold": "Bright and bold - like him",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "coconut milk, vanilla extract, sugar, and a pinch of salt",
+   "gold": "Coconut milk, vanilla extract, sugar, salt",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Finding Home",
+   "gold": "\"Finding Home\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "action and sci-fi",
+   "gold": "Fantasy and sci-fi",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "loads of books",
+   "gold": "Adventures and magic",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "dramas and emotionally-driven",
+   "gold": "Dramas and emotionally-driven films",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Playing games",
+   "gold": "watching fantasy and sci-fi movies",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "strawberry",
+   "gold": "strawberry",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "coconut cream",
+   "gold": "coconut cream",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "hikes",
+   "gold": "write a whole movie",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "stories",
+   "gold": "Start thinking about a drama and publish a screenplay",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Maybe! Nate do like nature, so that might be fun going with someone else",
+   "gold": "Joanna",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "support you",
+   "gold": "get her a stuffed animal",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It's great",
+   "gold": "A stuffed animal to remind you of the good vibes",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "gaming party",
+   "gold": "A gaming party",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Joanna",
+   "gold": "Tournament friends, old friends, teammates",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "cash",
+   "gold": "Custom controller decorations",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "screenplay",
+   "gold": "screenplay bits",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Spider-Man",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "iron man",
+   "gold": "Iron Man",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "inspiring quotes and pictures",
+   "gold": "inspiring quotes, photos, and little keepsakes",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the love and encouragement from them every day",
+   "gold": "love and encouragement from her family",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "vegan ice cream",
+   "gold": "vegan ice cream",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "7",
+   "gold": "7",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Joanna made for Joanna's family",
+   "gold": "vegan ice cream recipe",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "let you know how it turns out",
+   "gold": "make it for her family",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fourth",
+   "gold": "Four",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "trails",
+   "gold": "Woodhaven",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a cool old book collection",
+   "gold": "cool old book collection",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "sisterhood, love, and chasing dreams",
+   "gold": "loss, redemption, and forgiveness",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Woodhaven has had an interesting past with lots of cool people. Seeing how much it changed",
+   "gold": "Woodhaven's interesting past and people",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "research",
+   "gold": "Won a video game tournament",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "video game",
+   "gold": "Competing in video game tournaments",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bummed Joanna out",
+   "gold": "Touched",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "express Joanna",
+   "gold": "share her stories and hopefully have an impact",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "online blog post",
+   "gold": "A blog post about a hard moment in her life",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "knowing that Joanna's writing can make a difference",
+   "gold": "Knowing that her writing can make a difference",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Coconut milk",
+   "gold": "Coconut milk ice cream",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fun and rewarding",
+   "gold": "Happy to share",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Joanna's book",
+   "gold": "her book",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "it's like Joanna finally belong somewhere",
+   "gold": "making a delicious treat",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "So proud",
+   "gold": "Taking time off to chill with pets",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "lactose intolerant",
+   "gold": "lactose intolerance",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "berries",
+   "gold": "dairy-free margarine or coconut oil",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "cooking",
+   "gold": "a cooking show",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It was rich and creamy",
+   "gold": "Coconut milk ice cream",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "chocolate mousse",
+   "gold": "dairy-free chocolate mousse",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "chocolate raspberry tart",
+   "gold": "chocolate raspberry tart",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "cakes",
+   "gold": "chocolate cake with raspberries",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "almond flour, coconut oil, chocolate and raspberries",
+   "gold": "blueberries and coconut milk",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Little Women",
+   "gold": "Little Women",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bookmark",
+   "gold": "a bookmark",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Catan",
+   "gold": "Catan",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Inception",
+   "gold": "\"Inception\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Cyberpunk 2077",
+   "gold": "Cyberpunk 2077",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a bookcase filled with dvds and movies",
+   "gold": "a bookcase filled with dvds and movies",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "awesome",
+   "gold": "gripping with great actors",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a good blanket",
+   "gold": "couch for multiple people, fluffy blanket, lights that can be dimmed",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Tilly",
+   "gold": "stuffed animal dog named Tilly",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "printed",
+   "gold": "have a stuffed animal dog named Tilly with her",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Joanna got allergic",
+   "gold": "after a dog she had in Michigan",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "bummed Joanna out",
+   "gold": "keep grinding and moving ahead",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It can feel like a step back",
+   "gold": "respect Joanna for being able to bounce back",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "kind words",
+   "gold": "rejections don't define her, keep grinding and she'll find the perfect opportunity",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "in your pocket",
+   "gold": "his turtles",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The name",
+   "gold": "naming a stuffed animal dog Tilly",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "movie script",
+   "gold": "movie script",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Writing",
+   "gold": "visuals to help bring the characters alive in her head so she can write better",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "everywhere",
+   "gold": "people she knows, things she saw, her imagination",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "surreal",
+   "gold": "surreal and cool",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "varied",
+   "gold": "combination of vegetables, fruits, and insects",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "coconut milk",
+   "gold": "coconut milk",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "early writings",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Xeonoblade Chronicles",
+   "gold": "\"Xenoblade Chronicles\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "cute notes",
+   "gold": "a handwritten letter",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fantasy RPG",
+   "gold": "fantasy RPG",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Homemade coconut ice cream",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a suspenseful thriller",
+   "gold": "A suspenseful thriller set in a small Midwestern town",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "gaming content",
+   "gold": "gaming content",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "connecting with people",
+   "gold": "Love of gaming and connecting with others who enjoy it too",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "gaming",
+   "gold": "Gaming videos",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Way to go, Nate! Making videos and connecting with people about gaming - that's awesome! You'll do great",
+   "gold": "Watch other people's videos to understand what the audience likes",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The sunset",
+   "gold": "Sunset",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "nature's beauty",
+   "gold": "The incredible sunset and surrounding beauty",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The tank is big enough now for three, so Nate figured why not",
+   "gold": "He saw another one at a pet store and wanted to get it",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Big projects",
+   "gold": "Watch one of Joanna's movies together or go to the park",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Nate's turtles",
+   "gold": "turtles",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "watching Nate's turtles slowly walk around",
+   "gold": "They make him feel calm and don't require much looking after",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "turtles",
+   "gold": "colorful bowls of coconut milk ice cream",
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "The Lord of the Rings",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "fantasy",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "dramas and romcoms",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Nate will start to think of a drama Nate and publish Nate's own screenplay",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "3 years",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "No prob",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "ice cream",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "video game",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "new hair color looks amazing",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "ice cream and chocolate sauce",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "stories",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Playing video games or watching movies",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "berries",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Iron Man",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "desserts",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the library",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "balance",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Wow",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "self-discovery",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "they take Nate to new worlds",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "berries",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "desserts",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "chocolate cake",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "chocolate and mixed berry flavors",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Dyed Nate's hair",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "For sure!",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Nate should really get a set up",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Writing and creative projects",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "tackle important issues",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "share the love",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "DIYs",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fate. Having a walking buddy",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Writing",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Dyed Nate's hair",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "writing down some of Nate's favorite memories",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "trophy and a trophy",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "dark sky and green scenery",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "hike",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "So cute",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.6666666666666666,
+   "answer": "work ethic and dedication",
+   "gold": "improve shooting percentage, win a championship",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "charity or inspiring people",
+   "gold": "get endorsements, build his brand, do charity work",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "jerseys",
+   "gold": "sneakers, fantasy movie DVDs, jerseys",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "John",
+   "gold": "C. S.Lewis",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "harry potter",
+   "gold": "Harry Potter, Game of Thrones, the Name of the Wind, The Alchemist, The Hobbit, A Dance with Dragons, and the Wheel of Time.",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "castles",
+   "gold": "House of MinaLima",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "June 2023] - on and off the court. Last week [the week before 16 July 2023",
+   "gold": "June 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "London",
+   "gold": "California, London, the Smoky Mountains",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Nike",
+   "gold": "Under Armour",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Nike and Gatorade",
+   "gold": "basketball shoes and gear deal with Nike, potential sponsorship with Gatorade, Moxie a popular beverage company, outdoor gear company",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "August 2023",
+   "gold": "early August, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "pro ball",
+   "gold": "surfing",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2018",
+   "gold": "2018",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "take Tim to alternate realities",
+   "gold": "Read fantasy books.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.25,
+   "answer": "fantasy novels",
+   "gold": "comments on favorite books in a fantasy literature forum, articles on fantasy novels, studying characters, themes, and making book recommendations, writing a fantasy novel",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "likely John's friend, colleague or family",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Last week [the week before 16 July 2023",
+   "gold": "three weeks",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.2,
+   "answer": "2023",
+   "gold": "6",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "J.K. Rowling, R.R. Martin, Patrick Rothfuss, Paulo Coelho, and J. R. R. Tolkien.",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "helps disadvantaged kids with sports and school",
+   "gold": "Good Sports, because they work with Nike, Gatorade, and Under Armour and they aim toprovide youth sports opportunities for kids ages 3-18 in high-need communities.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Seattle",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "New York City",
+   "gold": "Seattle, Chicago, New York",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "15th",
+   "gold": "August 15, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "September 2023",
+   "gold": "September 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Chicago",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "basketball ball",
+   "gold": "signed basketball",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "Harry Potter and the Philosopher's Stone",
+   "gold": "That, Wheel of Time",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fantasy reading hobby",
+   "gold": "Pomodoro technique",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "theme from a movie",
+   "gold": "John Williams",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "four",
+   "gold": "Middle school, high school, and college and he was with his high school team for 4 years.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "New York City",
+   "gold": "Seattle, Chicago, New York, and Paris.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "August",
+   "gold": "September, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "California or Florida",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "October 2023",
+   "gold": "October, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "life",
+   "gold": "become a basketball coach since he likes giving back and leadership",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "hiking stuff and outdoor gear",
+   "gold": "Hiking, surfing",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "LeBron James",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "the week before 13 October 2023",
+   "gold": "The week before October 13th, 2023.",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.3333333333333333,
+   "answer": "London",
+   "gold": "UK",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2022",
+   "gold": "2022",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "amazing",
+   "gold": "Yes",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "articles",
+   "gold": "Fantasy stories with plot twists",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Soup, a slow cooker meal, and honey garlic chicken with roasted veg.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "skills and leadership",
+   "gold": "His heart, determination, skills, and leadership.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "6 November, 2023",
+   "gold": "November, 2023.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "UK",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "UK",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2 October 2023",
+   "gold": "last week of September 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "21 November",
+   "gold": "around November 16, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "3:37 pm on 16 December, 2023",
+   "gold": "two times",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "inspiring book",
+   "gold": "The Alchemist",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Yoga",
+   "gold": "Hatha Yoga",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "Strength training",
+   "gold": "Yoga, strength training",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "train",
+   "gold": "Sprinting, long-distance running, and boxing.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "1 December, 2023",
+   "gold": "2022",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "When John turned ten",
+   "gold": "May, 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "6 December, 2023",
+   "gold": "August 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "violin",
+   "gold": "piano, violin",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Last August",
+   "gold": "August 2023.",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "assists",
+   "gold": "highest point score, highest assist",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "8 December 2023",
+   "gold": "December 11, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.16666666666666666,
+   "answer": "fantasy series",
+   "gold": "inpsiring book on dreaming big, The Alchemist, fantasy series, non-fiction books on personal development, Dune",
+   "has_dates": false
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "help out",
+   "gold": "gives seminars, mentors younger players.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "last summer",
+   "gold": "summer 2023",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "December 2023",
+   "gold": "December, 2023",
+   "has_dates": true
+  },
+  {
+   "cat": 1,
+   "declined": false,
+   "recall10": 0.4,
+   "answer": "Star Wars",
+   "gold": "Lord of the Rings, Harry Potter, and Star Wars.",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "The Alchemist",
+   "gold": "Star Wars: Jedi Apprentice by Judy Blundell and David Farland. It is a highly rated and immersive series about his favorite movies.",
+   "has_dates": false
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "researching visa requirements",
+   "gold": "Writing a travel blog.",
+   "has_dates": false
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Friday",
+   "gold": "Januarty 5, 2024",
+   "has_dates": true
+  },
+  {
+   "cat": 2,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "February 2024",
+   "gold": "February, 2024",
+   "has_dates": true
+  },
+  {
+   "cat": 3,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "castles",
+   "gold": "Skellig Michael, Malin Head, Loop Head, Ceann Sib\u00e9al, and Brow Head because they are Star Wars filming locations.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a new team",
+   "gold": "The Minnesota Wolves",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Nike",
+   "gold": "shooting guard",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Fitting into the new team's style of play",
+   "gold": "fitting into the new team's style of play",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "John's sneaker collection",
+   "gold": "characters, spells, magical creatures",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fantasy literature forum",
+   "gold": "fantasy literature forum",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a photo of a collection of harry potter books on a desk",
+   "gold": "MinaLima's creation from the Harry Potter films",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "40",
+   "gold": "40 points",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "something cool happened",
+   "gold": "a tough win",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "basketball shoe and gear",
+   "gold": "basketball shoe and gear deal with Nike, potential sponsorship deal with Gatorade",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Seattle",
+   "gold": "Seattle",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "five years",
+   "gold": "five years",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "unreal",
+   "gold": "super exciting and free-feeling",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fantasy novels",
+   "gold": "different fantasy novels, characters, themes, and book recommendations",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Tim's fave books",
+   "gold": "Harry Potter and Game of Thrones",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Harry Potter trivia contest",
+   "gold": "an intense Harry Potter trivia contest",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Harry Potter",
+   "gold": "Characters from Harry Potter",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "awesome",
+   "gold": "Awesome",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "shared love for basketball",
+   "gold": "Dad signed him up for a local league",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Winning a championship",
+   "gold": "Winning a championship",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a local organization",
+   "gold": "A local organization helping disadvantaged kids with sports and school",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "15th",
+   "gold": "Aug 15th",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "ball",
+   "gold": "a basketball with autographs on it",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a sign of our friendship",
+   "gold": "to show their friendship and appreciation",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "help Tim learn more about literature and create a stronger bond to it",
+   "gold": "to learn more about literature and create a stronger bond to it",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "play the piano",
+   "gold": "play the piano",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a movie",
+   "gold": "\"Harry Potter and the Philosopher's Stone\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "great memories",
+   "gold": "Watching it with his family",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Home Alone",
+   "gold": "\"Home Alone\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "prepping the feast",
+   "gold": "Prepping the feast and talking about what they're thankful for",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "four years",
+   "gold": "Four years",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "discovering new cities",
+   "gold": "Amazing",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "That skyline looks amazing",
+   "gold": "It's got so much to check out - the culture, food - you won't regret it.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "tasty",
+   "gold": "tasty soup with sage",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "sage",
+   "gold": "sage",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The Wheel of Time",
+   "gold": "The Harry Potter stuff",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a new city",
+   "gold": "a new city",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "a new city",
+   "gold": "Edinburgh, Scotland",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "give something back",
+   "gold": "positively influence and inspire others, potentially start a foundation and engage in charity work",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "make sure they align with your values and brand",
+   "gold": "Ensure they align with values and brand, look for companies that share the desire to make a change and help others, make sure the endorsement feels authentic",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "write",
+   "gold": "A fantasy novel by Patrick Rothfuss",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "greenhouse",
+   "gold": "Greenhouse",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a cozy restaurant",
+   "gold": "Cozy restaurant",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "The Wolves",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fantasy stuff",
+   "gold": "passion for fantasy stuff",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "excited",
+   "gold": "intense with tough losses and great wins",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "We back each other up and won't quit",
+   "gold": "by backing each other up and not quitting",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "We faced tough opponents",
+   "gold": "facing tough opponents",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "great wins",
+   "gold": "a trophy",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a tree",
+   "gold": "Smoky Mountains",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "really rewarding",
+   "gold": "It feels great",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Seeing their growth, improvement, and confidence",
+   "gold": "Seeing their growth, improvement, and confidence",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "growth, improvement, and confidence",
+   "gold": "reach their goals",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "fantasy",
+   "gold": "Fantasy",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "authors",
+   "gold": "J.K. Rowling",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "\"Turn on the light - happiness hides in the darkest of times.\"",
+   "gold": "\"Turn on the light - happiness hides in the darkest of times.\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "motivational quotes and strategies",
+   "gold": "motivational quotes and strategies",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "cooking",
+   "gold": "Cooking",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a mixture of food",
+   "gold": "honey garlic chicken with roasted veg",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "let John know if you want suggestions",
+   "gold": "write it down and mail it",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "got stuck on a plot twist",
+   "gold": "He got stuck on a plot twist",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a basketball signed by Tim's favorite player",
+   "gold": "a basketball signed by his favorite player",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.5,
+   "answer": "love his skills and leadership",
+   "gold": "LeBron's determination and the epic block in Game 7 of the '16 Finals",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "spectacular",
+   "gold": "Spectacular",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "\"That\"",
+   "gold": "\"That\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "keep chasing those dreams",
+   "gold": "Visualizing goals and success",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Tim hope your injury heals soon",
+   "gold": "The doctor said it's not too serious",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "it didn't go the way Tim wanted",
+   "gold": "Story based on experiences in the UK didn't go as planned",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "physical therapy",
+   "gold": "stayed focused on recovery and worked hard to strengthen his body",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "When things get tough",
+   "gold": "Love for writing and reading",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "worked hard to get better",
+   "gold": "Worked hard to get better and focused on growth",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The Alchemist",
+   "gold": "The Alchemist",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "It made John think again",
+   "gold": "made him think again about following dreams and searching for personal legends",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "yoga",
+   "gold": "yoga",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "30-60 seconds",
+   "gold": "30-60 seconds",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "near John's hometown",
+   "gold": "near his hometown",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "an instrument",
+   "gold": "an instrument",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "violin",
+   "gold": "violin",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "four months",
+   "gold": "about four months",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "A Dance with Dragons",
+   "gold": "\"A Dance with Dragons\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "A Dance with Dragons",
+   "gold": "\"A Dance with Dragons\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Academic achievements and sports successes",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "our big",
+   "gold": "basketball",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "practice basketball",
+   "gold": "practicing basketball outside for hours",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "really electric",
+   "gold": "electric and intense",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "relief",
+   "gold": "It was a huge success.",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "something new",
+   "gold": "Deal with a renowned outdoor gear company",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a gorgeous forest",
+   "gold": "In a gorgeous forest",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "communication and bonding",
+   "gold": "Communication and bonding",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "helping people with their sports and marketing",
+   "gold": "Sports and marketing seminars",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "motivated Tim",
+   "gold": "visited a travel agency",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "making the world a better place",
+   "gold": "youth sports and fair chances in sports",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The Wheel of Time",
+   "gold": "\"The Wheel of Time\"",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "German",
+   "gold": "German",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "German",
+   "gold": "Spanish",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The Alchemist",
+   "gold": "a cooking book",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "fantasy",
+   "gold": "Harry Potter",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Aragorn",
+   "gold": "Aragorn",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "he grows so much throughout the story",
+   "gold": "brave, selfless, down-to-earth attitude",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "painting",
+   "gold": "a painting of Aragorn",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "brave, selfless, down-to-earth attitude is what inspired John. He never gives up and always stands up for justice",
+   "gold": "be a leader",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "westendell",
+   "gold": "a map of Middle-earth from LOTR",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Ireland",
+   "gold": "Ireland",
+   "has_dates": true
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Galway",
+   "gold": "Galway",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "benefit basketball game",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Congrats",
+   "gold": "endorsement with a popular beverage company",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "crazy feeling, sense of accomplishment",
+   "has_dates": false
+  },
+  {
+   "cat": 4,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": "Barcelona",
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Overcoming challenges",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "a travel club",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "11:41",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "like being in another world",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "The Alchemist\"",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "get better",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "to show our friendship and appreciation",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "You're a real bookworm",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "goals",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Watching that movie with Tim's family was awesome",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "first movie",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "how they take Tim to other places",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "2024",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Wow!",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "nature",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "get better",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "greenhouse",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "learning about different cultures",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "rough",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "a tree",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "see them reach their goals",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "determination",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Books",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "two hikers",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "reading",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "writing and reading",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "creative",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "how they take Tim to other places",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "last week [the week before 21 November 2023] Tim had a setback",
+   "gold": null,
+   "has_dates": true
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "Tim bet",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "dreams",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "dedication and hard work",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "Overcoming challenges",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "German",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "violin",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "just under a year",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a way to escape reality",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "a gorgeous forest",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "personal",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "German",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 0.0,
+   "answer": "It's amazing how he grows and achieves redemption throughout his journey",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": false,
+   "recall10": 1.0,
+   "answer": "inspiring",
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  },
+  {
+   "cat": 5,
+   "declined": true,
+   "recall10": 0.0,
+   "answer": null,
+   "gold": null,
+   "has_dates": false
+  }
+ ]
+}

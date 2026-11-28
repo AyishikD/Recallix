@@ -1,0 +1,29 @@
+{
+  "split": "fresh",
+  "embedder": "st:BAAI/bge-small-en-v1.5",
+  "retrieval": {
+    "hit@1": 0.84,
+    "hit@3": 0.8533333333333334,
+    "stale_top": 0,
+    "answer_match": 0.8,
+    "false_abstain_rate": 0.12,
+    "abstain_accuracy": 0.9333333333333333,
+    "embed_calls_per_query": 1.0,
+    "recall_ms_p50": 32.7,
+    "recall_ms_p95": 64.32000000000001,
+    "store_ms_p50": 10.6,
+    "store_stage_ms_mean": {
+      "Sensory & Working Memory": 0.572,
+      "Embedding": 8.11,
+      "Fact Extraction": 0.106,
+      "Schema Classification": 3.73,
+      "Importance Scoring": 0.529,
+      "Episodic Storage": 1.548,
+      "Vector Engine": 0.0,
+      "Long-Term Promotion": 0.594,
+      "Date Resolution": 0.0
+    }
+  },
+  "engine": "in-process brute force",
+  "ranker_model": "eval/data/dev/retrieval.jsonl, embedder=st:BAAI/bge-small-en-v1.5 + LoCoMo dev conversations (5)"
+}
