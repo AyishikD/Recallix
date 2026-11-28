@@ -12,7 +12,7 @@ import { DEMO_API, TURNSTILE_SITE_KEY } from "@/lib/demo";
    server sleeps. */
 
 declare global {
-    interface Window { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => string } }
+    interface Window { turnstile?: { render: (el: HTMLElement, opts: Record<string, unknown>) => string; reset: (id?: string) => void; remove: (id: string) => void } }
 }
 
 const EXAMPLES = [
@@ -24,7 +24,7 @@ const EXAMPLES = [
 const QUESTIONS = ["Where do I live?", "When is Meera's ballet?", "What am I allergic to?", "What is my brother's name?"];
 
 type Result = { status: string; answer?: string | null; replaced?: string | null; memories: { content: string; answer?: { text?: string } | null }[]; reason?: string; latency_ms?: number };
-type Server = "checking" | "waking" | "ready" | "down";
+type Server = "checking" | "tick" | "slow" | "waking" | "ready" | "down";
 const TOKEN_KEY = "recallic-demo-token";
 
 function savedToken(): string {
@@ -51,22 +51,26 @@ async function call(path: string, token: string, body?: object) {
 }
 
 const STATUS: Record<Server, string> = {
-    checking: "Checking you're a person (Cloudflare)…",
+    checking: "Getting the demo ready…",
+    tick: "One quick check: tick the box below.",
+    slow: "This is taking longer than usual.",
     waking: "Waking the demo server, about 20 seconds…",
     ready: "Ready. Try it below.",
     down: "The demo is not answering right now. Please try again in a few minutes.",
 };
 
-function StatusBadge({ server, dark = false }: { server: Server; dark?: boolean }) {
+function StatusBadge({ server, dark = false, boxAbove = false }: { server: Server; dark?: boolean; boxAbove?: boolean }) {
     const busy = server === "checking" || server === "waking";
+    const attention = server === "tick" || server === "slow";
     const tone = server === "ready" ? "border-[#2E7D4F] text-[#2E7D4F]" : server === "down" ? "border-[#B42318] text-[#B42318]"
+        : attention ? "border-[#FF6B5B] text-[#FF6B5B]"
         : dark ? "border-[#F4EDE0]/50 text-[#F4EDE0]" : "border-[#14213D]/40 text-[#14213D]";
     return (
         <span role="status" className={`inline-flex items-center gap-3 rounded-full border-2 px-5 py-2.5 text-[17px] font-medium ${tone} ${server === "ready" && dark ? "bg-[#F4EDE0] border-[#F4EDE0]" : ""}`}>
             {busy
                 ? <span aria-hidden="true" className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                : <span aria-hidden="true" className={`h-3 w-3 rounded-full ${server === "ready" ? "bg-[#2E7D4F]" : "bg-[#B42318]"}`} />}
-            {STATUS[server]}
+                : <span aria-hidden="true" className={`h-3 w-3 rounded-full ${server === "ready" ? "bg-[#2E7D4F]" : attention ? "bg-[#FF6B5B]" : "bg-[#B42318]"}`} />}
+            {server === "tick" && boxAbove ? "One quick check: tick the box at the top of the page." : STATUS[server]}
         </span>
     );
 }
@@ -82,6 +86,8 @@ export default function DemoPage() {
     const [error, setError] = useState("");
     const token = useRef("");
     const check = useRef<HTMLDivElement>(null);
+    const widget = useRef<string | undefined>(undefined);
+    const [attempt, setAttempt] = useState(0);
 
     useEffect(() => {
         let cancelled = false;
@@ -99,12 +105,20 @@ export default function DemoPage() {
         };
         const saved = savedToken();
         if (saved) { wake(saved); return () => { cancelled = true; }; }
+        let passed = false;
+        const slow = setTimeout(() => { if (!passed && !cancelled) setServer((s) => (s === "checking" ? "slow" : s)); }, 20000);
         const render = () => {
             if (!window.turnstile || !check.current) return;
-            window.turnstile.render(check.current, {
+            widget.current = window.turnstile.render(check.current, {
                 sitekey: TURNSTILE_SITE_KEY,
-                appearance: "interaction-only",            // invisible unless Cloudflare wants a click
+                appearance: "interaction-only",            // invisible unless a click is needed
+                theme: "light",                            // stands out on the navy hero when it does show
+                "before-interactive-callback": () => { if (!cancelled) setServer("tick"); },
+                "after-interactive-callback": () => { if (!cancelled) setServer("checking"); },
+                "expired-callback": () => { if (!cancelled) setServer("tick"); },
+                "timeout-callback": () => { if (!cancelled) setServer("slow"); },
                 callback: async (human: string) => {
+                    passed = true;
                     try {
                         const { token: t } = await call("/session", "", { turnstile: human });
                         saveToken(t);
@@ -120,10 +134,15 @@ export default function DemoPage() {
             tag.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
             tag.async = true;
             tag.onload = render;
+            tag.onerror = () => { if (!cancelled) { setServer("down"); setError("The check could not load. Is a content blocker on? Please reload."); } };
             document.head.appendChild(tag);
         }
-        return () => { cancelled = true; };
-    }, []);
+        return () => {
+            cancelled = true; clearTimeout(slow);
+            if (widget.current && window.turnstile) { try { window.turnstile.remove(widget.current); } catch { /* already gone */ } }
+            widget.current = undefined;
+        };
+    }, [attempt]);
 
     async function store(texts: string[]) {
         setBusy(true); setError("");
@@ -153,7 +172,13 @@ export default function DemoPage() {
                 <Eyebrow>Try it</Eyebrow>
                 <Headline as="h1">Tell it a few things. Then ask.</Headline>
                 <Lede className="mt-6">This is the real Recallic, no LLM involved. It answers from what you told it, and when nothing answers, it says so instead of guessing.</Lede>
-                <div className="mt-8" aria-live="polite"><StatusBadge server={server} dark /></div>
+                <div className="mt-8 flex flex-wrap items-center gap-4" aria-live="polite">
+                    <StatusBadge server={server} dark />
+                    {(server === "slow" || server === "down") && (
+                        <button type="button" onClick={() => { setError(""); setServer("checking"); setAttempt((a) => a + 1); }}
+                            className="rounded-full bg-cta text-cta-ink px-5 h-11 text-[15px] hover:bg-cta-hover">Try again</button>
+                    )}
+                </div>
                 <div ref={check} className="mt-4" />
             </Section>
 
@@ -162,7 +187,7 @@ export default function DemoPage() {
                     <div>
                         <h2 className="text-[22px] font-semibold text-ink">1. Your messages</h2>
                         <p className="mt-2 text-[15px] text-ink-2">Write like you would text an assistant, or use the examples.</p>
-                        {server !== "ready" && <div className="mt-4"><StatusBadge server={server} /></div>}
+                        {server !== "ready" && <div className="mt-4"><StatusBadge server={server} boxAbove /></div>}
                         <ul className="mt-5 space-y-2">
                             {messages.map((m, i) => (
                                 <li key={i} className="rounded-[16px] bg-[#14213D] px-4 py-3 text-[15px] text-[#F4EDE0]">{m}</li>
