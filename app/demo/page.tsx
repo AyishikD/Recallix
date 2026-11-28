@@ -50,6 +50,27 @@ async function call(path: string, token: string, body?: object) {
     return data;
 }
 
+const STATUS: Record<Server, string> = {
+    checking: "Checking you're a person (Cloudflare)…",
+    waking: "Waking the demo server, about 20 seconds…",
+    ready: "Ready. Try it below.",
+    down: "The demo is not answering right now. Please try again in a few minutes.",
+};
+
+function StatusBadge({ server, dark = false }: { server: Server; dark?: boolean }) {
+    const busy = server === "checking" || server === "waking";
+    const tone = server === "ready" ? "border-[#2E7D4F] text-[#2E7D4F]" : server === "down" ? "border-[#B42318] text-[#B42318]"
+        : dark ? "border-[#F4EDE0]/50 text-[#F4EDE0]" : "border-[#14213D]/40 text-[#14213D]";
+    return (
+        <span role="status" className={`inline-flex items-center gap-3 rounded-full border-2 px-5 py-2.5 text-[17px] font-medium ${tone} ${server === "ready" && dark ? "bg-[#F4EDE0] border-[#F4EDE0]" : ""}`}>
+            {busy
+                ? <span aria-hidden="true" className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                : <span aria-hidden="true" className={`h-3 w-3 rounded-full ${server === "ready" ? "bg-[#2E7D4F]" : "bg-[#B42318]"}`} />}
+            {STATUS[server]}
+        </span>
+    );
+}
+
 export default function DemoPage() {
     const [server, setServer] = useState<Server>("checking");
     const [messages, setMessages] = useState<string[]>([]);
@@ -132,12 +153,7 @@ export default function DemoPage() {
                 <Eyebrow>Try it</Eyebrow>
                 <Headline as="h1">Tell it a few things. Then ask.</Headline>
                 <Lede className="mt-6">This is the real Recallic, no LLM involved. It answers from what you told it, and when nothing answers, it says so instead of guessing.</Lede>
-                <p className="mt-6 text-[14px] text-ink-2" aria-live="polite">
-                    {server === "checking" && "Checking you're a person (Cloudflare)…"}
-                    {server === "waking" && "Waking the demo server (about 20 seconds the first time)…"}
-                    {server === "ready" && "Demo server ready."}
-                    {server === "down" && "The demo server is not answering right now. Please try again in a few minutes."}
-                </p>
+                <div className="mt-8" aria-live="polite"><StatusBadge server={server} dark /></div>
                 <div ref={check} className="mt-4" />
             </Section>
 
@@ -146,6 +162,7 @@ export default function DemoPage() {
                     <div>
                         <h2 className="text-[22px] font-semibold text-ink">1. Your messages</h2>
                         <p className="mt-2 text-[15px] text-ink-2">Write like you would text an assistant, or use the examples.</p>
+                        {server !== "ready" && <div className="mt-4"><StatusBadge server={server} /></div>}
                         <ul className="mt-5 space-y-2">
                             {messages.map((m, i) => (
                                 <li key={i} className="rounded-[16px] bg-[#14213D] px-4 py-3 text-[15px] text-[#F4EDE0]">{m}</li>
