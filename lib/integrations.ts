@@ -57,7 +57,7 @@ https://github.com/Recallic/Recallic/blob/main/integrations/open-webui/recallic_
         description: "RecallicMemoryBlock plugs a self-hosted Recallic server into LlamaIndex's Memory: agents recall what each user said in earlier sessions and decline honestly when nothing answers. No LLM calls for memory.",
         lede: "A memory block for LlamaIndex's Memory. Each turn it recalls what this user said in any earlier session, and stores new messages right away.",
         packageName: "llama-index-memory-recallic",
-        install: "pip install llama-index-memory-recallic",
+        install: "pip install \"llama-index-memory-recallic @ git+https://github.com/Recallic/Recallic#subdirectory=integrations/llama-index\"",  // TEMP until on PyPI
         codeLabel: "Python",
         code: `import os
 from llama_index.core.agent.workflow import FunctionAgent
@@ -87,7 +87,7 @@ await agent.run("Which city did I move to?", memory=later)   # "You moved to Pun
             ["tell_model_on_decline", "True", "when nothing answers, tell the model not to guess"],
         ],
         readme: `${REPO}/integrations/llama-index/README.md`,
-        registry: { label: "PyPI", href: "https://pypi.org/project/llama-index-memory-recallic/" },
+        // registry: { label: "PyPI", href: "https://pypi.org/project/llama-index-memory-recallic/" },  // TEMP: back once published
     },
     {
         slug: "vercel-ai-sdk",
@@ -134,7 +134,7 @@ const { text } = await generateText({
         description: "RecallicMemoryStore follows Haystack's MemoryStore protocol: agents remember what each user said, re-adding a conversation is safe, and searches return nothing rather than near-misses when nothing answers.",
         lede: "A Haystack MemoryStore backed by your own Recallic server. The agent searches before it answers and adds the conversation after.",
         packageName: "recallic-haystack",
-        install: "pip install \"recallic-haystack[agent]\"",
+        install: "pip install \"recallic-haystack[agent] @ git+https://github.com/Recallic/Recallic#subdirectory=integrations/haystack\"",  // TEMP until on PyPI
         codeLabel: "Python",
         code: `from haystack.components.generators.chat import OpenAIChatGenerator
 from haystack.dataclasses import ChatMessage
@@ -161,7 +161,7 @@ agent.run(messages=[ChatMessage.from_user("Where did I move?")],
             ["store_roles", "(\"user\",)", "which message roles are stored"],
         ],
         readme: `${REPO}/integrations/haystack/README.md`,
-        registry: { label: "PyPI", href: "https://pypi.org/project/recallic-haystack/" },
+        // registry: { label: "PyPI", href: "https://pypi.org/project/recallic-haystack/" },  // TEMP: back once published
     },
     {
         slug: "google-adk",
@@ -170,7 +170,7 @@ agent.run(messages=[ChatMessage.from_user("Where did I move?")],
         description: "RecallicMemoryService is a self-hosted memory service for Google's Agent Development Kit: sessions are stored with their real dates and searches return nothing when nothing answers. No LLM calls for memory.",
         lede: "Plug Recallic into an ADK Runner as its memory service. Sessions go in with their real dates; load_memory gets back only what answers.",
         packageName: "recallic-adk",
-        install: "pip install recallic-adk",
+        install: "pip install \"recallic-adk @ git+https://github.com/Recallic/Recallic#subdirectory=integrations/google-adk\"",  // TEMP until on PyPI
         codeLabel: "Python",
         code: `import os
 from google.adk.agents import Agent
@@ -199,7 +199,7 @@ await memory.add_session_to_memory(session)`,
             ["store_authors", "(\"user\",)", "which event authors are stored; None stores every author"],
         ],
         readme: `${REPO}/integrations/google-adk/README.md`,
-        registry: { label: "PyPI", href: "https://pypi.org/project/recallic-adk/" },
+        // registry: { label: "PyPI", href: "https://pypi.org/project/recallic-adk/" },  // TEMP: back once published
     },
     {
         slug: "mcp",
