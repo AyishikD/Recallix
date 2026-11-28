@@ -24,7 +24,7 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Recallic/Recallic",
+        "url": "git+https://github.com/Recallic/Recallic.git",
         "directory": "integrations/vercel-ai"
     },
     "engines": {
