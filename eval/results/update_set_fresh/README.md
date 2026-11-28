@@ -37,3 +37,25 @@ only those compete for latest-wins (`matches_purpose`; recall_engine.py `_best_a
 Only both_true_credit_card changed. Gates: LoCoMo dev identical (0 of 999 answers changed); dev set and Gemini batches
 identical. To be confirmed on a later unseen batch. Files: gemini_upd1_after_purpose.json, locomo_dev_after_purpose.json,
 dev_set_after_purpose.json, gemini_batches_after_purpose.json; our update set: eval/results/update_set/after_purpose.json.
+
+## Unseen Gemini batch 2 (confirmation)
+
+eval/data/fresh/updates/gemini_upd2.jsonl (another persona), scored once with the code at 42e0c258 before any scenario
+was looked at; the code before the day's update fixes (db109d48) run afterwards for comparison.
+
+| code | correct | wrong | declined | other |
+|---|---|---|---|---|
+| before the update fixes (db109d48) | 20 | 3 | 2 | 5 |
+| after (42e0c258), first score | **21** | **2** | 2 | 5 |
+
+Changed: update_temple_day wrong ("tuesday") -> correct ("friday"); nothing else. No new wrong answer. Over both unseen
+batches the day's fixes (as first scored) went from 7 to 6 wrong of 60, plus the credit-card fix tuned on batch 1.
+
+Read by hand, "other" includes one answer that is really wrong: unrelated_flat_number answers "104", the chairman's flat,
+for "What is my flat number?" (the scorer needs "flat 302"). The rest are partial spans of the right value ("80" for
+telma 80, "silver wagon", "prabhat", "maharashtra bajirao road branch").
+
+Still wrong: update_society_agm ("15th september"; postponed to the 29th), update_security_agency ("eagle security";
+terminated, tiger force hired).
+
+Files: gemini_upd2.json (first score), gemini_upd2_before_fixes.json.

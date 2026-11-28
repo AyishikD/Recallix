@@ -1,0 +1,330 @@
+{
+ "summary": {
+  "update": {
+   "other": 1,
+   "correct": 6,
+   "wrong": 3,
+   "declined": 2,
+   "n": 12
+  },
+  "both_true": {
+   "correct": 8,
+   "other": 1,
+   "n": 9
+  },
+  "unrelated": {
+   "correct": 6,
+   "other": 3,
+   "n": 9
+  },
+  "all": {
+   "other": 5,
+   "correct": 20,
+   "wrong": 3,
+   "declined": 2,
+   "n": 30
+  }
+ },
+ "rows": [
+  {
+   "name": "update_bp_medicine",
+   "group": "update",
+   "question": "What dose of Telma am I taking for blood pressure?",
+   "status": "CONSISTENT",
+   "answer": "80",
+   "first_memory_answer": "80",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "update_walk_spot",
+   "group": "update",
+   "question": "Where does my morning walking group meet now?",
+   "status": "CONSISTENT",
+   "answer": "sambhaji park",
+   "first_memory_answer": "vetal tekdi gate",
+   "result": "correct",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_society_agm",
+   "group": "update",
+   "question": "When is our society AGM scheduled?",
+   "status": "CONSISTENT",
+   "answer": "15th september",
+   "first_memory_answer": "15th september",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_consulting_fee",
+   "group": "update",
+   "question": "What is my daily consulting fee for the bank audit?",
+   "status": "CONSISTENT",
+   "answer": "5500 rs",
+   "first_memory_answer": "5500 rs",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_car_battery",
+   "group": "update",
+   "question": "What brand of battery is installed in my car?",
+   "status": "CONSISTENT",
+   "answer": "amaron",
+   "first_memory_answer": "amaron",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_bangalore_train",
+   "group": "update",
+   "question": "Which train have I booked for Bangalore?",
+   "status": "CONSISTENT",
+   "answer": "karnataka express 1st ac coach",
+   "first_memory_answer": "karnataka express 1st ac coach",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_temple_day",
+   "group": "update",
+   "question": "On which day do I go for my weekly temple visit?",
+   "status": "CONSISTENT",
+   "answer": "tuesday",
+   "first_memory_answer": "friday",
+   "result": "wrong",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_scooter_garage",
+   "group": "update",
+   "question": "Which garage do I use for servicing my Activa?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "update_diabetologist",
+   "group": "update",
+   "question": "Who is my consulting diabetologist?",
+   "status": "CONSISTENT",
+   "answer": "dr apte",
+   "first_memory_answer": "dr apte",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_security_agency",
+   "group": "update",
+   "question": "Which security agency manages our society guards?",
+   "status": "CONSISTENT",
+   "answer": "eagle security",
+   "first_memory_answer": "eagle security",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_optician",
+   "group": "update",
+   "question": "Where did I buy my spectacles from?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "update_newspaper",
+   "group": "update",
+   "question": "Which newspaper is delivered to our flat?",
+   "status": "CONSISTENT",
+   "answer": "indian express",
+   "first_memory_answer": "indian express",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_vehicles",
+   "group": "both_true",
+   "question": "Which vehicle do I take for grocery shopping at Mandai?",
+   "status": "CONSISTENT",
+   "answer": "activa",
+   "first_memory_answer": "activa",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_daughters_city",
+   "group": "both_true",
+   "question": "In which city does my elder daughter Sneha live?",
+   "status": "CONSISTENT",
+   "answer": "bangalore",
+   "first_memory_answer": "bangalore",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_bank_accounts",
+   "group": "both_true",
+   "question": "Which bank receives my monthly pension?",
+   "status": "CONSISTENT",
+   "answer": "maharashtra bajirao road branch",
+   "first_memory_answer": "maharashtra bajirao road branch",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "both_true_temples",
+   "group": "both_true",
+   "question": "Which temple did I visit for morning Sankashti aarti?",
+   "status": "CONSISTENT",
+   "answer": "dagdusheth ganpati",
+   "first_memory_answer": "dagdusheth ganpati",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_walk_partners",
+   "group": "both_true",
+   "question": "Who walked four kilometers with me discussing stock market?",
+   "status": "CONSISTENT",
+   "answer": "joshi ji",
+   "first_memory_answer": "joshi ji",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_consulting_clients",
+   "group": "both_true",
+   "question": "Which client did I submit the inspection report for?",
+   "status": "CONSISTENT",
+   "answer": "janata sahakari bank head office",
+   "first_memory_answer": "janata sahakari bank head office",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_society_roles",
+   "group": "both_true",
+   "question": "What official post do I hold in the building society committee?",
+   "status": "CONSISTENT",
+   "answer": "treasurer",
+   "first_memory_answer": "treasurer",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_tea_routine",
+   "group": "both_true",
+   "question": "What tea do I have first thing in the morning?",
+   "status": "CONSISTENT",
+   "answer": "organic green tea",
+   "first_memory_answer": "organic green tea",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_shops",
+   "group": "both_true",
+   "question": "Where did I buy our monthly grocery stock from?",
+   "status": "CONSISTENT",
+   "answer": "d-mart baner",
+   "first_memory_answer": "d-mart baner",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_specs_power",
+   "group": "unrelated",
+   "question": "What is my reading spectacle power?",
+   "status": "CONSISTENT",
+   "answer": "plus 2.25",
+   "first_memory_answer": "plus 2.25",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_car_model",
+   "group": "unrelated",
+   "question": "What car do I own?",
+   "status": "CONSISTENT",
+   "answer": "silver wagon",
+   "first_memory_answer": "silver wagon",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "unrelated_doctor_specialty",
+   "group": "unrelated",
+   "question": "Who is my cardiologist?",
+   "status": "CONSISTENT",
+   "answer": "dr patil",
+   "first_memory_answer": "dr patil",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_daughter_profession",
+   "group": "unrelated",
+   "question": "What is Sneha's profession in Bangalore?",
+   "status": "CONSISTENT",
+   "answer": "product designer",
+   "first_memory_answer": "product designer",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_flat_number",
+   "group": "unrelated",
+   "question": "What is my flat number in the building?",
+   "status": "CONSISTENT",
+   "answer": "104",
+   "first_memory_answer": "104",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "unrelated_brother_locality",
+   "group": "unrelated",
+   "question": "In which locality is my apartment located?",
+   "status": "CONSISTENT",
+   "answer": "prabhat",
+   "first_memory_answer": "prabhat",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "unrelated_evening_routine",
+   "group": "unrelated",
+   "question": "What morning activity do I attend at Kamla Nehru Park?",
+   "status": "CONSISTENT",
+   "answer": "laughing club",
+   "first_memory_answer": "laughing club",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_fasting_day",
+   "group": "unrelated",
+   "question": "On which day do I observe my weekly fast?",
+   "status": "CONSISTENT",
+   "answer": "thursday",
+   "first_memory_answer": "thursday",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_phone_model",
+   "group": "unrelated",
+   "question": "What smartphone model do I use?",
+   "status": "CONSISTENT",
+   "answer": "samsung galaxy m34",
+   "first_memory_answer": "samsung galaxy m34",
+   "result": "correct",
+   "first_memory_result": "correct"
+  }
+ ]
+}
