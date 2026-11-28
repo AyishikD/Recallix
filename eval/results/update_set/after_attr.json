@@ -1,0 +1,419 @@
+{
+ "summary": {
+  "update": {
+   "correct": 10,
+   "declined": 3,
+   "wrong": 1,
+   "n": 14
+  },
+  "both_true": {
+   "correct": 12,
+   "other": 1,
+   "n": 13
+  },
+  "unrelated": {
+   "correct": 10,
+   "declined": 2,
+   "n": 12
+  },
+  "all": {
+   "correct": 32,
+   "declined": 5,
+   "wrong": 1,
+   "other": 1,
+   "n": 39
+  }
+ },
+ "rows": [
+  {
+   "name": "update_home",
+   "group": "update",
+   "question": "Where do I live?",
+   "status": "CONSISTENT",
+   "answer": "pune",
+   "first_memory_answer": "delhi",
+   "result": "correct",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_car",
+   "group": "update",
+   "question": "What car do I drive?",
+   "status": "CONSISTENT",
+   "answer": "hyundai creta",
+   "first_memory_answer": "honda city",
+   "result": "correct",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_manager",
+   "group": "update",
+   "question": "Who is my manager?",
+   "status": "CONSISTENT",
+   "answer": "rohan",
+   "first_memory_answer": "rohan",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_phone",
+   "group": "update",
+   "question": "What phone do I use?",
+   "status": "CONSISTENT",
+   "answer": null,
+   "first_memory_answer": "iphone 12",
+   "result": "declined",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_gym",
+   "group": "update",
+   "question": "Which gym do I go to?",
+   "status": "CONSISTENT",
+   "answer": "golds gym",
+   "first_memory_answer": "golds gym",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_dentist",
+   "group": "update",
+   "question": "Who is my dentist?",
+   "status": "CONSISTENT",
+   "answer": "dr rao",
+   "first_memory_answer": "dr rao",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_diet",
+   "group": "update",
+   "question": "What diet do I follow?",
+   "status": "CONSISTENT",
+   "answer": "vegan",
+   "first_memory_answer": "vegan",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_employer",
+   "group": "update",
+   "question": "Where do I work?",
+   "status": "CONSISTENT",
+   "answer": null,
+   "first_memory_answer": "infosys",
+   "result": "declined",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_laptop",
+   "group": "update",
+   "question": "What laptop do I use?",
+   "status": "CONSISTENT",
+   "answer": "macbook air m3",
+   "first_memory_answer": "dell xps 13",
+   "result": "correct",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_school",
+   "group": "update",
+   "question": "Which school does Meera go to?",
+   "status": "CONSISTENT",
+   "answer": "dps whitefield",
+   "first_memory_answer": "inventure academy",
+   "result": "wrong",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_bank",
+   "group": "update",
+   "question": "Which bank is my salary account with?",
+   "status": "CONSISTENT",
+   "answer": null,
+   "first_memory_answer": "hdfc",
+   "result": "declined",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_team",
+   "group": "update",
+   "question": "Which team am I on?",
+   "status": "CONSISTENT",
+   "answer": "search team",
+   "first_memory_answer": "search team",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_partner",
+   "group": "update",
+   "question": "Who am I dating?",
+   "status": "CONSISTENT",
+   "answer": "kavya",
+   "first_memory_answer": "kavya",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_commute",
+   "group": "update",
+   "question": "How do I get to work?",
+   "status": "CONSISTENT",
+   "answer": "cycle",
+   "first_memory_answer": "cycle",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_pets",
+   "group": "both_true",
+   "question": "What is my dog's name?",
+   "status": "CONSISTENT",
+   "answer": "bruno",
+   "first_memory_answer": "bruno",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_siblings",
+   "group": "both_true",
+   "question": "Where does my brother live?",
+   "status": "CONSISTENT",
+   "answer": "delhi",
+   "first_memory_answer": "delhi",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_two_cars",
+   "group": "both_true",
+   "question": "What car do I drive?",
+   "status": "CONSISTENT",
+   "answer": "honda city",
+   "first_memory_answer": "honda city",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_second_phone",
+   "group": "both_true",
+   "question": "What is my personal phone?",
+   "status": "CONSISTENT",
+   "answer": "iphone 15",
+   "first_memory_answer": "iphone 15",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_two_doctors",
+   "group": "both_true",
+   "question": "Who is my dentist?",
+   "status": "CONSISTENT",
+   "answer": "dr mehta",
+   "first_memory_answer": "dr mehta",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_two_gyms",
+   "group": "both_true",
+   "question": "Which gym do I go to?",
+   "status": "CONSISTENT",
+   "answer": "cult fit",
+   "first_memory_answer": "cult fit",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_hobby_added",
+   "group": "both_true",
+   "question": "What instrument did I start learning recently?",
+   "status": "CONSISTENT",
+   "answer": "violin",
+   "first_memory_answer": "violin",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_side_job",
+   "group": "both_true",
+   "question": "Where do I work full time?",
+   "status": "CONSISTENT",
+   "answer": "infosys",
+   "first_memory_answer": "infosys",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_two_kids_schools",
+   "group": "both_true",
+   "question": "Which school does Meera go to?",
+   "status": "CONSISTENT",
+   "answer": "dps whitefield",
+   "first_memory_answer": "dps whitefield",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_two_accounts",
+   "group": "both_true",
+   "question": "Which bank is my salary account with?",
+   "status": "CONSISTENT",
+   "answer": "hdfc",
+   "first_memory_answer": "hdfc",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_trip_then_home",
+   "group": "both_true",
+   "question": "Where do I live?",
+   "status": "CONSISTENT",
+   "answer": "pune",
+   "first_memory_answer": "pune",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_allergy_plus",
+   "group": "both_true",
+   "question": "Which medicine am I allergic to?",
+   "status": "CONSISTENT",
+   "answer": "peanuts",
+   "first_memory_answer": "peanuts",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "both_true_two_languages",
+   "group": "both_true",
+   "question": "Which language am I learning?",
+   "status": "CONSISTENT",
+   "answer": "german",
+   "first_memory_answer": "german",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_sister_manager",
+   "group": "unrelated",
+   "question": "Who is my manager?",
+   "status": "CONSISTENT",
+   "answer": "priya",
+   "first_memory_answer": "priya",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_friend_car",
+   "group": "unrelated",
+   "question": "What car do I drive?",
+   "status": "CONSISTENT",
+   "answer": "honda city",
+   "first_memory_answer": "honda city",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_mom_phone",
+   "group": "unrelated",
+   "question": "What phone do I use?",
+   "status": "CONSISTENT",
+   "answer": "iphone 12",
+   "first_memory_answer": "iphone 12",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_colleague_moved",
+   "group": "unrelated",
+   "question": "Where do I live?",
+   "status": "CONSISTENT",
+   "answer": "pune",
+   "first_memory_answer": "pune",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_brother_job",
+   "group": "unrelated",
+   "question": "Where do I work?",
+   "status": "CONSISTENT",
+   "answer": "infosys",
+   "first_memory_answer": "infosys",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_wife_diet",
+   "group": "unrelated",
+   "question": "What diet do I follow?",
+   "status": "CONSISTENT",
+   "answer": "vegetarian",
+   "first_memory_answer": "vegetarian",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_friend_gym",
+   "group": "unrelated",
+   "question": "Which gym do I go to?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "unrelated_boss_dentist",
+   "group": "unrelated",
+   "question": "Who is my dentist?",
+   "status": "CONSISTENT",
+   "answer": "dr mehta",
+   "first_memory_answer": "dr mehta",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_kid_friend_school",
+   "group": "unrelated",
+   "question": "Which school does Meera go to?",
+   "status": "CONSISTENT",
+   "answer": "dps whitefield",
+   "first_memory_answer": "dps whitefield",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_dad_laptop",
+   "group": "unrelated",
+   "question": "What laptop do I use?",
+   "status": "CONSISTENT",
+   "answer": "dell xps 13",
+   "first_memory_answer": "dell xps 13",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_neighbour_bank",
+   "group": "unrelated",
+   "question": "Which bank is my salary account with?",
+   "status": "CONSISTENT",
+   "answer": "hdfc",
+   "first_memory_answer": "hdfc",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_cousin_team",
+   "group": "unrelated",
+   "question": "Which team am I on?",
+   "status": "CONSISTENT",
+   "answer": null,
+   "first_memory_answer": "payments",
+   "result": "declined",
+   "first_memory_result": "correct"
+  }
+ ]
+}

@@ -45,3 +45,21 @@ Still wrong: "Which school does Meera go to?" (a named person's present: third p
 which LoCoMo favours) and a friend's gym mentioned by first name only ("rahul keeps telling me golds gym is better, he
 goes there"). Phone, employer and bank now decline instead of answering the outdated value; the reader does not pick the
 new value from those messages.
+
+## Attribution: someone telling the user (same day)
+
+`without_other_people` now also sets aside a clause where another person tells, says, recommends, suggests or insists
+something to the user ("rahul keeps telling me golds gym is better, he goes there"); a following he/she clause continues
+it. Kept when the question names that person ("Which gym does Rahul recommend?") and when the clause is advice to the
+user ("the doctor told me to take vitamin d", "asked me not to ...").
+
+| group | correct | wrong | declined | other |
+|---|---|---|---|---|
+| unrelated | 10 -> 10 | 1 -> **0** | 1 -> 2 | 0 -> 0 |
+
+Update set: 1 wrong left (of 39), from 2; no other scenario changed. The friend's gym now declines rather than answering
+"cult fit": the reader does not answer "Which gym do I go to?" from the lowercase "my gym is cult fit" even alone
+(margin -10.9; "My gym is Cult Fit" and "What is my gym?" answer), a reader limit separate from attribution.
+
+Gates (development data): LoCoMo dev identical (0 of 999 answers changed); dev set and Gemini batches identical apart
+from timings. Files: after_attr.json, locomo_dev_after_attr.json, dev_set_after_attr.json, gemini_batches_after_attr.json.

@@ -329,6 +329,14 @@ _SAME = {"mom": "mother", "mum": "mother", "dad": "father", "hubby": "husband", 
 _CLAUSE = re.compile(r"[,;.!?]+\s*|\s+(?:but|and|so|because|while|whereas)\s+", re.I)
 _LEAD = re.compile(r"^(?:(?:btw|uff|ok|so|actually|also|then|our|my|his|her|the|a|an)\s+)*", re.I)
 _PERSON_PRONOUN = re.compile(r"^(?:he|she|they|his|her|their)\b", re.I)
+# "rahul keeps telling me golds gym is better": someone else (named or not) telling, advising or recommending something
+# to the user. What they say is theirs, not a fact about the user.
+_TELLS_ME = re.compile(r"^([a-z][a-z'’-]*)\s+(?:(?:keeps|kept|always|also|just|even)\s+)?(?:tell(?:s|ing)?|told|say(?:s|ing)?|said|"
+                       r"ask(?:s|ed|ing)?|recommend(?:s|ed|ing)?|suggest(?:s|ed|ing)?|advis(?:es|ed|ing)|insist(?:s|ed|ing)?|"
+                       r"swear(?:s|ing)?|swore|convinc(?:es|ed|ing)|push(?:es|ed|ing)|want(?:s|ed))\b.*\b(?:me|us)\b", re.I)
+_ADVICE_TO_ME = re.compile(r"\b(?:me|us)\s+(?:to|not\s+to)\s+[a-z]", re.I)
+_NOT_A_PERSON = {"i", "it", "this", "that", "there", "what", "which", "who", "we", "you", "everything", "nothing", "work",
+                 "life", "the", "a", "an", "someone", "somebody"}
 
 
 def _rel(w):
@@ -371,6 +379,10 @@ def without_other_people(context, question):
             other = not asked_about
         elif prev_other and _PERSON_PRONOUN.match(body):
             other = True  # "he is locking himself in the library" continues the roommate's clause
+        elif ((t := _TELLS_ME.match(body.lower())) and t.group(1) not in _NOT_A_PERSON
+              and not _ADVICE_TO_ME.search(body)):  # "the doctor told me to take vitamin d" is about the user
+            other = t.group(1) not in q_words  # "rahul keeps telling me ..." unless the question is about rahul
+            rel = rel if not other else t.group(1)  # so a following "he goes there" continues it
         prev_other = other if (rel is not None or other) else False
         if other:
             dropped = True

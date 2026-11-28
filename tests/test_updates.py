@@ -268,3 +268,14 @@ def test_a_later_answer_about_someone_else_or_barely_accepted_does_not_override(
     work = [_accepted(1, "Zomato", 8.4, timestamp=1, content="I work at Zomato as a data analyst."),
             _accepted(2, "Mumbai", -1.1, timestamp=2, content="I moved to Mumbai in March.")]
     assert RecallEngine._best_answer(work, [{"id": 1}, {"id": 2}], "Where do I work?")["text"] == "Zomato"
+
+
+def test_someone_telling_the_user_is_theirs_unless_asked_about_them():
+    from backend.brain.memory.updates import without_other_people as w
+    s = "rahul keeps telling me golds gym is better, he goes there"
+    assert w(s, "Which gym do I go to?") == ""
+    assert w(s, "Which gym does Rahul recommend?") == s
+    # advice addressed to the user is about the user
+    assert w("the doctor told me to take vitamin d", "What supplement should I take?") != ""
+    assert w("my gym is cult fit", "Which gym do I go to?") == "my gym is cult fit"
+    assert w("it reminds me of goa", "Where does it remind me of?") != ""
