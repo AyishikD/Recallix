@@ -4,14 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-export const NAV_LINKS = [
-    { href: "/flow-control", label: "How it works" },
-    { href: "/architecture", label: "Architecture" },
-    { href: "/benchmark", label: "Benchmarks" },
-    { href: "/sdk", label: "Developers" },
-    { href: "/roadmap", label: "Roadmap" },
-    { href: "/observability", label: "Dashboard" },
-];
+import { NAV_LINKS } from "./links";
+
+export { NAV_LINKS };
 
 function Logo() {
     return (

@@ -28,7 +28,7 @@ If Recallic is down or slow, the chat carries on without memory and shows a stat
    https://github.com/Recallic/Recallic/blob/main/integrations/open-webui/recallic_memory_filter.py
    ```
 
-   (or *Create*, and paste the file's contents). Open WebUI installs its one requirement, `requests`.
+   (or *Create*, and paste the file's contents). It needs nothing extra: Open WebUI already includes `requests`.
 
 3. **Set the valves** (the gear icon on the function):
    * `recallic_url`: where Recallic listens. If Open WebUI runs in Docker and Recallic on the same machine,

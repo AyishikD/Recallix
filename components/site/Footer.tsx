@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NAV_LINKS } from "./Nav";
+import { NAV_LINKS } from "./links";
 import { AgentWorld } from "./AgentWorld";
 
 export function Footer({ note }: { note?: React.ReactNode }) {
