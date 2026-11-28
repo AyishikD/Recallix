@@ -81,6 +81,22 @@ async function countRequest(env, ip) {
     return null;
 }
 
+/**
+ * Permanent usage totals, one Redis hash per UTC day (stats:YYYY-MM-DD): sessions (passed the human check), chatted
+ * (sessions that stored a first message), messages, questions. Unique visitors are a HyperLogLog of a salted hash of
+ * the IP (an estimate; the IPs cannot be read back). No message text and no IP is stored. Written after the reply is
+ * sent and failures are ignored, so counting never slows or breaks the demo. Read with scripts/demo_stats.py.
+ */
+function track(ctx, env, ip, fields) {
+    const day = new Date().toISOString().slice(0, 10);
+    const work = (async () => {
+        const cmds = Object.entries(fields).map(([f, n]) => ["HINCRBY", `stats:${day}`, f, String(n)]);
+        if (fields.sessions) cmds.push(["PFADD", `stats:visitors:${day}`, await hmac(env.SESSION_SECRET, `visitor:${day}:${ip}`)]);
+        await redis(env, cmds);
+    })().catch(() => {});
+    if (ctx && ctx.waitUntil) ctx.waitUntil(work);
+}
+
 async function forward(env, path, init, ip) {
     const headers = { "Content-Type": "application/json", "X-Demo-Gate": env.GATE_SECRET, "X-Demo-Client": ip };
     const r = await fetch(`${env.DEMO_ORIGIN}${path}`, { ...init, headers });
@@ -88,7 +104,7 @@ async function forward(env, path, init, ip) {
 }
 
 export default {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
         const url = new URL(request.url), origin = request.headers.get("Origin") || "";
         if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
         const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -103,6 +119,7 @@ export default {
                 const day = new Date().toISOString().slice(0, 10);
                 const [sessions] = await redis(env, [["INCR", `rl:s:${ip}:${day}`], ["EXPIRE", `rl:s:${ip}:${day}`, "172800"]]);
                 if (sessions > SESSIONS_PER_IP_PER_DAY) return reply(429, { detail: "Too many new visits from you today; come back tomorrow." }, origin);
+                track(ctx, env, ip, { sessions: 1 });
                 return reply(200, { token: await newToken(env) }, origin);
             }
 
@@ -126,6 +143,7 @@ export default {
                 if (bySession > MESSAGES_PER_DAY || byIp > MESSAGES_PER_DAY)
                     return reply(429, { detail: `The demo keeps ${MESSAGES_PER_DAY} messages per visitor. Ask about them, or come back tomorrow for a fresh start.` }, origin);
                 const r = await forward(env, "/store", { method: "POST", body: JSON.stringify({ session: sid, content }) }, ip);
+                if (r.status < 300) track(ctx, env, ip, bySession === 1 ? { messages: 1, chatted: 1 } : { messages: 1 });
                 return reply(r.status, r.body, origin);
             }
             if (url.pathname === "/recall" && request.method === "POST") {
@@ -133,6 +151,7 @@ export default {
                 if (typeof query !== "string" || !query.trim() || query.length > 400)
                     return reply(422, { detail: "A question is 1 to 400 characters." }, origin);
                 const r = await forward(env, "/recall", { method: "POST", body: JSON.stringify({ session: sid, query }) }, ip);
+                if (r.status < 300) track(ctx, env, ip, { questions: 1 });
                 return reply(r.status, r.body, origin);
             }
             return reply(404, { detail: "Not found." }, origin);
