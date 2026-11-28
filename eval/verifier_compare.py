@@ -2,12 +2,14 @@
 Compare answer verifiers (recall.answer_check.verify) on LoCoMo DEV, at the same strictness.
 
     python eval/verifier_compare.py LOCOMO10.json OUT.json [--models a,b,c] [--keep 0.923]
+    python eval/verifier_compare.py LOCOMO10.json OUT.json --split test --frozen DEV_OUT.json   (confirmation)
 
 Recall runs once (balanced, the verifier on with a threshold that never drops anything, so the memories the reader
 accepted are listed). Each candidate then scores those (question, "<speaker> said: <message>") pairs. Per model the
 threshold is set so that `keep` of the real questions answered from an evidence memory keep their answer (0.923 =
 350/379, the current setting); the number of answered trick questions it then declines is the comparison. A question
-keeps its answer when any accepted memory scores at least the threshold. Development data only.
+keeps its answer when any accepted memory scores at least the threshold. With --frozen, each model's threshold is
+taken from an earlier (dev) output instead of being set on the data being scored.
 """
 import argparse
 import contextlib
@@ -24,7 +26,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "eval"), str(ROOT / "eval" / "benchmarks")
 DEFAULT_MODELS = "cross-encoder/qnli-electra-base,cross-encoder/qnli-distilroberta-base,cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 
-def collect(locomo_path):
+def collect(locomo_path, split="dev"):
     """[(is_trap, from_evidence, question, [premise, ...])] for every question recall answered."""
     cfg = (ROOT / "config.yaml").read_text().replace(
         "    verify:\n      enabled: false\n      model: cross-encoder/qnli-electra-base\n      threshold: 0.001",
@@ -44,7 +46,7 @@ def collect(locomo_path):
     with contextlib.redirect_stdout(io.StringIO()):
         mm = get_memory_manager()
     items = []
-    for sample in locomo.split_samples(json.load(open(locomo_path)), "dev"):
+    for sample in locomo.split_samples(json.load(open(locomo_path)), split):
         user, m2d = locomo.ingest(mm, sample)
         for qa in sample["qa"]:
             with contextlib.redirect_stdout(io.StringIO()):
@@ -68,8 +70,11 @@ def main():
     ap.add_argument("out")
     ap.add_argument("--models", default=DEFAULT_MODELS)
     ap.add_argument("--keep", type=float, default=350 / 379)
+    ap.add_argument("--split", default="dev", choices=["dev", "test"])
+    ap.add_argument("--frozen", default=None, help="an earlier output whose per-model thresholds are reused")
     args = ap.parse_args()
-    items = collect(args.locomo)
+    frozen = json.load(open(args.frozen))["results"] if args.frozen else {}
+    items = collect(args.locomo, args.split)
     real = [it for it in items if not it[0] and it[1]]
     traps = [it for it in items if it[0]]
     from sentence_transformers import CrossEncoder
@@ -83,7 +88,8 @@ def main():
             best.append(float(np.max(np.asarray(s).reshape(-1))))
         by = dict(zip(map(id, items), best))
         real_s = sorted(by[id(it)] for it in real)
-        t = real_s[int(round((1 - args.keep) * len(real_s)))]  # keeps `keep` of the real evidence answers
+        t = (frozen[name]["threshold"] if name in frozen
+             else real_s[int(round((1 - args.keep) * len(real_s)))])  # keeps `keep` of the real evidence answers
         kept = sum(by[id(it)] >= t for it in real)
         caught = sum(by[id(it)] < t for it in traps)
         lost_other = sum(by[id(it)] < t for it in items if not it[0] and not it[1])
@@ -91,7 +97,8 @@ def main():
                          "answered_traps_declined": f"{caught}/{len(traps)}",
                          "other_real_answers_declined": f"{lost_other}/{sum(1 for it in items if not it[0] and not it[1])}"}
         print(name, results[name], flush=True)
-    json.dump({"keep": args.keep, "answered_questions": len(items), "results": results}, open(args.out, "w"), indent=1)
+    json.dump({"split": args.split, "frozen_from": args.frozen, "keep": None if frozen else args.keep,
+               "answered_questions": len(items), "results": results}, open(args.out, "w"), indent=1)
 
 
 if __name__ == "__main__":

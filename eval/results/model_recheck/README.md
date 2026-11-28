@@ -35,3 +35,26 @@ At the same strictness the small ms-marco relevance model declines 27 more answe
 the other real answers (answers from a memory not marked as evidence; some right, some wrong). It is five times
 smaller. The thresholds were chosen on the same data they are scored on, so this needs confirmation on held-out data
 (with the threshold frozen) before cautious mode switches model.
+
+## Verifier confirmation: LoCoMo test passes, texting-style data fails (not switched)
+
+Thresholds frozen from the dev run, LoCoMo test (conversations 5-9; viewed before for other decisions, never for this
+one), 846 answered questions (verifier_compare_locomo_test_frozen.json):
+
+| verifier | real answers from evidence kept | answered trick questions declined | other real answers declined |
+|---|---|---|---|
+| qnli-electra-base (current) | 379 / 403 | 62 / 143 | 139 / 300 |
+| qnli-distilroberta-base | 376 / 403 | 49 / 143 | 101 / 300 |
+| ms-marco-MiniLM-L-6-v2 | **382 / 403** | **78 / 143** | **90 / 300** |
+
+On LoCoMo the small model is better on all three. But cautious mode end to end on the Gemini retrieval batches
+(lowercase texting-style messages, development data; cautious_gemini_*.json):
+
+| cautious mode with | hit@1 | answer match | real questions wrongly declined | trick questions declined |
+|---|---|---|---|---|
+| qnli-electra-base | 0.800 | 0.760 | 0.16 | 30 / 30 |
+| ms-marco-MiniLM-L-6-v2 | 0.627 | 0.573 | **0.36** | 30 / 30 |
+
+The threshold set on LoCoMo (edited, capitalised dialogue) does not transfer to texting-style messages, the same
+failure seen earlier with a re-ranker as a gate. Not switched: cautious mode keeps qnli-electra-base. A verifier choice
+has to be checked on texting-style data as well as LoCoMo.

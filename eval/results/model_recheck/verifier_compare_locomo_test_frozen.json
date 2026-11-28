@@ -1,0 +1,26 @@
+{
+ "split": "test",
+ "frozen_from": "eval/results/model_recheck/verifier_compare_locomo_dev.json",
+ "keep": null,
+ "answered_questions": 846,
+ "results": {
+  "cross-encoder/qnli-electra-base": {
+   "threshold": 0.0011335089802742004,
+   "real_from_evidence_kept": "379/403",
+   "answered_traps_declined": "62/143",
+   "other_real_answers_declined": "139/300"
+  },
+  "cross-encoder/qnli-distilroberta-base": {
+   "threshold": 0.022280527278780937,
+   "real_from_evidence_kept": "376/403",
+   "answered_traps_declined": "49/143",
+   "other_real_answers_declined": "101/300"
+  },
+  "cross-encoder/ms-marco-MiniLM-L-6-v2": {
+   "threshold": -1.377687931060791,
+   "real_from_evidence_kept": "382/403",
+   "answered_traps_declined": "78/143",
+   "other_real_answers_declined": "90/300"
+  }
+ }
+}
