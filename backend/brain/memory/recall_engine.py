@@ -733,8 +733,16 @@ class RecallEngine:
         found a later, different answer (a possible update without a cue word), it is reported as
         `later_answer` (and its memory stays first in `memories`); best_answer: "conflict" restores
         the old choice. {"text", "memory_id", "margin"[, "later_answer", "later_memory_id"]} or None.
+
+        A memory that a later message explicitly updates (promote_updates marks the later one with
+        `update_of`: "update: ballet got rescheduled to wednesdays" updates "ballet on tuesdays") is not
+        a candidate: its span is the outdated fact, however confident the reader is in it. If only
+        outdated memories hold an answer (the update says "cancelled", with no new value), there is no
+        top-level answer rather than the outdated one.
         """
         accepted = [(m, out) for m, out in zip(final, memories) if m.get("_answer_ok") and m.get("answer")]
+        outdated = {m.get("update_of") for m in final if m.get("update_of") is not None}
+        accepted = [(m, out) for m, out in accepted if m.get("id", out.get("id")) not in outdated]
         if not accepted:
             return None
         conflict = next((p for p in accepted if p[0].get("answer_conflict_with")), None)

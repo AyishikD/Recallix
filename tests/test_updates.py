@@ -156,3 +156,43 @@ def test_best_answer_is_the_most_confident_and_reports_a_later_one():
     assert best["text"] == "Pune" and best["memory_id"] == 1               # not the rejected "Goa"
     assert best["later_answer"] == "Mumbai" and best["later_memory_id"] == 2
     assert RecallEngine._best_answer([{"_answer_ok": False, "answer": "x"}], [{"id": 1}]) is None
+
+
+# --- the top-level answer never comes from a memory a later message updated ---------------------------------
+
+def test_an_update_that_already_ranks_first_is_still_marked_as_the_update():
+    ranked = _ranked([(2, "update: ballet got rescheduled to wednesdays", 4, 0.6, 0.6),
+                      (1, "my daughter meera has ballet on tuesdays 4pm", 1, 0.5, 0.7)])
+    out = promote_updates(ranked, "When is Meera's ballet?")
+    assert [m["id"] for m in out] == [2, 1]  # no move needed
+    assert out[0]["update_of"] == 1           # but recorded, so the old answer is not shown
+
+
+def test_an_update_about_another_named_thing_is_not_marked_even_when_it_ranks_first():
+    ranked = _ranked([(2, "The Project Alpha deadline was moved to December 18.", 5, 0.6, 0.6),
+                      (1, "Project Beta deadline is December 21.", 1, 0.5, 0.55)])
+    out = promote_updates(ranked, "When is Project Beta due?")
+    assert out[0].get("update_of") is None
+
+
+def _accepted(id_, answer, margin, **extra):
+    return {"id": id_, "answer": answer, "answer_margin": margin, "_answer_ok": True, **extra}
+
+
+def test_the_answer_skips_a_memory_a_later_message_updated():
+    from backend.brain.memory.recall_engine import RecallEngine
+    final = [_accepted(2, "wednesdays", 3.6, update_of=1), _accepted(1, "tuesdays 4pm", 10.1)]
+    best = RecallEngine._best_answer(final, [{"id": 2}, {"id": 1}])
+    assert best["text"] == "wednesdays" and best["memory_id"] == 2  # not the more confident, outdated span
+
+
+def test_no_answer_rather_than_an_outdated_one():
+    from backend.brain.memory.recall_engine import RecallEngine
+    final = [{"id": 2, "update_of": 1, "answer": None, "_answer_ok": False}, _accepted(1, "tuesdays 4pm", 10.1)]
+    assert RecallEngine._best_answer(final, [{"id": 2}, {"id": 1}]) is None  # "ballet is cancelled": no new day
+
+
+def test_without_updates_the_most_confident_answer_is_unchanged():
+    from backend.brain.memory.recall_engine import RecallEngine
+    final = [_accepted(2, "fridays", 1.0), _accepted(1, "tuesdays 4pm", 10.1)]
+    assert RecallEngine._best_answer(final, [{"id": 2}, {"id": 1}])["text"] == "tuesdays 4pm"

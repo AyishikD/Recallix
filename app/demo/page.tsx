@@ -166,7 +166,7 @@ export default function DemoPage() {
                 </div>
                 <p className="mt-10 text-[14px] text-ink-2 max-w-[720px]">
                     Your messages are visible only in this browser tab and are erased when the demo server sleeps, a few minutes after the last visitor.
-                    Each message counts as one day after the one before, like a week of texting. Please don&apos;t type anything private. Limits: {30} messages, 400 characters each.
+                    Each message counts as one day after the one before, like a week of texting. Please don&apos;t type anything private. Limit: 5 messages per visitor per day, 400 characters each.
                 </p>
             </Section>
             <Footer />

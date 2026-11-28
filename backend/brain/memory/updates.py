@@ -129,6 +129,19 @@ def promote_updates(ranked, query="", window=5, consider_top=3, max_share=0.3, m
                 break
         if not moved:
             break
+    # A later update that already ranks above what it updates needs no move, but it is still an update: mark it
+    # (same tests as above), so the outdated memory's span is never shown as the answer (RecallEngine._best_answer).
+    for b in head:
+        if b.get("update_of") is not None or not _CHANGE_CUE.search(str(b.get("content", ""))):
+            continue
+        for a in head[head.index(b) + 1:consider_top]:
+            if float(b.get("timestamp") or 0) <= float(a.get("timestamp") or 0):
+                continue
+            shared = _same_subject(a, b, topics, asked, named, min_meaning_ratio)
+            if shared:
+                b["update_of"] = a.get("id")
+                b["update_shared_words"] = sorted(shared)[:3]
+                break
     ranked[:window] = head
     return ranked
 

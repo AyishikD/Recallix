@@ -56,9 +56,10 @@ app = modal.App("recallic-demo", image=image)
 
 ALLOWED_ORIGINS = ["https://www.recallic.com", "https://recallic.com", "https://recallix.vercel.app",
                    "http://localhost:3000"]
-MAX_MESSAGES = 30          # per session
+MAX_MESSAGES = 5           # per visitor: per session AND per IP, per 24 hours
 MAX_CHARS = 400            # per message or question
-PER_MINUTE = 30            # requests per visitor (IP) per minute
+PER_MINUTE = 20            # requests per visitor (IP) per minute
+DAILY_REQUESTS = 3000      # all visitors together per UTC day, so nobody can run up the compute bill
 DAY_ZERO = 1_767_225_600   # 2026-01-01 UTC: demo messages are dated one day apart from here
 
 
@@ -112,13 +113,26 @@ class Demo:
                            allow_headers=["Content-Type"])
         hits = collections.defaultdict(collections.deque)
         counts = collections.Counter()
+        ip_stores = collections.defaultdict(collections.deque)
+        daily = {"day": "", "n": 0}
         lock = threading.Lock()
         mm = self.mm
 
+        def client_ip(request: Request) -> str:
+            # the proxy in front appends the real address last; earlier entries can be sent by the client
+            fwd = [p.strip() for p in (request.headers.get("x-forwarded-for") or "").split(",") if p.strip()]
+            return fwd[-1] if fwd else (request.client.host if request.client else "?")
+
         def limit(request: Request):
-            ip = (request.headers.get("x-forwarded-for") or request.client.host or "?").split(",")[0].strip()
+            ip = client_ip(request)
             now = time.time()
             with lock:
+                today = time.strftime("%Y-%m-%d", time.gmtime(now))
+                if daily["day"] != today:
+                    daily.update(day=today, n=0)
+                if daily["n"] >= DAILY_REQUESTS:
+                    raise HTTPException(429, "The demo has had a busy day. Please come back tomorrow.")
+                daily["n"] += 1
                 q = hits[ip]
                 while q and now - q[0] > 60:
                     q.popleft()
@@ -147,10 +161,17 @@ class Demo:
         def store(body: Store, request: Request):
             limit(request)
             uid = user(body.session)
+            ip = client_ip(request)
+            now = time.time()
             with lock:
-                if counts[uid] >= MAX_MESSAGES:
-                    raise HTTPException(429, f"This demo keeps at most {MAX_MESSAGES} messages per visitor.")
+                q = ip_stores[ip]
+                while q and now - q[0] > 86400:
+                    q.popleft()
+                if counts[uid] >= MAX_MESSAGES or len(q) >= MAX_MESSAGES:
+                    raise HTTPException(429, f"The demo keeps {MAX_MESSAGES} messages per visitor. Ask about them, "
+                                             "or come back tomorrow for a fresh start.")
                 counts[uid] += 1
+                q.append(now)
                 day = counts[uid]
             # each message counts as one day after the previous one (a week of texting), so "the newest fact wins"
             # works as it does in real use, where messages arrive days apart rather than within one second
