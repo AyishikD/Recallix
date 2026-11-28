@@ -18,7 +18,10 @@ import pathlib
 
 import modal
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
+_HERE = pathlib.Path(__file__).resolve()
+# the repo root on your machine (deploy/modal/demo.py -> repo); inside the container this file is /root/demo.py and
+# the local paths below are not used, so any value works there
+ROOT = _HERE.parents[2] if len(_HERE.parents) > 2 else _HERE.parent
 PACKAGES = ["fastapi>=0.110", "uvicorn>=0.27", "pydantic>=2.5", "requests>=2.33.0", "numpy>=1.26", "pyyaml>=6.0",
             "python-dotenv>=1.2.2", "starlette>=1.3.1", "h11>=0.16.0", "urllib3>=2.8.0",
             "sentence-transformers>=5.6.0", "transformers>=5.10.0", "jinja2>=3.1.6"]
@@ -56,6 +59,7 @@ ALLOWED_ORIGINS = ["https://www.recallic.com", "https://recallic.com", "https://
 MAX_MESSAGES = 30          # per session
 MAX_CHARS = 400            # per message or question
 PER_MINUTE = 30            # requests per visitor (IP) per minute
+DAY_ZERO = 1_767_225_600   # 2026-01-01 UTC: demo messages are dated one day apart from here
 
 
 @app.cls(cpu=2.0, memory=2048, scaledown_window=300, timeout=60, max_containers=1)
@@ -147,16 +151,26 @@ class Demo:
                 if counts[uid] >= MAX_MESSAGES:
                     raise HTTPException(429, f"This demo keeps at most {MAX_MESSAGES} messages per visitor.")
                 counts[uid] += 1
-            out = mm.store(uid, body.content, agent_id="demo")
+                day = counts[uid]
+            # each message counts as one day after the previous one (a week of texting), so "the newest fact wins"
+            # works as it does in real use, where messages arrive days apart rather than within one second
+            ts = DAY_ZERO + day * 86400
+            out = mm.store(uid, body.content, agent_id="demo", timestamp=ts)
             return {"status": out["status"], "memory_id": out["memory_id"], "ms": out.get("total_ms")}
 
         @api.post("/recall")
         def recall(body: Recall, request: Request):
             limit(request)
             out = mm.retrieve(user(body.session), body.query, agent_id="demo", limit=3)
+            best = out.get("answer") or {}
+            first = (out.get("memories") or [{}])[0]
+            # show the answer the receipt states: the first memory's (an update is ranked first). The top-level
+            # `answer` can still hold an older, higher-confidence answer; see the note in the project memory.
+            shown = first.get("answer") or best.get("later_answer") or best.get("text")
             return {
                 "status": out.get("status"),
-                "answer": (out.get("answer") or {}).get("text"),
+                "answer": shown,
+                "replaced": best.get("text") if best.get("text") and best.get("text") != shown else None,
                 "memories": [{"content": m.get("content"), "answer": m.get("answer")} for m in (out.get("memories") or [])[:3]],
                 "reason": (out.get("receipt") or {}).get("reason"),
                 "latency_ms": out.get("latency_ms"),

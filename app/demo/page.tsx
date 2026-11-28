@@ -17,7 +17,7 @@ const EXAMPLES = [
 ];
 const QUESTIONS = ["Where do I live?", "When is Meera's ballet?", "What am I allergic to?", "What is my brother's name?"];
 
-type Result = { status: string; answer?: string | null; memories: { content: string; answer?: { text?: string } | null }[]; reason?: string; latency_ms?: number };
+type Result = { status: string; answer?: string | null; replaced?: string | null; memories: { content: string; answer?: { text?: string } | null }[]; reason?: string; latency_ms?: number };
 type Server = "waking" | "ready" | "down";
 
 function sessionId(): string {
@@ -152,6 +152,7 @@ export default function DemoPage() {
                                         <>
                                             <p className="mt-2 text-[24px] font-semibold text-ink">{result.answer || result.memories[0]?.content}</p>
                                             {result.memories[0] && <p className="mt-3 text-[15px] text-ink-2">From: “{result.memories[0].content}”</p>}
+                                            {result.replaced && <p className="mt-1 text-[14px] text-ink-2">Updated from “{result.replaced}”: the newer message wins.</p>}
                                         </>
                                     ) : (
                                         <p className="mt-2 text-[22px] font-semibold text-ink">No record. It declines instead of guessing.</p>
@@ -165,7 +166,7 @@ export default function DemoPage() {
                 </div>
                 <p className="mt-10 text-[14px] text-ink-2 max-w-[720px]">
                     Your messages are visible only in this browser tab and are erased when the demo server sleeps, a few minutes after the last visitor.
-                    Please don&apos;t type anything private. Limits: {30} messages, 400 characters each.
+                    Each message counts as one day after the one before, like a week of texting. Please don&apos;t type anything private. Limits: {30} messages, 400 characters each.
                 </p>
             </Section>
             <Footer />

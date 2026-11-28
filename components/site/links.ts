@@ -1,5 +1,6 @@
 /* Site navigation, shared by the nav bar (a client component) and the footer (rendered on the server). */
 export const NAV_LINKS = [
+    { href: "/demo", label: "Try it" },
     { href: "/flow-control", label: "How it works" },
     { href: "/architecture", label: "Architecture" },
     { href: "/benchmark", label: "Benchmarks" },
