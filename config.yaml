@@ -134,6 +134,8 @@ recall:
   #   helpful   also rescue declined counting / ordering / time questions (aggregation_check, rescue). LongMemEval_S
   #             wrongly declined 78 -> 55 of 470, unanswerable declined 16 -> 17 of 30; LoCoMo dev 60 -> 56 of 760.
   mode: balanced
+  # helpful also lowers the answer check's threshold by this much (balanced and cautious never do).
+  helpful_threshold_offset: 0.8
   candidate_pool: 200        # max candidates from each of lexical and vector search
   backfill_per_query: 50     # max legacy rows embedded lazily per query
   # Abstention: recall returns nothing when the best match's relevance is below a threshold.

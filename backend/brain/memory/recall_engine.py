@@ -396,6 +396,10 @@ class RecallEngine:
         elif checker is not None:
             final = resolved[:top_k]
             t = checker.threshold()
+            if modes.current() == "helpful":
+                # helpful: accept a slightly less confident reader span (recall.helpful_threshold_offset); answers more
+                # clear questions the reader is unsure of in texting-style memories, and a few more trick questions
+                t -= float(settings.get("recall.helpful_threshold_offset", 0.8) or 0)
             accept, subject = self._subject_contrast(checker, asked, all_scored)
             conflicts = (settings.get("recall.answer_conflicts", {}) or {})
             min_read = int(conflicts.get("read", 3)) if conflicts.get("enabled", True) else 1
