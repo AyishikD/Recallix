@@ -1,0 +1,20 @@
+name: IndexNow
+
+# After each successful production deploy (Vercel reports it to GitHub as a deployment), tell Bing and the other
+# IndexNow engines to re-crawl recallic.com's pages.
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Submit the sitemap's URLs
+        run: python3 scripts/indexnow.py
