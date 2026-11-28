@@ -1,11 +1,11 @@
 """
-Plain vector search vs Recallix, on the same messages and the same embedding model.
+Plain vector search vs Recallic, on the same messages and the same embedding model.
 
-    python examples/vector_db_vs_recallix.py [--json out.json]
+    python examples/vector_db_vs_recallic.py [--json out.json]
 
 One person texts their assistant over a year. A "vector database" here is exactly what most RAG
-setups do: embed every message with the same model Recallix uses (bge-small) and return the
-closest ones by cosine similarity. Recallix stores the same messages through its normal pipeline
+setups do: embed every message with the same model Recallic uses (bge-small) and return the
+closest ones by cosine similarity. Recallic stores the same messages through its normal pipeline
 (no LLM anywhere) and answers the same questions. Runs locally on a temporary store; nothing
 leaves the machine. Illustrative examples, not a benchmark: the benchmarks are in eval/results.
 """
@@ -66,15 +66,15 @@ def main():
             rx = {"status": out["status"], "answer": (out.get("answer") or {}).get("text"),
                   "memories": [m.get("content_resolved") or m.get("content") for m in out["memories"]],
                   "reason": (out.get("receipt") or {}).get("reason"), "ms": round(ms, 1)}
-            results["questions"].append({"label": label, "question": q, "vector_db_top3": top, "recallix": rx})
+            results["questions"].append({"label": label, "question": q, "vector_db_top3": top, "recallic": rx})
 
     for r in results["questions"]:
         print(f"\n=== {r['label']}: \"{r['question']}\"")
         print("  Vector database (top 3 by similarity):")
         for x in r["vector_db_top3"]:
             print(f"    {x['similarity']:.3f}  {x['said_at'][:10]}  {x['text']}")
-        rx = r["recallix"]
-        print(f"  Recallix: {rx['status']}  ({rx['ms']:.0f} ms)")
+        rx = r["recallic"]
+        print(f"  Recallic: {rx['status']}  ({rx['ms']:.0f} ms)")
         if rx["answer"]:
             print(f"    answer: {rx['answer']}")
         for m in rx["memories"][:2]:

@@ -15,7 +15,7 @@ def get_db_path(relative_path="backend/storage/sqlite_db/memory.db"):
     """
     Absolute path for a storage file. Paths under "backend/storage/" resolve
     against the configured storage root (config.yaml storage.root or
-    RECALLIX_STORAGE_ROOT) and their parent directory is created.
+    RECALLIC_STORAGE_ROOT) and their parent directory is created.
     """
     rel = relative_path.replace("\\", "/")
     if rel.startswith(_STORAGE_PREFIX):

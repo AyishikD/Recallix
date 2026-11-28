@@ -39,13 +39,13 @@ jobs:
           cache: pip
       - name: Build engine
         run: |
-          cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release -DRECALLIX_TSAN=OFF
+          cmake -S backend/infra_cpp -B backend/infra_cpp/build -DCMAKE_BUILD_TYPE=Release -DRECALLIC_TSAN=OFF
           cmake --build backend/infra_cpp/build -j 4 --target memory_service
       - name: Install
         run: pip install -r requirements-dev.txt
       - name: Tests (real engine binary, hermetic storage, no LLM)
         env:
-          RECALLIX_ENGINE_BIN: backend/infra_cpp/build/memory_service
+          RECALLIC_ENGINE_BIN: backend/infra_cpp/build/memory_service
         run: python -m pytest tests -q
       - name: Memory tests (deterministic expectations about what is remembered)
         run: python -m backend.tools.memtest tests/memory/*.yaml --embedder hash --answer-check off

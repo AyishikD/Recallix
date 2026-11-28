@@ -1,15 +1,15 @@
 """
-Portable memory: export a user's memories in an open format, and import from Recallix,
+Portable memory: export a user's memories in an open format, and import from Recallic,
 Mem0 or plain text. Memory belongs to the user, not to a model vendor or to us.
 
     python -m backend.tools.portable export --user alice --out alice.json
-    python -m backend.tools.portable import --user alice --file alice.json            # Recallix export
+    python -m backend.tools.portable import --user alice --file alice.json            # Recallic export
     python -m backend.tools.portable import --user alice --file mem0.json --format mem0
     python -m backend.tools.portable import --user alice --file notes.txt --format text  # one memory per line
 
-Format "recallix-memory" v1 (JSON):
+Format "recallic-memory" v1 (JSON):
 
-    {"format": "recallix-memory", "version": 1, "exported_at": "...", "user_id": "...",
+    {"format": "recallic-memory", "version": 1, "exported_at": "...", "user_id": "...",
      "extractor": "rules-...", "embedding_model": "...",
      "memories": [{"content": "...", "timestamp": 1700000000.0, "agent_id": "...",
                    "memory_type": "private|shared", "metadata": {...client metadata...},
@@ -17,7 +17,7 @@ Format "recallix-memory" v1 (JSON):
 
 The original messages are the source of truth. `derived` is informational: import re-runs
 the deterministic store pipeline with the original timestamps, so a file moves cleanly
-between Recallix versions and embedding models (the result is what `replay` would give).
+between Recallic versions and embedding models (the result is what `replay` would give).
 """
 import argparse
 import datetime as _dt
@@ -26,7 +26,8 @@ import sqlite3
 import sys
 import time
 
-FORMAT, VERSION = "recallix-memory", 1
+FORMAT, VERSION = "recallic-memory", 1
+OLD_FORMATS = ("recallix-memory",)  # exports made before the project was renamed
 MAX_IMPORT_ITEMS = 5000
 
 
@@ -65,14 +66,14 @@ def _timestamp(value, fallback):
     return fallback
 
 
-def parse(data, fmt="recallix"):
+def parse(data, fmt="recallic"):
     """Normalise an export into [{"content", "timestamp", "agent_id", "memory_type", "metadata"}]."""
     now = time.time()
-    if fmt == "recallix":
-        if not isinstance(data, dict) or data.get("format") != FORMAT:
+    if fmt in ("recallic", "recallix"):
+        if not isinstance(data, dict) or data.get("format") not in (FORMAT, *OLD_FORMATS):
             raise ValueError(f'not a "{FORMAT}" export')
         if int(data.get("version", 0)) > VERSION:
-            raise ValueError(f"export version {data.get('version')} is newer than this Recallix ({VERSION})")
+            raise ValueError(f"export version {data.get('version')} is newer than this Recallic ({VERSION})")
         items = [{"content": m.get("content", ""), "timestamp": _timestamp(m.get("timestamp"), now),
                   "agent_id": m.get("agent_id"), "memory_type": m.get("memory_type"),
                   "metadata": m.get("metadata") or None} for m in data.get("memories", [])]
@@ -90,7 +91,7 @@ def parse(data, fmt="recallix"):
         items = [{"content": str(line).strip().lstrip("-•* ").strip(), "timestamp": now + i * 1e-3}
                  for i, line in enumerate(lines)]
     else:
-        raise ValueError(f"unknown format {fmt!r} (recallix, mem0, text)")
+        raise ValueError(f"unknown format {fmt!r} (recallic, mem0, text)")
     items = [it for it in items if it["content"].strip()]
     if len(items) > MAX_IMPORT_ITEMS:
         raise ValueError(f"{len(items)} memories in one import; the limit is {MAX_IMPORT_ITEMS} per request")
@@ -113,7 +114,7 @@ def main(argv=None):
     i = sub.add_parser("import")
     i.add_argument("--user", required=True)
     i.add_argument("--file", required=True)
-    i.add_argument("--format", default="recallix", choices=["recallix", "mem0", "text"])
+    i.add_argument("--format", default="recallic", choices=["recallic", "recallix", "mem0", "text"])
     i.add_argument("--agent", default="default_agent")
     i.add_argument("--memory-type", default="private", choices=["private", "shared"])
     args = ap.parse_args(argv)

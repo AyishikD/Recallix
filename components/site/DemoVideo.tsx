@@ -1,4 +1,4 @@
-/* Product films rendered from a real Recallix session (source: recallix-video/, outside this repo). */
+/* Product films rendered from a real Recallic session (source: recallix-video/, outside this repo). */
 export function DemoVideo({ src, poster, label, autoPlay = false, className = "" }:
     { src: string; poster: string; label: string; autoPlay?: boolean; className?: string }) {
     return (

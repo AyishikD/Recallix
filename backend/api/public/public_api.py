@@ -169,7 +169,7 @@ def recall_feedback(request: FeedbackRequest, auth=Depends(verify_api_key)):
 
 
 class ImportRequest(BaseModel):
-    format: Literal["recallix", "mem0", "text"] = "recallix"
+    format: Literal["recallic", "recallix", "mem0", "text"] = "recallic"  # "recallix": same format, older name
     data: Union[dict, list, str]
     user_id: UserId = None
     agent_id: AgentId = "default_agent"
@@ -178,7 +178,7 @@ class ImportRequest(BaseModel):
 
 @router.get("/export")
 def export_memories(user_id: Optional[str] = None, auth=Depends(verify_api_key)):
-    """All of the user's memories in the open "recallix-memory" format (backend/tools/portable.py)."""
+    """All of the user's memories in the open "recallic-memory" format (backend/tools/portable.py)."""
     from backend.tools.portable import export_user
     return envelope(export_user(get_memory_manager(), acting_user(auth, user_id)))
 
@@ -186,7 +186,7 @@ def export_memories(user_id: Optional[str] = None, auth=Depends(verify_api_key))
 @router.post("/import")
 def import_memories(request: ImportRequest, auth=Depends(verify_api_key)):
     """
-    Imports a Recallix export, a Mem0 export, or plain text (one memory per line). Every memory
+    Imports a Recallic export, a Mem0 export, or plain text (one memory per line). Every memory
     goes through the normal store pipeline with its original timestamp; duplicates are skipped.
     """
     from backend.tools.portable import import_items, parse

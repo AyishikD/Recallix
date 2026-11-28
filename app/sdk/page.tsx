@@ -7,15 +7,15 @@ import { ButtonLink, CodeBlock, Eyebrow, Headline, Lede, Reveal, ScrollFade, Sec
 import { DemoVideo } from "@/components/site/DemoVideo";
 import { ClosingCTA, MemoryField, TypeCode } from "@/components/site/story";
 
-/* Code samples mirror sdk/python/recallix, sdk/typescript and docs/quickstart.md. */
+/* Code samples mirror sdk/python/recallic, sdk/typescript and docs/quickstart.md. */
 
 const SAMPLES: Record<string, { label: string; code: string }> = {
     python: {
         label: "Python",
         code: `import os
-from recallix import Memory
+from recallic import Memory
 
-mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
+mem = Memory(api_key=os.environ["RECALLIC_API_KEY"])
 
 mem.store("My name is Priya and I live in Pune.")
 out = mem.recall("Where do I live?")
@@ -24,14 +24,14 @@ print(out["status"])                       # CONSISTENT, ABSTAINED or NO_MATCH
 for m in out["memories"]:
     print(m["content"], m.get("answer"), m["explain"])
 
-# Tell Recallix which results helped — this trains the ranker.
+# Tell Recallic which results helped — this trains the ranker.
 mem.feedback(out["recall_id"], [out["memories"][0]["id"]])`,
     },
     typescript: {
         label: "TypeScript",
-        code: `import { Memory } from "recallix";
+        code: `import { Memory } from "recallic";
 
-const mem = new Memory({ apiKey: process.env.RECALLIX_API_KEY! });
+const mem = new Memory({ apiKey: process.env.RECALLIC_API_KEY! });
 
 await mem.store("My name is Priya and I live in Pune.");
 const out = await mem.recall("Where do I live?");
@@ -44,19 +44,19 @@ await mem.feedback(out.recall_id, [out.memories[0].id]);`,
     curl: {
         label: "REST",
         code: `curl -X POST http://localhost:8000/memory/store \\
-  -H "X-API-Key: $RECALLIX_API_KEY" \\
+  -H "X-API-Key: $RECALLIC_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"content": "I prefer dark mode.", "agent_id": "settings-bot", "memory_type": "shared"}'
 
 curl -X POST http://localhost:8000/memory/recall \\
-  -H "X-API-Key: $RECALLIX_API_KEY" \\
+  -H "X-API-Key: $RECALLIC_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"query": "Which theme does the user like?", "agent_id": "chat-bot"}'`,
     },
 };
 
 const multiUser = `# A service key may act for its end users.
-app = Memory(api_key=os.environ["RECALLIX_SERVICE_KEY"])
+app = Memory(api_key=os.environ["RECALLIC_SERVICE_KEY"])
 
 app.store(
     "Prefers vegetarian food.",
@@ -76,10 +76,10 @@ const BEYOND = [
         text: "Claude Desktop, Cursor and other Model Context Protocol clients get recall, store, confirm, forget and export tools — backed by the same memory as your app.",
         label: "MCP configuration",
         code: `"mcpServers": {
-  "recallix": {
-    "command": "recallix-mcp",
-    "env": {"RECALLIX_API_KEY": "rx_...",
-            "RECALLIX_AGENT_ID": "cursor"}
+  "recallic": {
+    "command": "recallic-mcp",
+    "env": {"RECALLIC_API_KEY": "rx_...",
+            "RECALLIC_AGENT_ID": "cursor"}
   }
 }`,
     },
@@ -87,7 +87,7 @@ const BEYOND = [
         title: "Move your memory",
         text: "Export everything in an open format, or bring memories with you from a Mem0 export or a plain list. Imports keep their original timestamps.",
         label: "Python",
-        code: `# export everything in the open "recallix-memory" format
+        code: `# export everything in the open "recallic-memory" format
 data = mem.export()
 other.import_memories(data)
 
@@ -167,10 +167,10 @@ $ python -m backend.tools.audit verify`,
 const SETUP = [
     { t: "Run it (Docker)", c: `git clone https://github.com/Recallic/Recallic && cd Recallic
 docker compose up -d                 # vector engine + API on localhost:8000` },
-    { t: "Get your keys", c: `docker compose logs recallix | grep -A1 "admin API key"   # printed once
-docker compose exec recallix python -m backend.tools.keys create --user alice` },
-    { t: "Install the SDK", c: `pip install recallix                 # Python 3.9+, includes recallix-mcp
-npm install recallix                 # TypeScript / Node 18+` },
+    { t: "Get your keys", c: `docker compose logs recallic | grep -A1 "admin API key"   # printed once
+docker compose exec recallic python -m backend.tools.keys create --user alice` },
+    { t: "Install the SDK", c: `pip install recallic                 # Python 3.9+, includes recallic-mcp
+npm install recallic                 # TypeScript / Node 18+` },
     { t: "Without Docker", c: `pip install -r requirements-local.txt
 python -m backend.tools.get_engine   # prebuilt engine (or build it with cmake)
 python -m backend.tools.setup_env && set -a; source .env; set +a
@@ -208,9 +208,9 @@ export default function DevelopersPage() {
 
             <Section>
                 <Reveal from="scale">
-                    <DemoVideo autoPlay src="/videos/recallix-api.mp4" poster="/videos/recallix-api-poster.jpg"
+                    <DemoVideo autoPlay src="/videos/recallic-api.mp4" poster="/videos/recallic-api-poster.jpg"
                         label="The Python SDK storing five messages, recalling an answer with its receipt and latency, then returning ABSTAINED for a question nothing answers" />
-                    <p className="text-center mt-5 text-[14px] text-ink-2">A real session through the published <code>recallix</code> package. Responses shown as returned; “…” marks omitted fields. Sound: “Swoosh.wav” by Brsjak (<a className="underline" href="https://freesound.org/people/Brsjak/sounds/482880">freesound</a>), CC BY 4.0.</p>
+                    <p className="text-center mt-5 text-[14px] text-ink-2">A real session through the published <code>recallic</code> package. Responses shown as returned; “…” marks omitted fields. Sound: “Swoosh.wav” by Brsjak (<a className="underline" href="https://freesound.org/people/Brsjak/sounds/482880">freesound</a>), CC BY 4.0.</p>
                 </Reveal>
             </Section>
 

@@ -1,16 +1,16 @@
 """
-RecallixMemoryService: Recallix as the memory of a Google ADK agent.
+RecallicMemoryService: Recallic as the memory of a Google ADK agent.
 
-    from recallix_adk import RecallixMemoryService
-    memory = RecallixMemoryService(api_key="rx_...")          # a Recallix key with role "service"
+    from recallic_adk import RecallicMemoryService
+    memory = RecallicMemoryService(api_key="rx_...")          # a Recallic key with role "service"
     runner = Runner(agent=agent, app_name="my_app", session_service=..., memory_service=memory)
 
 ADK hands over sessions (add_session_to_memory) or the latest turn (add_events_to_memory); this stores each text
-event in Recallix with its original time. search_memory recalls with Recallix and returns ADK MemoryEntry items.
-When Recallix finds nothing that answers the query it returns no memories, so the agent is not handed
+event in Recallic with its original time. search_memory recalls with Recallic and returns ADK MemoryEntry items.
+When Recallic finds nothing that answers the query it returns no memories, so the agent is not handed
 near-misses to guess from. No LLM is called to store or search memory.
 
-Scope: Recallix user = the ADK user_id; Recallix agent = the ADK app_name, so each app reads back what it wrote.
+Scope: Recallic user = the ADK user_id; Recallic agent = the ADK app_name, so each app reads back what it wrote.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from google.adk.memory.base_memory_service import BaseMemoryService, SearchMemoryResponse
 from google.adk.memory.memory_entry import MemoryEntry
 from google.genai import types
-from recallix import Memory
+from recallic import Memory
 
 if TYPE_CHECKING:
     from google.adk.events.event import Event
@@ -42,10 +42,10 @@ def _iso(ts: Any) -> Optional[str]:
         return None
 
 
-class RecallixMemoryService(BaseMemoryService):
+class RecallicMemoryService(BaseMemoryService):
     """
-    api_key: a Recallix key with role "service" (it acts for each ADK user_id).
-    base_url: the Recallix API.
+    api_key: a Recallic key with role "service" (it acts for each ADK user_id).
+    base_url: the Recallic API.
     mode: "cautious" | "balanced" | "helpful" for every search (None: the server's recall.mode).
     limit: memories per search.
     store_authors: which event authors to store: ("user",) by default, so memories are what users said. Pass None
@@ -76,7 +76,7 @@ class RecallixMemoryService(BaseMemoryService):
             if custom_metadata:
                 metadata["adk"] = dict(custom_metadata)
             items.append({"content": text[:20000], "metadata": metadata, "timestamp": getattr(event, "timestamp", None)})
-        # one request per 100 events; Recallix skips a message it already holds for this user and agent, so
+        # one request per 100 events; Recallic skips a message it already holds for this user and agent, so
         # re-adding a session is safe
         if items:
             self.memory.store_many(items, agent_id=app_name, user_id=user_id)
@@ -116,12 +116,12 @@ class RecallixMemoryService(BaseMemoryService):
         out = await asyncio.to_thread(lambda: self.memory.recall(query[:2000], limit=self.limit, agent_id=app_name,
                                                                  user_id=user_id, mode=self.mode))
         if out.get("status") != "CONSISTENT":
-            return SearchMemoryResponse(memories=[])  # Recallix found nothing that answers it: no near-misses
+            return SearchMemoryResponse(memories=[])  # Recallic found nothing that answers it: no near-misses
         entries = []
         computed = out.get("computed_answer")
         if computed and computed.get("text"):
             entries.append(MemoryEntry(
-                id="recallix-computed", author="recallix", timestamp=None,
+                id="recallic-computed", author="recallic", timestamp=None,
                 content=types.Content(role="user", parts=[types.Part(text=f"Worked out from the memories below: {computed['text']}"
                                                                          f" ({out.get('receipt', {}).get('computed', '')})")]),
                 custom_metadata={"computed_answer": computed}))
@@ -133,10 +133,10 @@ class RecallixMemoryService(BaseMemoryService):
                 timestamp=_iso(m.get("timestamp")),
                 content=types.Content(role="user", parts=[types.Part(text=m.get("content_resolved") or m.get("content", ""))]),
                 custom_metadata={"relevance": m.get("relevance"), "trust": m.get("trust"),
-                                 "receipt": m.get("receipt"), "recallix_recall_id": out.get("recall_id")}))
+                                 "receipt": m.get("receipt"), "recallic_recall_id": out.get("recall_id")}))
         return SearchMemoryResponse(memories=entries)
 
     async def delete_memory(self, *, app_name: str, user_id: str, memory_id: Optional[str] = None) -> None:
-        if memory_id is None or memory_id == "recallix-computed":
+        if memory_id is None or memory_id == "recallic-computed":
             return
         await asyncio.to_thread(self.memory.delete, int(memory_id), user_id)

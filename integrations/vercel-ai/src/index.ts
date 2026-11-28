@@ -1,28 +1,28 @@
 /**
- * Recallix memory for the Vercel AI SDK.
+ * Recallic memory for the Vercel AI SDK.
  *
  *     import { generateText, wrapLanguageModel } from "ai";
- *     import { recallixMemory } from "recallix-ai-sdk";
+ *     import { recallicMemory } from "recallic-ai-sdk";
  *
- *     const model = wrapLanguageModel({ model: openai("gpt-4.1-mini"), middleware: recallixMemory({ apiKey }) });
- *     await generateText({ model, prompt: "Where did I move?", providerOptions: { recallix: { userId: "alice" } } });
+ *     const model = wrapLanguageModel({ model: openai("gpt-4.1-mini"), middleware: recallicMemory({ apiKey }) });
+ *     await generateText({ model, prompt: "Where did I move?", providerOptions: { recallic: { userId: "alice" } } });
  *
  * Before each model call, recalls what this user said before that bears on their latest message and gives it to
  * the model as a system message; when nothing answers it, tells the model there is no record instead of handing
  * over near-misses. Then stores the user's message. No LLM is called to store or search memory.
  */
-import { Memory } from "recallix";
+import { Memory } from "recallic";
 
 export type RecallMode = "cautious" | "balanced" | "helpful";
 
-export interface RecallixMemoryOptions {
-    /** A Recallix key. Role "service" acts for each userId; a user's own key acts for itself. */
+export interface RecallicMemoryOptions {
+    /** A Recallic key. Role "service" acts for each userId; a user's own key acts for itself. */
     apiKey: string;
     /** Default http://localhost:8000. */
     baseUrl?: string;
-    /** Whose memory: fixed here, or per call with providerOptions: { recallix: { userId } }. */
+    /** Whose memory: fixed here, or per call with providerOptions: { recallic: { userId } }. */
     userId?: string;
-    /** Recallix agent id; each agent reads back what it wrote (and what any agent shared). Default "ai-sdk". */
+    /** Recallic agent id; each agent reads back what it wrote (and what any agent shared). Default "ai-sdk". */
     agentId?: string;
     /** Default: the server's recall.mode. */
     mode?: RecallMode;
@@ -36,14 +36,14 @@ export interface RecallixMemoryOptions {
      * The AI SDK middleware version: "v4" for AI SDK 7 (default), "v3" for AI SDK 6.
      */
     specificationVersion?: "v3" | "v4";
-    /** Called when Recallix cannot be reached; the call goes on without memory. Default: console.warn. */
+    /** Called when Recallic cannot be reached; the call goes on without memory. Default: console.warn. */
     onError?: (error: unknown) => void;
     /** For tests: a ready client. */
     client?: Pick<Memory, "recall" | "store">;
 }
 
-/** Per-call settings: providerOptions: { recallix: { ... } }. */
-export interface RecallixCallOptions {
+/** Per-call settings: providerOptions: { recallic: { ... } }. */
+export interface RecallicCallOptions {
     userId?: string;
     agentId?: string;
     mode?: RecallMode;
@@ -51,7 +51,7 @@ export interface RecallixCallOptions {
     disabled?: boolean;
 }
 
-export const MARKER = "### Recallix memory";
+export const MARKER = "### Recallic memory";
 export const DECLINE_NOTE =
     "None of this user's earlier messages answers their latest message. If it depends on something they would " +
     "have told you before, say you don't have a record of it rather than guess.";
@@ -88,15 +88,15 @@ export function memoryNote(out: any, limit: number, tellModelOnDecline: boolean)
     return tellModelOnDecline ? `${MARKER}\n${DECLINE_NOTE}` : null;
 }
 
-/** AI SDK middleware that gives the model the user's Recallix memory. Use with wrapLanguageModel. */
-export function recallixMemory(options: RecallixMemoryOptions) {
+/** AI SDK middleware that gives the model the user's Recallic memory. Use with wrapLanguageModel. */
+export function recallicMemory(options: RecallicMemoryOptions) {
     const client = options.client ?? new Memory({ apiKey: options.apiKey, baseUrl: options.baseUrl ?? "http://localhost:8000" });
     const limit = options.limit ?? 5;
-    const onError = options.onError ?? ((e: unknown) => console.warn("Recallix memory unavailable:", e));
+    const onError = options.onError ?? ((e: unknown) => console.warn("Recallic memory unavailable:", e));
     const cache = new Map<string, { note: string | null; at: number }>();
 
     async function transformParams({ params }: { type: "generate" | "stream"; params: Params; model?: unknown }) {
-        const call = (params.providerOptions?.recallix ?? {}) as RecallixCallOptions;
+        const call = (params.providerOptions?.recallic ?? {}) as RecallicCallOptions;
         if (call.disabled) return params;
         const userId = call.userId ?? options.userId;
         const agentId = call.agentId ?? options.agentId ?? "ai-sdk";
@@ -142,4 +142,4 @@ export function recallixMemory(options: RecallixMemoryOptions) {
     return { specificationVersion: options.specificationVersion ?? "v4", transformParams } as any;
 }
 
-export default recallixMemory;
+export default recallicMemory;

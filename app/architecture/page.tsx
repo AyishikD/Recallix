@@ -28,7 +28,7 @@ const LAYERS = [
             ["Per-user indexes", "Namespaces keep every user’s vectors apart; one background thread links new vectors."],
             ["Instant visibility", "Vectors not yet linked into the graph are scanned exactly, so new memories are found at once."],
             ["SIMD", "NEON on ARM64, AVX2 + FMA on x86-64, scalar elsewhere — reported at runtime."],
-            ["Shared secret", "The engine refuses to start without RECALLIX_INTERNAL_KEY."],
+            ["Shared secret", "The engine refuses to start without RECALLIC_INTERNAL_KEY."],
         ],
     },
     {
@@ -65,7 +65,7 @@ function FlowDiagram() {
             <div className={box}><p className="font-semibold">Your agents</p><p className="text-[13px] text-ink-2">SDK or REST · API key</p></div>
             {arrow}
             <div className={`${box} ring-1 ring-accent/30`}>
-                <p className="font-semibold">Recallix API · Python</p>
+                <p className="font-semibold">Recallic API · Python</p>
                 <p className="text-[13px] text-ink-2">facts · topics · importance · ranking · truth · answer check</p>
             </div>
             <div className="grid grid-cols-2 gap-3">

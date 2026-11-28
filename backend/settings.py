@@ -1,15 +1,15 @@
 """
-Central configuration for the Recallix backend.
+Central configuration for the Recallic backend.
 
 Precedence (highest first): environment variables > config.yaml > defaults
 documented in config.yaml. Secrets are read from the environment only.
 
 Environment variables:
-  RECALLIX_CONFIG         path to an alternative config.yaml
-  RECALLIX_STORAGE_ROOT   storage directory (overrides storage.root)
-  RECALLIX_ENGINE_URL     vector engine base URL (overrides engine.url)
-  RECALLIX_INTERNAL_KEY   shared secret for the vector engine (required)
-  RECALLIX_EMBEDDING_PROVIDER  overrides models.embedding_provider
+  RECALLIC_CONFIG         path to an alternative config.yaml
+  RECALLIC_STORAGE_ROOT   storage directory (overrides storage.root)
+  RECALLIC_ENGINE_URL     vector engine base URL (overrides engine.url)
+  RECALLIC_INTERNAL_KEY   shared secret for the vector engine (required)
+  RECALLIC_EMBEDDING_PROVIDER  overrides models.embedding_provider
   CORS_ALLOWED_ORIGINS    comma-separated origins (overrides api.cors_allowed_origins)
 """
 import os
@@ -32,7 +32,7 @@ class ConfigError(RuntimeError):
 
 @lru_cache(maxsize=1)
 def config():
-    path = Path(os.environ.get("RECALLIX_CONFIG") or PROJECT_ROOT / "config.yaml")
+    path = Path(os.environ.get("RECALLIC_CONFIG") or PROJECT_ROOT / "config.yaml")
     try:
         with open(path) as f:
             return yaml.safe_load(f) or {}
@@ -59,7 +59,7 @@ def get(path, default=None):
 # Storage
 # ---------------------------------------------------------------------------
 def storage_root():
-    root = os.environ.get("RECALLIX_STORAGE_ROOT") or get("storage.root", "backend/storage")
+    root = os.environ.get("RECALLIC_STORAGE_ROOT") or get("storage.root", "backend/storage")
     root = Path(root)
     return root if root.is_absolute() else PROJECT_ROOT / root
 
@@ -76,7 +76,7 @@ def storage_path(*parts, is_dir=False):
 # Vector engine
 # ---------------------------------------------------------------------------
 def engine_url():
-    return (os.environ.get("RECALLIX_ENGINE_URL") or get("engine.url") or "").rstrip("/")
+    return (os.environ.get("RECALLIC_ENGINE_URL") or get("engine.url") or "").rstrip("/")
 
 
 def engine_timeout():
@@ -84,9 +84,9 @@ def engine_timeout():
 
 
 def internal_key():
-    key = os.environ.get("RECALLIX_INTERNAL_KEY", "")
+    key = os.environ.get("RECALLIC_INTERNAL_KEY", "")
     if len(key) < 16:
-        raise ConfigError("RECALLIX_INTERNAL_KEY is not set (>= 16 chars). "
+        raise ConfigError("RECALLIC_INTERNAL_KEY is not set (>= 16 chars). "
                           "Run `python -m backend.tools.setup_env` to create one in .env.")
     return key
 

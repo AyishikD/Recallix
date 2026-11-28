@@ -1,4 +1,4 @@
-import { MemoryClient, MemoryConfig, RecallixError } from "./client";
+import { MemoryClient, MemoryConfig, RecallicError } from "./client";
 
 export type MemoryType = "private" | "shared";
 
@@ -82,7 +82,7 @@ export class Memory {
                 });
                 results.push(...out.results);
             } catch (e) {
-                if (!(e instanceof RecallixError) || (e.status !== 404 && e.status !== 405)) throw e;
+                if (!(e instanceof RecallicError) || (e.status !== 404 && e.status !== 405)) throw e;
                 const byTime = chunk.map((r, i) => ({ r, i }))
                     .sort((a, b) => (a.r.timestamp ?? Infinity) - (b.r.timestamp ?? Infinity) || a.i - b.i);
                 const done: Record<string, any>[] = new Array(chunk.length);
@@ -115,13 +115,13 @@ export class Memory {
     }
 
     /**
-     * One-line feedback after a recall, so Recallix learns from use:
+     * One-line feedback after a recall, so Recallic learns from use:
      *
      *     const out = await mem.recall("Where do I live?");
      *     await mem.used(out);                    // the first memory answered it
      *     await mem.used(out, out.memories[2]);   // or name the memories (or ids) your app actually used
      *
-     * Recallix refits its ranking from this on a schedule and keeps a new fit only if it is better.
+     * Recallic refits its ranking from this on a schedule and keeps a new fit only if it is better.
      */
     used(recall: { recall_id: string; memories?: { id: number }[] }, ...memories: ({ id: number } | number)[]) {
         const chosen = memories.length ? memories : (recall.memories ?? []).slice(0, 1);
@@ -140,15 +140,15 @@ export class Memory {
         });
     }
 
-    /** All memories in the open "recallix-memory" format. */
+    /** All memories in the open "recallic-memory" format. */
     export(userId?: string) {
         return this.client.request("GET", `/memory/export${q({ user_id: userId })}`);
     }
 
-    /** Import a Recallix export, a Mem0 export (format "mem0") or text, one memory per line (format "text"). */
-    importMemories(data: unknown, opts: { format?: "recallix" | "mem0" | "text"; agentId?: string; memoryType?: MemoryType; userId?: string } = {}) {
+    /** Import a Recallic export, a Mem0 export (format "mem0") or text, one memory per line (format "text"). */
+    importMemories(data: unknown, opts: { format?: "recallic" | "mem0" | "text"; agentId?: string; memoryType?: MemoryType; userId?: string } = {}) {
         return this.client.request("POST", "/memory/import", {
-            format: opts.format ?? "recallix", data, agent_id: opts.agentId ?? "default_agent",
+            format: opts.format ?? "recallic", data, agent_id: opts.agentId ?? "default_agent",
             memory_type: opts.memoryType ?? "private", user_id: opts.userId,
         });
     }

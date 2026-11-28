@@ -1,5 +1,5 @@
 """
-Memory fuzzer: generate memory tests automatically from what Recallix extracted.
+Memory fuzzer: generate memory tests automatically from what Recallic extracted.
 
     python -m backend.tools.fuzz --spec tests/memory/example.yaml [--write-failures fails.yaml]
     python -m backend.tools.fuzz --eval dev                 # the dev scenarios (eval/data/dev/retrieval.jsonl)

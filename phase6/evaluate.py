@@ -4,7 +4,7 @@ Compare the rule grammar, the trained student(s) and their union on the held-out
     python phase6/evaluate.py
 
 Gold = teacher labels on the 300 held-out messages (never trained on), checked by the
-Recallix author (single annotator). A predicted fact matches a gold fact when the relation
+Recallic author (single annotator). A predicted fact matches a gold fact when the relation
 agrees and the values match after normalisation (exact) or overlap (relaxed: one contains
 the other). Reports precision / recall / F1 per system, value-only scores (relation ignored)
 — fairer to the rules, whose relation names differ — and entity accuracy.

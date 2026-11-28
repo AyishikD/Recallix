@@ -5,12 +5,12 @@
 ```bash
 git clone https://github.com/Recallic/Recallic && cd Recallic
 docker compose up -d
-docker compose logs recallix | grep -A1 "admin API key"     # printed once, on first start: save it
-docker compose exec recallix python -m backend.tools.keys create --user alice   # a key for your app
+docker compose logs recallic | grep -A1 "admin API key"     # printed once, on first start: save it
+docker compose exec recallic python -m backend.tools.keys create --user alice   # a key for your app
 ```
 
 The API is now on `http://localhost:8000` (bound to localhost only). One container runs the
-vector engine and the API; all data, keys and downloaded models live in the `recallix-data`
+vector engine and the API; all data, keys and downloaded models live in the `recallic-data`
 volume, so restarts and upgrades keep everything. The first start downloads the embedding and
 answer-check models (~600 MB) before it accepts requests; later starts take seconds. Nothing
 leaves your machine after that: no LLM, no API calls.
@@ -49,13 +49,13 @@ cmake --build backend/infra_cpp/build -j
 python -m backend.tools.setup_env
 ```
 
-This writes a random `RECALLIX_INTERNAL_KEY` (the API ↔ engine secret) to `.env`,
+This writes a random `RECALLIC_INTERNAL_KEY` (the API ↔ engine secret) to `.env`,
 creates the storage directory, and prints an **admin API key once**.
 
 Choose the embedding model in `config.yaml` → `models.embedding_provider`: `local` (default:
 sentence-transformers in-process, no server, model `BAAI/bge-small-en-v1.5`, the one the shipped
 ranking, answer-check and trust fits were made with), `ollama`, or an OpenAI-compatible API.
-No LLM is needed by Recallix itself.
+No LLM is needed by Recallic itself.
 
 The shipped fits belong to that model. With another embedding model, recall still works, but
 refit on your own data for best results (`eval/README.md`), and after changing the model on an
@@ -96,25 +96,25 @@ described for other tools at http://localhost:8000/openapi.json.
 **From code:**
 
 ```bash
-pip install recallix                                       # Python SDK + recallix-mcp
+pip install recallic                                       # Python SDK + recallic-mcp
 ```
 
 ```python
 import os
-from recallix import Memory
+from recallic import Memory
 
-mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
+mem = Memory(api_key=os.environ["RECALLIC_API_KEY"])
 mem.store("My name is Priya and I live in Pune.")
 out = mem.recall("Where do I live?")
 print(out["status"], [m["content"] for m in out["memories"]])
 
 # One line of feedback: the first memory answered it (or name the ones you used: mem.used(out, m)).
-# Recallix learns from this on its own; see "Learning from use" below.
+# Recallic learns from this on its own; see "Learning from use" below.
 mem.used(out)
 ```
 
 `status` is `CONSISTENT` (answer found), `ABSTAINED` (none of the matching memories
-answers the question — Recallix returns nothing rather than a guess) or `NO_MATCH`.
+answers the question — Recallic returns nothing rather than a guess) or `NO_MATCH`.
 If your agent checks `status`, it can ask for the results even when recall declines:
 `mem.recall(question, keep_on_decline=True)` (TypeScript: `{ keepOnDecline: true }`). `status`
 stays `ABSTAINED` and `answer` is empty, so show them as "possibly related", not as the answer.
@@ -146,11 +146,11 @@ out["computed_answer"]["text"]     # "21 days (3 weeks)", when every event is cl
 The "does it answer?" decision is made by a small local reading-comprehension model
 (SQuAD 2.0, no LLM) when `requirements-local.txt` is installed
 (`recall.answer_check` in config.yaml; first use downloads the model, ~500 MB).
-Without it, Recallix falls back to a learned relevance threshold.
+Without it, Recallic falls back to a learned relevance threshold.
 
-TypeScript (Node 18+): `npm install recallix`, then `import { Memory } from "recallix"`.
+TypeScript (Node 18+): `npm install recallic`, then `import { Memory } from "recallic"`.
 
-MCP (Claude Desktop, Cursor, ...): the Python package installs a `recallix-mcp` command; see
+MCP (Claude Desktop, Cursor, ...): the Python package installs a `recallic-mcp` command; see
 [Your memory, anywhere](#8-your-memory-anywhere).
 
 ## 6. Maintenance
@@ -164,7 +164,7 @@ python -m backend.brain.memory_ranking.fit_ranker --from-db --dry-run
 
 ## 7. Trust tools
 
-Recallix stores and recalls without an LLM, so the same messages always produce the same
+Recallic stores and recalls without an LLM, so the same messages always produce the same
 memory. These tools build on that.
 
 ```bash
@@ -214,13 +214,13 @@ or over the API: `GET /memory/export`, `POST /memory/import`, and in the SDKs
 `mem.export()` / `mem.import_memories(data, format="mem0")`.
 
 **MCP server**: give Claude Desktop, Cursor or any MCP client the same memory. The Python
-package installs a `recallix-mcp` command (or use `python -m recallix.mcp_server`):
+package installs a `recallic-mcp` command (or use `python -m recallic.mcp_server`):
 
 ```json
 "mcpServers": {
-  "recallix": {
-    "command": "recallix-mcp",
-    "env": {"RECALLIX_API_KEY": "rx_...", "RECALLIX_AGENT_ID": "claude-desktop"}
+  "recallic": {
+    "command": "recallic-mcp",
+    "env": {"RECALLIC_API_KEY": "rx_...", "RECALLIC_AGENT_ID": "claude-desktop"}
   }
 }
 ```
@@ -259,7 +259,7 @@ brought the score back within the calibration bar: eval/results/trust_check_long
 ## Learning from use
 
 Each `mem.used(out)` (or `POST /memory/feedback`) records which recalled memories were useful. Once a
-day (`workers.learning_hours`), Recallix refits its ranking from that feedback and **keeps the new fit
+day (`workers.learning_hours`), Recallic refits its ranking from that feedback and **keeps the new fit
 only if it ranks better on feedback it was not fitted on** (`learning` in `config.yaml`):
 
 * nothing happens until 30 recalls have feedback, and then only when 20 new ones have arrived;

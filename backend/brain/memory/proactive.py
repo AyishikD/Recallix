@@ -2,7 +2,7 @@
 Proactive recall: memories an agent should keep in mind for a new message, without a question.
 
 Agents rarely know *when* to look something up: "book a table at the Thai place" does not ask
-"what am I allergic to?", but the allergy matters. Recallix maps situations in the message to
+"what am I allergic to?", but the allergy matters. Recallic maps situations in the message to
 the kinds of facts that matter there, then returns this user's current facts of those kinds
 (visible to the asking agent), each with the reason it was surfaced.
 

@@ -2,7 +2,7 @@
 Test fixtures.
 
 * The real C++ engine binary is started once per session on a free port with a
-  random RECALLIX_INTERNAL_KEY (set RECALLIX_ENGINE_BIN, default
+  random RECALLIC_INTERNAL_KEY (set RECALLIC_ENGINE_BIN, default
   backend/infra_cpp/build/memory_service). Tests needing it are skipped if it
   has not been built.
 * Every test gets a fresh storage root and fresh singletons.
@@ -25,7 +25,7 @@ import requests
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-os.environ.setdefault("RECALLIX_INTERNAL_KEY", secrets.token_hex(16))
+os.environ.setdefault("RECALLIC_INTERNAL_KEY", secrets.token_hex(16))
 
 
 def hash_embedding(text, dim=64):
@@ -51,8 +51,8 @@ class EngineProcess:
         self.proc = None
 
     def start(self):
-        env = dict(os.environ, RECALLIX_INTERNAL_KEY=self.key, RECALLIX_ENGINE_PORT=str(self.port),
-                   RECALLIX_ENGINE_HOST="127.0.0.1")
+        env = dict(os.environ, RECALLIC_INTERNAL_KEY=self.key, RECALLIC_ENGINE_PORT=str(self.port),
+                   RECALLIC_ENGINE_HOST="127.0.0.1")
         self.proc = subprocess.Popen([self.binary], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
         deadline = time.time() + 10
         while time.time() < deadline:
@@ -81,7 +81,7 @@ class EngineProcess:
 
 @pytest.fixture(scope="session")
 def engine_process():
-    binary = os.environ.get("RECALLIX_ENGINE_BIN", str(ROOT / "backend/infra_cpp/build/memory_service"))
+    binary = os.environ.get("RECALLIC_ENGINE_BIN", str(ROOT / "backend/infra_cpp/build/memory_service"))
     if not os.path.exists(binary):
         pytest.skip(f"engine binary not built ({binary})")
     eng = EngineProcess(binary)
@@ -97,7 +97,7 @@ def hermetic(tmp_path, monkeypatch):
     import backend.brain.models.model_router as mr
 
     from backend.api.middleware import auth
-    monkeypatch.setenv("RECALLIX_STORAGE_ROOT", str(tmp_path / "storage"))
+    monkeypatch.setenv("RECALLIC_STORAGE_ROOT", str(tmp_path / "storage"))
     # the shipped ranking fit belongs to the default embedding model; the hash embedder has its own
     from backend.tools.sandbox import install_hash_fits
     (tmp_path / "storage").mkdir(parents=True, exist_ok=True)
@@ -123,8 +123,8 @@ def hermetic(tmp_path, monkeypatch):
 @pytest.fixture
 def engine(engine_process, monkeypatch):
     from backend import settings
-    monkeypatch.setenv("RECALLIX_INTERNAL_KEY", engine_process.key)
-    monkeypatch.setenv("RECALLIX_ENGINE_URL", engine_process.url)
+    monkeypatch.setenv("RECALLIC_INTERNAL_KEY", engine_process.key)
+    monkeypatch.setenv("RECALLIC_ENGINE_URL", engine_process.url)
     settings.reload()
     engine_process.post("/drop_all")
     return engine_process

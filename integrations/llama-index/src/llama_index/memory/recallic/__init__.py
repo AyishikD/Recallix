@@ -1,3 +1,3 @@
-from llama_index.memory.recallix.base import RecallixMemoryBlock
+from llama_index.memory.recallic.base import RecallicMemoryBlock
 
-__all__ = ["RecallixMemoryBlock"]
+__all__ = ["RecallicMemoryBlock"]

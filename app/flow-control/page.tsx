@@ -39,7 +39,7 @@ const RECALL: Stage[] = [
       code: `relevance = sigmoid(w · features)   # returned per memory as "explain"` },
     { title: "Keep facts current", where: "Python", detail: "Memories stating the same fact are walked in time order: newer values win, and “X is not V” removes V only.",
       code: `Dec 12  ->  moved to Dec 18  ->  "not Dec 12"   =>   Dec 18` },
-    { title: "Check the answer", where: "QA model", detail: "A small reading-comprehension model (SQuAD 2.0) reads the memories in rank order, with “I” resolved to whoever said it, and stops at the first that contains an answer. If none does, Recallix declines. The threshold can be calibrated on your own questions, with a certificate.",
+    { title: "Check the answer", where: "QA model", detail: "A small reading-comprehension model (SQuAD 2.0) reads the memories in rank order, with “I” resolved to whoever said it, and stops at the first that contains an answer. If none does, Recallic declines. The threshold can be calibrated on your own questions, with a certificate.",
       code: `margin = best answer span − “no answer”\nread 1, then 2 at a time; stop at margin ≥ threshold\nno memory passes  =>  status ABSTAINED` },
     { title: "Check who it’s about", where: "QA model", detail: "If the question names one of the people in the conversation, the reader asks it again about each other person. A memory that “answers” just as well for someone else is not evidence about this person.",
       code: `contrast = margin(“…Bob…”) − max margin(“…Alice…”, …)\ncontrast ≤ 0  =>  not about Bob; keep looking or decline` },
@@ -49,7 +49,7 @@ const RECALL: Stage[] = [
 
 const LEARNING: Stage[] = [
     { title: "Log", where: "SQLite", detail: "Each recall records the signals of its top candidates.", code: `recall_log.log(recall_id, user_id, ranked[:20])` },
-    { title: "Feedback", where: "API", detail: "Tell Recallix which results helped; the rest become negatives.", code: `POST /memory/feedback {"recall_id": "...", "relevant_memory_ids": [42]}` },
+    { title: "Feedback", where: "API", detail: "Tell Recallic which results helped; the rest become negatives.", code: `POST /memory/feedback {"recall_id": "...", "relevant_memory_ids": [42]}` },
     { title: "Refit", where: "Python", detail: "Ranking and importance weights are refit from your own usage, starting from documented priors. New models load without a restart.",
       code: `python -m backend.brain.memory_ranking.fit_ranker --from-db` },
 ];

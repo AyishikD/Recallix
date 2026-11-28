@@ -1,4 +1,4 @@
-"""Adapters for Recallix and the two classic baselines (vector search, BM25)."""
+"""Adapters for Recallic and the two classic baselines (vector search, BM25)."""
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -12,7 +12,7 @@ sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "eval" / "benchmarks"))
 
 
-class _RecallixShared:
+class _RecallicShared:
     """One sandbox, one ingest and one recall per question, shared by the served and ranked views."""
     _instances = {}
 
@@ -53,10 +53,10 @@ class _RecallixShared:
             self._instances.pop(embedder, None)
 
 
-class Recallix(MemorySystem):
+class Recallic(MemorySystem):
     """
-    Recallix in a sandbox (temporary storage, in-process exact vector engine).
-    mode="served": what Recallix returns (after the answer check; may decline).
+    Recallic in a sandbox (temporary storage, in-process exact vector engine).
+    mode="served": what Recallic returns (after the answer check; may decline).
     mode="ranked": its full ranking, ignoring the decline decision.
     Both views share one ingest and one recall per question.
     """
@@ -65,7 +65,7 @@ class Recallix(MemorySystem):
         from backend.brain.features.facts import EXTRACTOR_VERSION
         self.name = "recallix" if mode == "served" else "recallix-ranked"
         self.mode, self.embedder = mode, embedder
-        self.shared = _RecallixShared.get(embedder)
+        self.shared = _RecallicShared.get(embedder)
         self.config = {"embedder": embedder, "mode": mode, "extractor": EXTRACTOR_VERSION, "llm_calls": 0}
 
     def add_conversation(self, user, turns):

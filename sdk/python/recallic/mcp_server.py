@@ -1,19 +1,19 @@
 """
-Recallix as an MCP server: give Claude Desktop, Cursor, or any Model Context Protocol
+Recallic as an MCP server: give Claude Desktop, Cursor, or any Model Context Protocol
 client a memory that you own and that works with every model.
 
-    RECALLIX_API_KEY=rx_... python -m recallix.mcp_server
+    RECALLIC_API_KEY=rx_... python -m recallic.mcp_server
 
 Environment:
-    RECALLIX_API_KEY    your Recallix API key (required)
-    RECALLIX_URL        API base URL (default http://localhost:8000)
-    RECALLIX_AGENT_ID   agent name for memories written through this client (default "mcp")
+    RECALLIC_API_KEY    your Recallic API key (required)
+    RECALLIC_URL        API base URL (default http://localhost:8000)
+    RECALLIC_AGENT_ID   agent name for memories written through this client (default "mcp")
 
 Claude Desktop / Cursor configuration (mcpServers):
 
-    "recallix": {
-      "command": "python", "args": ["-m", "recallix.mcp_server"],
-      "env": {"RECALLIX_API_KEY": "rx_...", "RECALLIX_AGENT_ID": "claude-desktop"}
+    "recallic": {
+      "command": "python", "args": ["-m", "recallic.mcp_server"],
+      "env": {"RECALLIC_API_KEY": "rx_...", "RECALLIC_AGENT_ID": "claude-desktop"}
     }
 
 Memories written by one client with memory_type "shared" are visible to every client and
@@ -26,11 +26,11 @@ import json
 import os
 import sys
 
-SERVER_INFO = {"name": "recallix", "version": "1.0.0"}
+SERVER_INFO = {"name": "recallic", "version": "1.0.0"}
 SUPPORTED_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
 
 INSTRUCTIONS = (
-    "Recallix is the user's long-term memory. Call recall_memory before answering questions that may "
+    "Recallic is the user's long-term memory. Call recall_memory before answering questions that may "
     "depend on what the user told you earlier; if its status is ABSTAINED or NO_MATCH, say you don't know "
     "rather than guessing. Call store_memory when the user shares a durable fact, preference or decision. "
     "When a recalled memory was what answered the user, call confirm_answer. When the user corrects something "
@@ -58,7 +58,7 @@ TOOLS = [
                          "description": "shared: visible to all of the user's agents; private: only this one."}},
          "required": ["content"]}},
     {"name": "confirm_answer",
-     "description": "Tell Recallix which recalled memories actually answered the question (improves ranking and "
+     "description": "Tell Recallic which recalled memories actually answered the question (improves ranking and "
                     "makes similar future questions find them).",
      "inputSchema": {"type": "object", "properties": {
          "recall_id": {"type": "string"},
@@ -81,7 +81,7 @@ TOOLS = [
      "inputSchema": {"type": "object", "properties": {"memory_id": {"type": "integer"}},
                      "required": ["memory_id"]}},
     {"name": "export_memories",
-     "description": "Export all of the user's memories in the open recallix-memory format.",
+     "description": "Export all of the user's memories in the open recallic-memory format.",
      "inputSchema": {"type": "object", "properties": {}}},
 ]
 
@@ -90,7 +90,7 @@ def _log(*args):
     print(*args, file=sys.stderr, flush=True)
 
 
-class RecallixMCP:
+class RecallicMCP:
     def __init__(self, memory, agent_id="mcp"):
         self.memory, self.agent_id = memory, agent_id
 
@@ -157,7 +157,7 @@ class RecallixMCP:
                 except KeyError:
                     return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32602, "message": f"unknown tool {params.get('name')!r}"}}
                 except Exception as e:  # tool failures are reported to the model, not as protocol errors
-                    result = {"content": [{"type": "text", "text": f"Recallix error: {e}"}], "isError": True}
+                    result = {"content": [{"type": "text", "text": f"Recallic error: {e}"}], "isError": True}
             else:
                 return {"jsonrpc": "2.0", "id": mid, "error": {"code": -32601, "message": f"method not found: {method}"}}
         except Exception as e:
@@ -184,13 +184,13 @@ class RecallixMCP:
 
 def main():
     from .memory import Memory
-    key = os.environ.get("RECALLIX_API_KEY")
+    key = (os.environ.get("RECALLIC_API_KEY") or os.environ.get("RECALLIX_API_KEY"))
     if not key:
-        _log("RECALLIX_API_KEY is not set")
+        _log("RECALLIC_API_KEY is not set")
         return 1
-    memory = Memory(api_key=key, base_url=os.environ.get("RECALLIX_URL", "http://localhost:8000"))
-    _log(f"recallix MCP server ready ({os.environ.get('RECALLIX_URL', 'http://localhost:8000')})")
-    RecallixMCP(memory, os.environ.get("RECALLIX_AGENT_ID", "mcp")).serve()
+    memory = Memory(api_key=key, base_url=(os.environ.get("RECALLIC_URL") or os.environ.get("RECALLIX_URL") or "http://localhost:8000"))
+    _log(f"recallic MCP server ready ({os.environ.get('RECALLIC_URL') or os.environ.get('RECALLIX_URL') or 'http://localhost:8000'})")
+    RecallicMCP(memory, (os.environ.get("RECALLIC_AGENT_ID") or os.environ.get("RECALLIX_AGENT_ID") or "mcp")).serve()
     return 0
 
 

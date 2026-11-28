@@ -11,12 +11,12 @@ scored directly, without an answer-generating LLM or an LLM judge:
 
 Categories 1-4 are answerable. Category 5 is adversarial (the question presumes
 something the conversation never says); the right behaviour is to decline, so
-for Recallix we report how often it abstains there, and how often it wrongly
+for Recallic we report how often it abstains there, and how often it wrongly
 abstains on answerable questions. Baselines cannot abstain.
 
 Systems, all fed the identical text for every turn ("[date] Speaker: text"):
   recallix   full store + recall pipeline (as served, with abstention)
-  recallix_ranked  Recallix's ranking before truth arbitration and abstention
+  recallix_ranked  Recallic's ranking before truth arbitration and abstention
   dense      cosine top-k over the same embeddings (brute force)
   bm25       Okapi BM25 (k1, b configurable; defaults are the standard 1.2 / 0.75)
 
@@ -241,7 +241,7 @@ def main():
         embed_calls_ingest += env.embed_calls - before
 
         t0 = time.time()
-        vecs = np.vstack([mm.semantic.embed(t) for t in texts])  # cached: same embeddings Recallix stored
+        vecs = np.vstack([mm.semantic.embed(t) for t in texts])  # cached: same embeddings Recallic stored
         timing["dense_ingest_s"] += time.time() - t0
         t0 = time.time()
         bm25 = BM25(texts, args.bm25_k1, args.bm25_b)
@@ -321,7 +321,7 @@ def main():
         name = CATEGORY_NAMES.get(cat, str(cat))
         print(f"  {name:>12}: " + "  ".join(f"{s}={results['systems'][s][name][f'recall@{kmax}']:.3f}" for s in systems))
     a = results["abstention"]
-    print(f"Recallix abstention: declined {a['adversarial_declined']:.2%} of {a['n_adversarial']} adversarial questions; "
+    print(f"Recallic abstention: declined {a['adversarial_declined']:.2%} of {a['n_adversarial']} adversarial questions; "
           f"wrongly declined {a['answerable_wrongly_declined']:.2%} of {a['n_answerable']} answerable")
     for name, aa in results["abstention_analysis"].items():
         print(f"answerable-vs-adversarial AUC of {name}: {aa['auc']:.3f}  ("

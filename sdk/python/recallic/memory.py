@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Optional
 
-from .client import MemoryClient, RecallixError
+from .client import MemoryClient, RecallicError
 
 
 class Memory:
     """
-    Recallix client.
+    Recallic client.
 
-        mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
+        mem = Memory(api_key=os.environ["RECALLIC_API_KEY"])
         mem.store("I live in Pune.")
         hits = mem.recall("Where do I live?")
 
@@ -47,7 +47,7 @@ class Memory:
                 out = self.client.request("POST", "/memory/store_batch", data={
                     "items": chunk, "agent_id": agent_id, "memory_type": memory_type, "user_id": user_id})
                 results.extend(out["results"])
-            except RecallixError as e:
+            except RecallicError as e:
                 if e.status not in (404, 405):
                     raise
                 for row in sorted(chunk, key=lambda r: (r.get("timestamp") is None, r.get("timestamp") or 0)):
@@ -83,19 +83,19 @@ class Memory:
         return self.client.request("POST", "/memory/recall", data=data)
 
     def feedback(self, recall_id: str, relevant_memory_ids: List[int], user_id: Optional[str] = None) -> Dict[str, Any]:
-        """Tell Recallix which recalled memories were useful (trains the ranker)."""
+        """Tell Recallic which recalled memories were useful (trains the ranker)."""
         return self.client.request("POST", "/memory/feedback", data={
             "recall_id": recall_id, "relevant_memory_ids": relevant_memory_ids, "user_id": user_id})
 
     def used(self, recall: Dict[str, Any], *memories: Any, user_id: Optional[str] = None) -> Dict[str, Any]:
         """
-        One-line feedback after a recall, so Recallix learns from use:
+        One-line feedback after a recall, so Recallic learns from use:
 
             out = mem.recall("Where do I live?")
             mem.used(out)                       # the first memory answered it
             mem.used(out, out["memories"][2])   # or name the memories (or ids) your app actually used
 
-        Recallix refits its ranking from this on a schedule and keeps a new fit only if it is better.
+        Recallic refits its ranking from this on a schedule and keeps a new fit only if it is better.
         """
         chosen = memories or recall.get("memories", [])[:1]
         ids = [int(m["id"] if isinstance(m, dict) else m) for m in chosen]
@@ -112,12 +112,12 @@ class Memory:
             "message": message, "agent_id": agent_id, "limit": limit, "user_id": user_id})
 
     def export(self, user_id: Optional[str] = None) -> Dict[str, Any]:
-        """All memories in the open "recallix-memory" format (portable to another Recallix)."""
+        """All memories in the open "recallic-memory" format (portable to another Recallic)."""
         return self.client.request("GET", "/memory/export", params=_params(user_id=user_id))
 
-    def import_memories(self, data: Any, format: str = "recallix", agent_id: str = "default_agent",
+    def import_memories(self, data: Any, format: str = "recallic", agent_id: str = "default_agent",
                         memory_type: str = "private", user_id: Optional[str] = None) -> Dict[str, Any]:
-        """Import a Recallix export, a Mem0 export (format="mem0") or text, one memory per line (format="text")."""
+        """Import a Recallic export, a Mem0 export (format="mem0") or text, one memory per line (format="text")."""
         return self.client.request("POST", "/memory/import", data={
             "format": format, "data": data, "agent_id": agent_id, "memory_type": memory_type, "user_id": user_id})
 

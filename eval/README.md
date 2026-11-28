@@ -1,4 +1,4 @@
-# Recallix evaluation
+# Recallic evaluation
 
 Every number published in `eval/results/` (and on the website's Benchmarks page)
 is produced by the commands below. Nothing is entered by hand.
@@ -40,7 +40,7 @@ for cfg in "100000 128 clustered 50" "100000 128 uniform 50" "100000 128 uniform
 done > eval/results/hnsw_reference.jsonl
 
 # memory pipeline, against the real engine
-export RECALLIX_INTERNAL_KEY=$(python -c "import secrets;print(secrets.token_hex(16))") RECALLIX_ENGINE_PORT=18431
+export RECALLIC_INTERNAL_KEY=$(python -c "import secrets;print(secrets.token_hex(16))") RECALLIC_ENGINE_PORT=18431
 backend/infra_cpp/build/memory_service & 
 for split in dev test; do
   for e in hash st:BAAI/bge-small-en-v1.5; do
@@ -71,7 +71,7 @@ Without `--engine-url` the harness uses an in-process brute-force engine (hermet
 ```bash
 E=st:BAAI/bge-small-en-v1.5; L=/tmp/locomo/locomo10.json
 python eval/run_eval.py --fit-importance --embedder $E
-RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --fit-ranker --locomo $L --embedder $E
+RECALLIC_ANSWER_CHECK=0 python eval/run_eval.py --fit-ranker --locomo $L --embedder $E
 python eval/run_eval.py --fit-answer-check deepset/minilm-uncased-squad2,deepset/tinyroberta-squad2,deepset/roberta-base-squad2,deepset/deberta-v3-base-squad2 \
     --locomo $L --embedder $E          # then set recall.answer_check.model in config.yaml to the chosen model
 ```
@@ -82,7 +82,7 @@ The model-free `hash` embedder used by CI and offline sandboxes therefore has it
 the test fixtures install automatically:
 
 ```bash
-RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --fit-ranker --locomo $L --embedder hash
+RECALLIC_ANSWER_CHECK=0 python eval/run_eval.py --fit-ranker --locomo $L --embedder hash
 ```
 
 How the default embedding model was chosen (8 candidates, development data only):
@@ -111,10 +111,10 @@ python eval/benchmarks/longmemeval.py --data /tmp/lme/longmemeval_s_cleaned.json
     --engine-url http://127.0.0.1:18431 --storage /tmp/lme_store --json eval/results/longmemeval_s_bge-small-en-v1.5.json
 # Storing the 246,750 turns takes ~3.5 h on an M4; --storage keeps them. Recall-only re-runs then take minutes:
 python eval/benchmarks/longmemeval.py ... --storage /tmp/lme_store --reuse [--deep] --json ...
-# The vector-search and BM25 baselines do not depend on Recallix settings and re-embedding them
+# The vector-search and BM25 baselines do not depend on Recallic settings and re-embedding them
 # takes ~1 h; copy them from an earlier result file instead (a re-run then takes ~5-8 min):
 python eval/benchmarks/longmemeval.py ... --reuse --baselines-from eval/results/longmemeval_s_bge-small-en-v1.5.json --json ...
-# Try a setting without editing config.yaml: RECALLIX_CONFIG=/path/to/changed-copy.yaml
+# Try a setting without editing config.yaml: RECALLIC_CONFIG=/path/to/changed-copy.yaml
 ```
 
 ## CI
@@ -123,7 +123,7 @@ python eval/benchmarks/longmemeval.py ... --reuse --baselines-from eval/results/
 without torch) and fails if any metric falls below `results/gate_dev_hash.json`, produced by:
 
 ```bash
-RECALLIX_ANSWER_CHECK=0 python eval/run_eval.py --split dev --embedder hash \
+RECALLIC_ANSWER_CHECK=0 python eval/run_eval.py --split dev --embedder hash \
     --only facts,schemas,importance,retrieval,legacy --json eval/results/gate_dev_hash.json
 ```
 
@@ -163,7 +163,7 @@ redistributed: build the index locally with `python -m backend.tools.build_infer
 --atomic <folder>`) and verifies each statement with an NLI model
 (`MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli`, MIT).
 
-Measured on `eval/data/implicit` (119 sentences written by the Recallix author; every verified
+Measured on `eval/data/implicit` (119 sentences written by the Recallic author; every verified
 inference labelled in `labels.jsonl` by the same author — single annotator, not yet reviewed): precision **51%** at question-time and **71%** at
 store-time settings — below the 90% required to ship it on. Re-measure any change with
 `python eval/implicit_precision.py` (it lists new, unlabelled inferences to label first).

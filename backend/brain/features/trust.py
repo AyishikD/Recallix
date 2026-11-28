@@ -1,7 +1,7 @@
 """
 Trust score: one calibrated probability that a served memory actually answers the question.
 
-Recallix already computes several signals per served memory — meaning relevance, the
+Recallic already computes several signals per served memory — meaning relevance, the
 reader's answer margin, whether an answer span was found, the who-said-what contrast, and
 how likely its facts are to still be true. A logistic model combines them into
 

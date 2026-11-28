@@ -8,7 +8,7 @@ import { Eyebrow, Headline, Lede, Reveal, Section } from "@/components/site/ui";
 import { MemoryField } from "@/components/site/story";
 import { API_BASE, memoryApi } from "@/lib/api";
 
-/* Live view of a running Recallix API. Nothing here is sample data: with no API reachable it says so. */
+/* Live view of a running Recallic API. Nothing here is sample data: with no API reachable it says so. */
 
 const POLL_MS = 3000;
 const HISTORY = 20;
@@ -71,9 +71,9 @@ export default function DashboardPage() {
                 </div>
                 {reachable === false && (
                     <Lede className="mt-6">
-                        No Recallix API answered. Start one locally (see Developers) and build this site with
-                        <code className="mx-1">NEXT_PUBLIC_RECALLIX_API_URL</code> and a user key in
-                        <code className="mx-1">NEXT_PUBLIC_RECALLIX_API_KEY</code> — never for a public deployment.
+                        No Recallic API answered. Start one locally (see Developers) and build this site with
+                        <code className="mx-1">NEXT_PUBLIC_RECALLIC_API_URL</code> and a user key in
+                        <code className="mx-1">NEXT_PUBLIC_RECALLIC_API_KEY</code> — never for a public deployment.
                     </Lede>
                 )}
             </Section>

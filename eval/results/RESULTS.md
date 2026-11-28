@@ -45,7 +45,7 @@ Generated 2026-11-24 17:44 UTC from commit `d62eaee8` on Apple M4 (Darwin). Rege
 | dense | 0.578 | 0.742 | 0.864 | 0.829 | 0.598 | 1.000 | 0.667 | 0.914 | 0.646 |
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
 
-Recallix declined 60.0% of 30 unanswerable questions and wrongly declined 20.0% of 470 answerable ones (AUC: answer margin 0.803, top relevance 0.639).
+Recallic declined 60.0% of 30 unanswerable questions and wrongly declined 20.0% of 470 answerable ones (AUC: answer margin 0.803, top relevance 0.639).
 
 ## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — `longmemeval_s_bge-small-en-v1.5.json`
 
@@ -56,7 +56,7 @@ Recallix declined 60.0% of 30 unanswerable questions and wrongly declined 20.0% 
 | dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
 
-Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
+Recallic declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
 
 ## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — `longmemeval_s_bge-small-en-v1.5_before-retrieval-fixes.json`
 
@@ -67,7 +67,7 @@ Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% 
 | dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
 
-Recallix declined 53.3% of 30 unanswerable questions and wrongly declined 18.3% of 470 answerable ones (AUC: answer margin 0.782, top relevance 0.672).
+Recallic declined 53.3% of 30 unanswerable questions and wrongly declined 18.3% of 470 answerable ones (AUC: answer margin 0.782, top relevance 0.672).
 
 ## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — deep recall — `longmemeval_s_bge-small-en-v1.5_deep.json`
 
@@ -78,7 +78,7 @@ Recallix declined 53.3% of 30 unanswerable questions and wrongly declined 18.3% 
 | dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
 
-Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
+Recallic declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
 
 ## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — results kept on decline (`recall.keep_results_on_decline`) — `longmemeval_s_bge-small-en-v1.5_keep-on-decline.json`
 
@@ -89,7 +89,7 @@ Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% 
 | dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
 
-Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
+Recallic declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
 
 ## LongMemEval_S (fresh held-out: 500 questions, 246,750 turns; embedder st:BAAI/bge-small-en-v1.5, real engine, answer check deepset/roberta-base-squad2; no LLM) — deep recall — results kept on decline (`recall.keep_results_on_decline`) — `longmemeval_s_bge-small-en-v1.5_keep-on-decline_deep.json`
 
@@ -100,7 +100,7 @@ Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% 
 | dense | 0.648 | 0.798 | 0.908 | 0.903 | 0.737 | 0.946 | 0.828 | 0.898 | 0.674 |
 | bm25 | 0.660 | 0.767 | 0.851 | 0.889 | 0.636 | 0.911 | 0.444 | 0.930 | 0.753 |
 
-Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
+Recallic declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% of 470 answerable ones (AUC: answer margin 0.793, top relevance 0.673).
 
 ## LoCoMo retrieval, dev split (5 conversations, 2760 turns, 999 questions; embedder st:sentence-transformers/all-MiniLM-L6-v2, real engine; no LLM) — dev conversations were used for fitting
 
@@ -111,7 +111,7 @@ Recallix declined 56.7% of 30 unanswerable questions and wrongly declined 16.6% 
 | dense | 0.440 | 0.540 | 0.611 | 0.330 | 0.654 | 0.282 | 0.597 |
 | bm25 | 0.486 | 0.561 | 0.616 | 0.233 | 0.722 | 0.273 | 0.642 |
 
-Recallix declined 0.8% of 237 adversarial (unanswerable) questions and wrongly declined 0.4% of 762 answerable ones.
+Recallic declined 0.8% of 237 adversarial (unanswerable) questions and wrongly declined 0.4% of 762 answerable ones.
 
 ## LoCoMo retrieval, dev split (5 conversations, 2760 turns, 999 questions; embedder st:BAAI/bge-small-en-v1.5, real engine; no LLM) — dev conversations were used for fitting
 
@@ -122,7 +122,7 @@ Recallix declined 0.8% of 237 adversarial (unanswerable) questions and wrongly d
 | dense | 0.512 | 0.602 | 0.660 | 0.420 | 0.736 | 0.339 | 0.641 |
 | bm25 | 0.486 | 0.561 | 0.616 | 0.233 | 0.722 | 0.273 | 0.642 |
 
-Recallix declined 32.5% of 237 adversarial (unanswerable) questions and wrongly declined 7.9% of 762 answerable ones.
+Recallic declined 32.5% of 237 adversarial (unanswerable) questions and wrongly declined 7.9% of 762 answerable ones.
 
 ## LoCoMo retrieval, test split (5 conversations, 3122 turns, 987 questions; embedder st:sentence-transformers/all-MiniLM-L6-v2, real engine; no LLM) — held out from fitting, but evaluated repeatedly during development
 
@@ -133,7 +133,7 @@ Recallix declined 32.5% of 237 adversarial (unanswerable) questions and wrongly 
 | dense | 0.355 | 0.458 | 0.532 | 0.284 | 0.458 | 0.257 | 0.536 |
 | bm25 | 0.449 | 0.527 | 0.587 | 0.208 | 0.543 | 0.293 | 0.651 |
 
-Recallix declined 1.0% of 209 adversarial (unanswerable) questions and wrongly declined 0.0% of 778 answerable ones.
+Recallic declined 1.0% of 209 adversarial (unanswerable) questions and wrongly declined 0.0% of 778 answerable ones.
 
 ## LoCoMo retrieval, test split (5 conversations, 3122 turns, 987 questions; embedder st:BAAI/bge-small-en-v1.5, real engine; no LLM) — held out from fitting, but evaluated repeatedly during development
 
@@ -144,4 +144,4 @@ Recallix declined 1.0% of 209 adversarial (unanswerable) questions and wrongly d
 | dense | 0.474 | 0.570 | 0.653 | 0.393 | 0.584 | 0.351 | 0.646 |
 | bm25 | 0.449 | 0.527 | 0.587 | 0.208 | 0.543 | 0.293 | 0.651 |
 
-Recallix declined 31.6% of 209 adversarial (unanswerable) questions and wrongly declined 9.0% of 778 answerable ones.
+Recallic declined 31.6% of 209 adversarial (unanswerable) questions and wrongly declined 9.0% of 778 answerable ones.

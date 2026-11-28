@@ -2,7 +2,7 @@
 Implicit facts: what a memory implies but does not say (no LLM).
 
 "I just got back from my sister's wedding in Goa" does not say "my sister got married",
-but it implies it. Recallix finds such implications in two steps:
+but it implies it. Recallic finds such implications in two steps:
 
   1. propose  ATOMIC 2020 commonsense (backend/tools/build_inference_rules.py) maps events
               to their effects. The memory is matched to the closest event patterns by

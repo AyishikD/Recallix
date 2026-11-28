@@ -9,10 +9,10 @@ Aggregation dev set: questions whose answer is spread over several dated message
 Each scenario also has traps: questions that look answerable but are not (never mentioned, only planned,
 someone else's event), which should be declined.
 
-Why: on LongMemEval, most answerable questions Recallix declined with the evidence already in its top 10
+Why: on LongMemEval, most answerable questions Recallic declined with the evidence already in its top 10
 were counting or ordering questions. Fixes are designed on THIS set (dev) and LoCoMo dev; LongMemEval is
 run once at the end. The scenarios are written from a task description only, by models that never see
-Recallix's code, rules or results: an open-weight model (Groq, openai/gpt-oss-120b, Apache 2.0) for most,
+Recallic's code, rules or results: an open-weight model (Groq, openai/gpt-oss-120b, Apache 2.0) for most,
 Gemini 2.5 Flash for agg_counting_00-09 (each draft records its "model"). Every scenario is then reviewed
 (review.jsonl records each verdict and every change) before it enters scenarios.jsonl.
 
@@ -332,7 +332,7 @@ def run(args):
     run_eval.Env(args.embedder, args.engine_url)
     if args.config:
         import os
-        os.environ["RECALLIX_CONFIG"] = str(Path(args.config).resolve())
+        os.environ["RECALLIC_CONFIG"] = str(Path(args.config).resolve())
         from backend import settings
         settings.reload()
     from backend.api.deps import get_memory_manager, reset

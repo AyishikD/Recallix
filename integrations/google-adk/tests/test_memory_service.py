@@ -1,6 +1,6 @@
 """
-Against a running Recallix server (skipped otherwise):
-    RECALLIX_URL=http://127.0.0.1:8000 RECALLIX_SERVICE_KEY=rx_... pytest integrations/google-adk/tests
+Against a running Recallic server (skipped otherwise):
+    RECALLIC_URL=http://127.0.0.1:8000 RECALLIC_SERVICE_KEY=rx_... pytest integrations/google-adk/tests
 """
 import asyncio
 import os
@@ -9,8 +9,8 @@ import uuid
 
 import pytest
 
-URL, KEY = os.environ.get("RECALLIX_URL"), os.environ.get("RECALLIX_SERVICE_KEY")
-pytestmark = pytest.mark.skipif(not (URL and KEY), reason="needs a running Recallix (RECALLIX_URL, RECALLIX_SERVICE_KEY)")
+URL, KEY = os.environ.get("RECALLIC_URL"), os.environ.get("RECALLIC_SERVICE_KEY")
+pytestmark = pytest.mark.skipif(not (URL and KEY), reason="needs a running Recallic (RECALLIC_URL, RECALLIC_SERVICE_KEY)")
 
 
 def run(coro):
@@ -32,8 +32,8 @@ def session_with(app, user, turns):
 
 @pytest.fixture
 def memory():
-    from recallix_adk import RecallixMemoryService
-    return RecallixMemoryService(api_key=KEY, base_url=URL)
+    from recallic_adk import RecallicMemoryService
+    return RecallicMemoryService(api_key=KEY, base_url=URL)
 
 
 def test_a_session_is_stored_with_its_dates_and_found_again(memory):

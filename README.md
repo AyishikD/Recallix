@@ -1,9 +1,12 @@
-# Recallix
+# Recallic
+
+*Formerly Recallix: same project, new name. Old setting names (`RECALLIX_*`), export files and the
+`recallix-mcp` command keep working.*
 
 Persistent memory for AI agents: store what a user tells any of their agents, recall it
 later by meaning, keep facts up to date, and say "I don't know" instead of guessing.
 
-[![Watch the 50-second demo: a week of messy texting, three answers, and one honest decline](public/videos/recallix-demo-poster.jpg)](https://recallix.vercel.app/videos/recallix-demo.mp4)
+[![Watch the 50-second demo: a week of messy texting, three answers, and one honest decline](public/videos/recallic-demo-poster.jpg)](https://www.recallic.com/videos/recallic-demo.mp4)
 
 *50-second demo, narrated (click to play). Every message, answer and timing in it comes from a real run.*
 
@@ -42,11 +45,11 @@ evidence in the top 10:
 
 | recall@10 | overall | multi-session | temporal | knowledge update | single-session user | preference |
 |---|---|---|---|---|---|---|
-| Recallix ranking | 0.860 | 0.748 | **0.838** | 0.963 | 0.977 | 0.717 |
-| Recallix, served (default) | 0.727 | 0.559 | 0.622 | 0.928 | 0.953 | 0.744 |
-| Recallix, served (deep recall) | 0.763 | 0.649 | 0.668 | 0.965 | 0.922 | 0.722 |
-| Recallix, served, declines keep their results* | 0.838 | 0.718 | 0.786 | 0.942 | **0.984** | 0.811 |
-| Recallix, served, deep recall + declines keep their results* | **0.874** | **0.808** | 0.833 | **0.979** | 0.953 | 0.789 |
+| Recallic ranking | 0.860 | 0.748 | **0.838** | 0.963 | 0.977 | 0.717 |
+| Recallic, served (default) | 0.727 | 0.559 | 0.622 | 0.928 | 0.953 | 0.744 |
+| Recallic, served (deep recall) | 0.763 | 0.649 | 0.668 | 0.965 | 0.922 | 0.722 |
+| Recallic, served, declines keep their results* | 0.838 | 0.718 | 0.786 | 0.942 | **0.984** | 0.811 |
+| Recallic, served, deep recall + declines keep their results* | **0.874** | **0.808** | 0.833 | **0.979** | 0.953 | 0.789 |
 | Dense vectors (same embeddings) | 0.798 | 0.737 | 0.674 | 0.903 | 0.898 | **0.828** |
 | BM25 | 0.767 | 0.636 | 0.753 | 0.889 | 0.930 | 0.444 |
 
@@ -81,11 +84,11 @@ from fitting, but evaluated repeatedly during development). Evidence retrieved, 
 
 | recall@10 | overall | multi-hop | temporal | open-domain | single-hop |
 |---|---|---|---|---|---|
-| **Recallix** | **0.659** | 0.363 | **0.650** | 0.340 | **0.793** |
+| **Recallic** | **0.659** | 0.363 | **0.650** | 0.340 | **0.793** |
 | Dense vectors (same embeddings) | 0.570 | **0.393** | 0.584 | **0.351** | 0.646 |
 | BM25 | 0.527 | 0.208 | 0.543 | 0.293 | 0.651 |
 
-Recallix declined 31.6% of LoCoMo's 209 adversarial questions (they attribute something the
+Recallic declined 31.6% of LoCoMo's 209 adversarial questions (they attribute something the
 conversation did discuss to the wrong person) and wrongly declined 9.0% of the 778 answerable
 ones. Multi-hop questions, whose answer is spread over several messages, are the weak spot;
 deep recall (`deep=True`) raises them most. Measurements:
@@ -136,14 +139,14 @@ Diagrams: [`docs/architecture_high_level.puml`](docs/architecture_high_level.pum
 ```bash
 git clone https://github.com/Recallic/Recallic && cd Recallic
 docker compose up -d                                       # engine + API on localhost:8000
-docker compose logs recallix | grep -A1 "admin API key"    # printed once: save it
-docker compose exec recallix python -m backend.tools.keys create --user alice
-pip install recallix                                       # Python SDK + recallix-mcp
-npm install recallix                                       # TypeScript / Node 18+
+docker compose logs recallic | grep -A1 "admin API key"    # printed once: save it
+docker compose exec recallic python -m backend.tools.keys create --user alice
+pip install recallic                                       # Python SDK + recallic-mcp
+npm install recallic                                       # TypeScript / Node 18+
 ```
 
 ```python
-from recallix import Memory
+from recallic import Memory
 mem = Memory(api_key="rx_...")
 mem.store("I moved to Pune last month.")
 print(mem.recall("Where do I live?")["memories"][0]["content"])
@@ -166,10 +169,10 @@ python server.py                                # API on 127.0.0.1:8000
 Then create a key (`python -m backend.tools.keys create --user alice`) and use the
 [Python SDK](sdk/python) or [TypeScript SDK](sdk/typescript).
 Integrations: [Open WebUI](integrations/open-webui/README.md) (memory for every chat, one filter, no code),
-[Google ADK](integrations/google-adk/README.md) (`RecallixMemoryService`),
-[Haystack](integrations/haystack/README.md) (`RecallixMemoryStore`),
-[LlamaIndex](integrations/llama-index/README.md) (`RecallixMemoryBlock`) and the
-[Vercel AI SDK](integrations/vercel-ai/README.md) (`recallixMemory()` middleware). Full walkthrough:
+[Google ADK](integrations/google-adk/README.md) (`RecallicMemoryService`),
+[Haystack](integrations/haystack/README.md) (`RecallicMemoryStore`),
+[LlamaIndex](integrations/llama-index/README.md) (`RecallicMemoryBlock`) and the
+[Vercel AI SDK](integrations/vercel-ai/README.md) (`recallicMemory()` middleware). Full walkthrough:
 [`docs/quickstart.md`](docs/quickstart.md). Endpoints: [`docs/api_reference.md`](docs/api_reference.md).
 To try every endpoint from the browser, open **http://localhost:8000/docs**, click **Authorize** and
 paste your key (no SDK needed).
@@ -189,13 +192,13 @@ All settings live in [`config.yaml`](config.yaml). Secrets come only from the en
   printable characters.
 * Deleting a memory removes its vector, long-term copy and timeline entry. Clearing a user
   removes their data from every store.
-* The engine binds to localhost and refuses to start without `RECALLIX_INTERNAL_KEY`.
+* The engine binds to localhost and refuses to start without `RECALLIC_INTERNAL_KEY`.
 
 ## Development
 
 ```bash
 pip install -r requirements-dev.txt
-RECALLIX_ENGINE_BIN=backend/infra_cpp/build/memory_service python -m pytest tests
+RECALLIC_ENGINE_BIN=backend/infra_cpp/build/memory_service python -m pytest tests
 ctest --test-dir backend/infra_cpp/build --output-on-failure   # includes a ThreadSanitizer run
 python eval/run_eval.py --split dev -v
 ```
@@ -205,20 +208,20 @@ the C++ tests under ThreadSanitizer, the API/integration tests against the real 
 and an eval regression gate.
 
 `examples/multi_agent_handover.py` is the multi-agent demo (the agents use an LLM;
-Recallix does not).
+Recallic does not).
 
 ## License
 
-- **Recallix (server, engine, everything in this repository except the SDKs):**
+- **Recallic (server, engine, everything in this repository except the SDKs):**
   [Functional Source License 1.1, ALv2 Future License](LICENSE) (FSL-1.1-ALv2).
   - **What you may do:** use, modify and self-host it for anything, including inside your own commercial
     products.
   - **What you may not do:** offer it, or a substantially similar product built from it, as a competing
     commercial product or service.
   - **Each version becomes Apache 2.0** two years after release.
-- **Client SDKs** ([`sdk/python`](sdk/python), [`sdk/typescript`](sdk/typescript)), published as `recallix` on PyPI and
+- **Client SDKs** ([`sdk/python`](sdk/python), [`sdk/typescript`](sdk/typescript)), published as `recallic` on PyPI and
   npm: [Apache 2.0](sdk/python/LICENSE).
 - **Earlier releases:** versions up to commit `e5fddcd0` (2026-11-24) were released under Apache 2.0 and stay available
   under it.
 
-"Recallix" and its logo are trademarks of Ayishik Das; see [NOTICE](NOTICE).
+"Recallic" and its logo are trademarks of Ayishik Das; see [NOTICE](NOTICE).

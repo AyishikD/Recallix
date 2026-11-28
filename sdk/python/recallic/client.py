@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 import requests
 
 
-class RecallixError(RuntimeError):
+class RecallicError(RuntimeError):
     def __init__(self, status: int, detail: str):
         super().__init__(f"HTTP {status}: {detail}")
         self.status = status
@@ -21,7 +21,7 @@ class MemoryClient:
 
     def request(self, method: str, endpoint: str, data: Optional[Dict] = None,
                 params: Optional[Dict] = None) -> Dict[str, Any]:
-        """Returns the response's `data`. Raises RecallixError on HTTP errors."""
+        """Returns the response's `data`. Raises RecallicError on HTTP errors."""
         body = {k: v for k, v in data.items() if v is not None} if data else None
         res = self.session.request(method, f"{self.base_url}{endpoint}", json=body, params=params, timeout=self.timeout)
         if res.status_code >= 400:
@@ -29,5 +29,5 @@ class MemoryClient:
                 detail = res.json().get("detail", res.text)
             except ValueError:
                 detail = res.text
-            raise RecallixError(res.status_code, str(detail))
+            raise RecallicError(res.status_code, str(detail))
         return res.json().get("data")

@@ -1,23 +1,23 @@
-# recallix (TypeScript)
+# recallic (TypeScript)
 
-Client for [Recallix](https://github.com/Recallic/Recallic): an LLM-free memory layer for AI
-agents. Recallix runs on your own machine, needs no LLM calls, and declines instead of guessing.
+Client for [Recallic](https://github.com/Recallic/Recallic): an LLM-free memory layer for AI
+agents. Recallic runs on your own machine, needs no LLM calls, and declines instead of guessing.
 
 ```bash
-npm install recallix
+npm install recallic
 ```
 
-You need a running Recallix server. The quickest way is
+You need a running Recallic server. The quickest way is
 `docker compose up -d` in the [repository](https://github.com/Recallic/Recallic); see the quickstart there.
 
 ```ts
-import { Memory } from "recallix";
+import { Memory } from "recallic";
 
-const mem = new Memory({ apiKey: process.env.RECALLIX_API_KEY! });   // baseUrl defaults to http://localhost:8000
+const mem = new Memory({ apiKey: process.env.RECALLIC_API_KEY! });   // baseUrl defaults to http://localhost:8000
 await mem.store("I moved to Pune last month for a job at Infosys.");
 const out = await mem.recall("Where do I live?");
 console.log(out.status, out.memories.map((m) => m.content));
-await mem.used(out);                                                  // one line of feedback: Recallix learns from it on its own
+await mem.used(out);                                                  // one line of feedback: Recallic learns from it on its own
 ```
 
 How readily recall answers is one option (server 0.2.5 or newer; default `"balanced"`):
@@ -41,6 +41,8 @@ await mem.update(memoryId, "I moved to Mumbai in March.");
 
 ## Changes
 
+* **0.3.0**: renamed from `recallix` to **`recallic`**: `npm install recallic`, `import { Memory } from "recallic"`.
+  Nothing else changed.
 * **0.2.7**: `update(memoryId, content)` corrects a memory (`PUT /memory/{id}`).
 * **0.2.6**: `storeMany(items)` stores many messages in one request per 100 (`POST /memory/store_batch`);
   `store(content, { timestamp })` keeps when a message was originally said.

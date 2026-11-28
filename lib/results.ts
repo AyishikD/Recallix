@@ -128,9 +128,9 @@ export const signedPct = (x: number) => `${x >= 0 ? "+" : "−"}${Math.abs(Math.
 
 /**
  * The independent benchmark to headline: LongMemEval (fresh, held out) when published,
- * otherwise LoCoMo's test split. Returns overall recall@10 for Recallix's ranking
- * (`ranked`), for what Recallix serves after the answer check (`served`), and for
- * the baselines, plus abstention rates. Both Recallix numbers are shown on the site.
+ * otherwise LoCoMo's test split. Returns overall recall@10 for Recallic's ranking
+ * (`ranked`), for what Recallic serves after the answer check (`served`), and for
+ * the baselines, plus abstention rates. Both Recallic numbers are shown on the site.
  */
 export function headlineBenchmark() {
     if (longMemEval) {

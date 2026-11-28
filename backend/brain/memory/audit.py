@@ -41,7 +41,7 @@ class AuditLog:
 
     @staticmethod
     def user_hash(user_id):
-        return _h(f"recallix-user:{user_id}")
+        return _h(f"recallic-user:{user_id}")
 
     def record(self, user_id, receipt):
         """Appends `receipt` to the chain; returns it with log_index, prev_hash and entry_hash."""

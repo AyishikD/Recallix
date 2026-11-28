@@ -24,9 +24,9 @@ from backend.api import keys
 
 
 # Declared as a security scheme so the interactive docs (/docs) show an Authorize button for the key.
-# auto_error=False keeps Recallix's own 401 message for a missing key.
+# auto_error=False keeps Recallic's own 401 message for a missing key.
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False, scheme_name="APIKey",
-                              description="Your Recallix API key (create one with: python -m backend.tools.keys create --user <id>)")
+                              description="Your Recallic API key (create one with: python -m backend.tools.keys create --user <id>)")
 
 
 async def verify_api_key(key: str | None = Depends(api_key_header)):

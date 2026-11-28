@@ -76,7 +76,7 @@ class Scheduler:
     def start(self):
         if not settings.get("workers.enabled", True) or self._thread is not None:
             return
-        self._thread = threading.Thread(target=self._loop, name="recallix-scheduler", daemon=True)
+        self._thread = threading.Thread(target=self._loop, name="recallic-scheduler", daemon=True)
         self._thread.start()
 
     def stop(self):

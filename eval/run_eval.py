@@ -1,5 +1,5 @@
 """
-Recallix offline evaluation harness.
+Recallic offline evaluation harness.
 
 Measures the LLM-free pipeline against hand-labelled data in eval/data/{dev,test}/:
 
@@ -16,7 +16,7 @@ Environment (hermetic by default):
   * embeddings -> --embedder hash (deterministic hashed bag-of-words) or
                   --embedder st:<sentence-transformers model>
   * engine     -> in-process brute-force fake speaking the engine protocol, or
-                  --engine-url URL to use a running C++ engine (needs RECALLIX_INTERNAL_KEY)
+                  --engine-url URL to use a running C++ engine (needs RECALLIC_INTERNAL_KEY)
   * LLM        -> any call raises
 
 Usage:
@@ -119,16 +119,16 @@ class Env:
         import atexit
         import shutil
         atexit.register(shutil.rmtree, self.tmp, ignore_errors=True)
-        os.environ["RECALLIX_STORAGE_ROOT"] = self.tmp
-        os.environ.setdefault("RECALLIX_INTERNAL_KEY", "eval-only-key-not-a-secret")
+        os.environ["RECALLIC_STORAGE_ROOT"] = self.tmp
+        os.environ.setdefault("RECALLIC_INTERNAL_KEY", "eval-only-key-not-a-secret")
         if engine_url:
-            os.environ["RECALLIX_ENGINE_URL"] = engine_url
+            os.environ["RECALLIC_ENGINE_URL"] = engine_url
         from backend import settings
         settings.reload()
 
         self.embed_calls = 0
         raw = self._embedder(embedder)
-        if embedder == "hash" and not os.environ.get("RECALLIX_FITTING"):
+        if embedder == "hash" and not os.environ.get("RECALLIC_FITTING"):
             from backend.tools.sandbox import install_hash_fits
             install_hash_fits(self.tmp)  # the shipped fits belong to the default embedding model
         import backend.brain.models.model_router as mr
@@ -581,7 +581,7 @@ def main():
     SCENARIO_PREFIX = args.scenarios
 
     if args.fit_ranker or args.fit_importance or args.fit_answer_check:
-        os.environ["RECALLIX_FITTING"] = "1"  # fit from the shipped defaults, not from an earlier hash fit
+        os.environ["RECALLIC_FITTING"] = "1"  # fit from the shipped defaults, not from an earlier hash fit
     env = Env(args.embedder, args.engine_url)
     if args.fit_importance:
         fit_importance(args.embedder)

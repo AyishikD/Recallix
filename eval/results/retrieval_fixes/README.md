@@ -1,6 +1,6 @@
 # Retrieval fixes, 2026-11-24
 
-What was tried after the head-to-head comparison showed most Recallix misses were retrieval misses
+What was tried after the head-to-head comparison showed most Recallic misses were retrieval misses
 (31 of 36 "I don't know" answers on conv-44 never had the evidence in the top 10).
 
 Development data only: LoCoMo dev (conversations 1-5, 999 questions), conv-44 (inspected question
@@ -78,7 +78,7 @@ on every question; mean recall 207 → 279 ms (every question deep: 494 ms; Appl
 * **Serving each memory with the message before it, for the answering model** (LoCoMo conv-44, already
   development data; same gpt-4o-mini answer model and judge as the Mem0 comparison, Mem0's saved answers
   reused; `eval/mem0_comparison/run_recallix.py --context-out`): overall 67.7% either way, trick questions
-  declined 31 -> 30 of 35, multi-hop +1 question. The trick questions Recallix still answers swap who owns or did
+  declined 31 -> 30 of 35, multi-hop +1 question. The trick questions Recallic still answers swap who owns or did
   something ("Audrey and Buddy" when Buddy is Andrew's dog); Mem0 stores self-contained facts ("Andrew's dog
   Buddy"), so its answering model notices. Next: ownership-aware facts (Phase 6 extractor; an ownership rule).
 

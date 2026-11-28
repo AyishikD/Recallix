@@ -1,7 +1,7 @@
 #ifndef INDEX_REGISTRY_H
 #define INDEX_REGISTRY_H
 
-// One HNSW index per namespace (Recallix uses one namespace per user), plus a
+// One HNSW index per namespace (Recallic uses one namespace per user), plus a
 // single background worker that links pending vectors into whichever indexes
 // have work. Dropping a namespace affects nobody else.
 

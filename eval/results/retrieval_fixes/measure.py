@@ -4,7 +4,7 @@
 
 Per question: evidence recall@10 of what is served and of the ranking before the answer check,
 the rank of the first evidence message among all candidates, and whether recall declined. No LLM.
-Config variants are selected with RECALLIX_CONFIG.
+Config variants are selected with RECALLIC_CONFIG.
 """
 import argparse, contextlib, io, json, sys
 sys.path[:0] = [".", "eval", "eval/benchmarks"]

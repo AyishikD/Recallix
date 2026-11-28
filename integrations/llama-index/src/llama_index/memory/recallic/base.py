@@ -1,16 +1,16 @@
 """
-RecallixMemoryBlock: Recallix as long-term memory of a LlamaIndex agent.
+RecallicMemoryBlock: Recallic as long-term memory of a LlamaIndex agent.
 
     from llama_index.core.memory import Memory
-    from llama_index.memory.recallix import RecallixMemoryBlock
+    from llama_index.memory.recallic import RecallicMemoryBlock
 
-    block = RecallixMemoryBlock(api_key="rx_...", user_id="alice")       # a "service" key acts for each user
+    block = RecallicMemoryBlock(api_key="rx_...", user_id="alice")       # a "service" key acts for each user
     memory = Memory.from_defaults(session_id="alice-1", memory_blocks=[block])
     agent.run("Where did I move?", memory=memory)
 
 Each turn, the block recalls what this user said before that bears on their latest message (in any earlier
 session or agent) and gives it to the model; when nothing answers it, it says so instead of handing over
-near-misses. Then it stores the user's new messages (re-sending one Recallix already holds is skipped). No LLM is
+near-misses. Then it stores the user's new messages (re-sending one Recallic already holds is skipped). No LLM is
 called to store or search memory.
 """
 from __future__ import annotations
@@ -22,7 +22,7 @@ from typing import Any, List, Optional, Tuple
 from llama_index.core.base.llms.types import ChatMessage, TextBlock
 from llama_index.core.bridge.pydantic import Field, PrivateAttr
 from llama_index.core.memory.memory import BaseMemoryBlock
-from recallix import Memory as RecallixClient
+from recallic import Memory as RecallicClient
 
 DECLINE_NOTE = ("None of this user's earlier messages answers their latest message. If it depends on something "
                 "they would have told you before, say you don't have a record of it rather than guess.")
@@ -39,23 +39,23 @@ def _when(ts: Any) -> str:
         return ""
 
 
-class RecallixMemoryBlock(BaseMemoryBlock[str]):
+class RecallicMemoryBlock(BaseMemoryBlock[str]):
     """
-    A LlamaIndex memory block backed by a self-hosted Recallix server.
+    A LlamaIndex memory block backed by a self-hosted Recallic server.
 
-    api_key: a Recallix key. Role "service" acts for `user_id`; a "user" key acts for itself (leave user_id None).
-    user_id: whose memory this is (Recallix keeps each user's memories apart).
-    agent_id: Recallix agent id; each agent reads back what it wrote (and what any agent shared).
+    api_key: a Recallic key. Role "service" acts for `user_id`; a "user" key acts for itself (leave user_id None).
+    user_id: whose memory this is (Recallic keeps each user's memories apart).
+    agent_id: Recallic agent id; each agent reads back what it wrote (and what any agent shared).
     mode: "cautious" | "balanced" | "helpful" (None: the server's recall.mode).
     store_roles: which message roles are stored ("user" by default: memories are what the user said).
     store_immediately: store new messages every turn (after recalling), not only when LlamaIndex moves them out of
         short-term memory, so other sessions and agents see them at once.
-    tell_model_on_decline: when Recallix has no answering memory, tell the model not to guess about the user's past.
+    tell_model_on_decline: when Recallic has no answering memory, tell the model not to guess about the user's past.
     """
 
-    name: str = Field(default="recallix_memory", description="The name of the memory block.")
-    description: Optional[str] = Field(default="What this user told you in earlier conversations (Recallix).")
-    api_key: str = Field(exclude=True, repr=False, description="Recallix API key.")
+    name: str = Field(default="recallic_memory", description="The name of the memory block.")
+    description: Optional[str] = Field(default="What this user told you in earlier conversations (Recallic).")
+    api_key: str = Field(exclude=True, repr=False, description="Recallic API key.")
     base_url: str = Field(default="http://localhost:8000")
     user_id: Optional[str] = Field(default=None)
     agent_id: str = Field(default="llamaindex")
@@ -66,13 +66,13 @@ class RecallixMemoryBlock(BaseMemoryBlock[str]):
     tell_model_on_decline: bool = Field(default=True)
     timeout: float = Field(default=30.0)
 
-    _client: RecallixClient = PrivateAttr()
+    _client: RecallicClient = PrivateAttr()
     _sent: set = PrivateAttr(default_factory=set)
 
     def __init__(self, **data: Any) -> None:
         client = data.pop("client", None)
         super().__init__(**data)
-        self._client = client or RecallixClient(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
+        self._client = client or RecallicClient(api_key=self.api_key, base_url=self.base_url, timeout=self.timeout)
 
     # ---------------------------------------------------------------- reading
 

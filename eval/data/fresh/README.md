@@ -1,6 +1,6 @@
 # Fresh test data (independently written)
 
-Written by Google Gemini from a task description only. It never saw Recallix's rules,
+Written by Google Gemini from a task description only. It never saw Recallic's rules,
 test sets or known gaps. Prompted by the project owner with one persona per batch.
 Messages and questions are **unedited**. Only a `name` per scenario was added.
 

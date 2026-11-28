@@ -3,9 +3,9 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "recallix"
-version = "0.2.7"
-description = "Python client and MCP server for Recallix, an LLM-free memory layer for AI agents"
+name = "recallic"
+version = "0.3.0"
+description = "Python client and MCP server for Recallic, an LLM-free memory layer for AI agents"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = ["requests>=2.33.0"]
@@ -17,7 +17,8 @@ Homepage = "https://github.com/Recallic/Recallic"
 Source = "https://github.com/Recallic/Recallic"
 
 [project.scripts]
-recallix-mcp = "recallix.mcp_server:main"
+recallic-mcp = "recallic.mcp_server:main"
+recallix-mcp = "recallic.mcp_server:main"  # name before the rename; old MCP client configs keep working
 
 [tool.setuptools]
-packages = ["recallix"]
+packages = ["recallic"]

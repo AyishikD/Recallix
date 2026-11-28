@@ -1,7 +1,7 @@
 """
 Precision of implicit-fact inference on the labelled set (eval/data/implicit).
 
-    RECALLIX_STORAGE_ROOT=<with built rule index> python eval/implicit_precision.py
+    RECALLIC_STORAGE_ROOT=<with built rule index> python eval/implicit_precision.py
 
 Runs the current pipeline over sentences.txt, scores every verified inference against
 labels.jsonl (correct = implied by the sentence, about the right person, usable English),

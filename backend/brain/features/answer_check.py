@@ -34,7 +34,7 @@ DEFAULT_PATH = os.path.join(os.path.dirname(__file__), "answer_check.default.jso
 def _cfg():
     c = settings.get("recall.answer_check", {}) or {}
     enabled = bool(c.get("enabled", False))
-    env = os.environ.get("RECALLIX_ANSWER_CHECK")  # "0"/"1" overrides config (CI, eval gate)
+    env = os.environ.get("RECALLIC_ANSWER_CHECK")  # "0"/"1" overrides config (CI, eval gate)
     if env is not None:
         enabled = env.strip() not in ("0", "false", "no", "")
     return {"enabled": enabled, "model": c.get("model"),

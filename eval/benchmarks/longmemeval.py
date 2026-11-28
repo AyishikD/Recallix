@@ -12,7 +12,7 @@ once with the frozen configuration.
 
 Systems (identical text per turn: "[date] User|Assistant: content"):
   recallix          full store + recall pipeline as configured (answer check, abstention)
-  recallix_ranked   Recallix's ranking before truth arbitration / abstention
+  recallix_ranked   Recallic's ranking before truth arbitration / abstention
   dense             cosine top-k over the same embeddings
   bm25              Okapi BM25
 
@@ -84,7 +84,7 @@ def main():
                     help="keep_on_decline=True on every recall (a decline still returns its results)")
     ap.add_argument("--baselines-from", default=None,
                     help="copy the dense and BM25 results from this earlier result file instead of recomputing "
-                         "them (they do not depend on Recallix settings; recomputing takes about an hour)")
+                         "them (they do not depend on Recallic settings; recomputing takes about an hour)")
     args = ap.parse_args()
     if args.reuse and not args.storage:
         ap.error("--reuse needs --storage")
@@ -95,7 +95,7 @@ def main():
     if args.storage:
         import os
         os.makedirs(args.storage, exist_ok=True)
-        os.environ["RECALLIX_STORAGE_ROOT"] = os.path.abspath(args.storage)
+        os.environ["RECALLIC_STORAGE_ROOT"] = os.path.abspath(args.storage)
         from backend import settings
         settings.reload()
     from backend.api.deps import get_memory_manager, reset

@@ -140,8 +140,8 @@ export function MemoryStory({ query, status, memories }: { query: string; status
         {
             t: answered ? "Answer." : "Decline.",
             d: answered
-                ? "A reading model confirms the top memory actually answers. If none had, Recallix would return nothing."
-                : "No memory contains an answer, so Recallix returns nothing rather than a guess.",
+                ? "A reading model confirms the top memory actually answers. If none had, Recallic would return nothing."
+                : "No memory contains an answer, so Recallic returns nothing rather than a guess.",
         },
     ];
 
@@ -228,7 +228,7 @@ const AGENTS = [
 export function AgentsHub() {
     const cx = 300, cy = 180;
     return (
-        <svg viewBox="0 0 600 360" className="w-full h-auto" role="img" aria-label="Four agents connected to one Recallix memory">
+        <svg viewBox="0 0 600 360" className="w-full h-auto" role="img" aria-label="Four agents connected to one Recallic memory">
             {AGENTS.map((a, i) => {
                 const path = `M${a.x},${a.y} L${cx},${cy}`;
                 return (
@@ -246,7 +246,7 @@ export function AgentsHub() {
                 );
             })}
             <rect x={cx - 96} y={cy - 40} width="192" height="80" rx="24" style={{ fill: "var(--color-ink)" }} />
-            <text x={cx} y={cy - 4} textAnchor="middle" fontSize="19" fontWeight="600" style={{ fill: "var(--color-on-ink)" }}>Recallix</text>
+            <text x={cx} y={cy - 4} textAnchor="middle" fontSize="19" fontWeight="600" style={{ fill: "var(--color-on-ink)" }}>Recallic</text>
             <text x={cx} y={cy + 18} textAnchor="middle" fontSize="12" style={{ fill: "var(--color-on-ink)", opacity: 0.65 }}>one memory per user</text>
         </svg>
     );

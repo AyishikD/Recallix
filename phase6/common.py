@@ -1,7 +1,7 @@
 """
 Shared pieces for Phase 6 (a small, deterministic fact extractor distilled from a teacher LLM).
 
-The teacher is used OFFLINE only, to label training data; Recallix never calls an LLM at
+The teacher is used OFFLINE only, to label training data; Recallic never calls an LLM at
 runtime. Teacher: any OpenAI-compatible endpoint serving an open-weight model whose licence
 allows training on its outputs (default: Groq, openai/gpt-oss-120b, Apache 2.0), configured
 in .env (GROQ_API_KEY, TEACHER_BASE_URL, TEACHER_MODEL). Data stays outside the repo
@@ -88,7 +88,7 @@ class Teacher:
             self._wait_for(min(estimate, self.tpm))
             req = urllib.request.Request(self.base + "/chat/completions", data=json.dumps(body).encode(),
                                          headers={"Authorization": f"Bearer {self.key}", "Content-Type": "application/json",
-                                                  "User-Agent": "recallix-phase6/1.0"})
+                                                  "User-Agent": "recallic-phase6/1.0"})
             try:
                 with urllib.request.urlopen(req, timeout=90) as r:
                     out = json.load(r)

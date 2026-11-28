@@ -2,7 +2,7 @@
 ModelRouter: provider abstraction configured entirely by config.yaml `models`.
 
 The memory pipeline only uses get_embedding(). route() (text generation) is
-kept for scripts that drive LLM agents against Recallix; nothing under
+kept for scripts that drive LLM agents against Recallic; nothing under
 backend/ calls it.
 """
 import os
@@ -22,8 +22,8 @@ class ModelRouter:
     def __init__(self):
         models_cfg = settings.get("models", {}) or {}
         self.provider = models_cfg.get("provider")
-        # env override, e.g. for the Docker image: RECALLIX_EMBEDDING_PROVIDER=local
-        self.embedding_provider = os.environ.get("RECALLIX_EMBEDDING_PROVIDER") or models_cfg.get("embedding_provider", self.provider)
+        # env override, e.g. for the Docker image: RECALLIC_EMBEDDING_PROVIDER=local
+        self.embedding_provider = os.environ.get("RECALLIC_EMBEDDING_PROVIDER") or models_cfg.get("embedding_provider", self.provider)
         if not self.embedding_provider:
             raise settings.ConfigError("config.yaml: models.embedding_provider is not set")
 

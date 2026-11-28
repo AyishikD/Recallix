@@ -29,7 +29,7 @@ from backend import settings
 def config():
     c = settings.get("recall.rerank", {}) or {}
     enabled = bool(c.get("enabled", False))
-    env = os.environ.get("RECALLIX_RERANK")  # "0"/"1" overrides config (CI, eval gate)
+    env = os.environ.get("RECALLIC_RERANK")  # "0"/"1" overrides config (CI, eval gate)
     if env is not None:
         enabled = env.strip() not in ("0", "false", "no", "")
     return {"enabled": enabled, "model": c.get("model") or "cross-encoder/ms-marco-MiniLM-L-6-v2",

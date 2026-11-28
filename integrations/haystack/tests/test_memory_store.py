@@ -1,6 +1,6 @@
 """
-Against a running Recallix server (skipped otherwise):
-    RECALLIX_URL=http://127.0.0.1:8000 RECALLIX_SERVICE_KEY=rx_... [RECALLIX_ADMIN_KEY=rx_...] pytest integrations/haystack/tests
+Against a running Recallic server (skipped otherwise):
+    RECALLIC_URL=http://127.0.0.1:8000 RECALLIC_SERVICE_KEY=rx_... [RECALLIC_ADMIN_KEY=rx_...] pytest integrations/haystack/tests
 """
 import os
 import time
@@ -8,15 +8,15 @@ import uuid
 
 import pytest
 
-URL, KEY, ADMIN = os.environ.get("RECALLIX_URL"), os.environ.get("RECALLIX_SERVICE_KEY"), os.environ.get("RECALLIX_ADMIN_KEY")
-pytestmark = pytest.mark.skipif(not (URL and KEY), reason="needs a running Recallix (RECALLIX_URL, RECALLIX_SERVICE_KEY)")
+URL, KEY, ADMIN = os.environ.get("RECALLIC_URL"), os.environ.get("RECALLIC_SERVICE_KEY"), os.environ.get("RECALLIC_ADMIN_KEY")
+pytestmark = pytest.mark.skipif(not (URL and KEY), reason="needs a running Recallic (RECALLIC_URL, RECALLIC_SERVICE_KEY)")
 
 
 @pytest.fixture
 def store():
     from haystack.utils import Secret
-    from recallix_haystack import RecallixMemoryStore
-    return RecallixMemoryStore(api_key=Secret.from_env_var("RECALLIX_SERVICE_KEY"), base_url=URL)
+    from recallic_haystack import RecallicMemoryStore
+    return RecallicMemoryStore(api_key=Secret.from_env_var("RECALLIC_SERVICE_KEY"), base_url=URL)
 
 
 def conversation():
@@ -26,12 +26,12 @@ def conversation():
 
 
 def test_follows_the_haystack_protocol_and_serializes(store):
-    from recallix_haystack import RecallixMemoryStore
+    from recallic_haystack import RecallicMemoryStore
     for name in ("to_dict", "from_dict", "add_memories", "search_memories", "delete_all_memories", "delete_memory"):
         assert callable(getattr(store, name)), name
     d = store.to_dict()
-    assert d["init_parameters"]["api_key"]["env_vars"] == ["RECALLIX_SERVICE_KEY"]  # the key itself is never written out
-    again = RecallixMemoryStore.from_dict(d)
+    assert d["init_parameters"]["api_key"]["env_vars"] == ["RECALLIC_SERVICE_KEY"]  # the key itself is never written out
+    again = RecallicMemoryStore.from_dict(d)
     assert again.base_url == store.base_url and again.agent_id == "haystack" and again.store_roles == ("user",)
 
 
@@ -71,8 +71,8 @@ def test_delete_all_needs_an_admin_key(store):
         store.delete_all_memories(user_id=user)
     if ADMIN:
         from haystack.utils import Secret
-        from recallix_haystack import RecallixMemoryStore
-        RecallixMemoryStore(api_key=Secret.from_token(ADMIN), base_url=URL).delete_all_memories(user_id=user)
+        from recallic_haystack import RecallicMemoryStore
+        RecallicMemoryStore(api_key=Secret.from_token(ADMIN), base_url=URL).delete_all_memories(user_id=user)
         assert store.search_memories(query="Where did I move?", user_id=user) == []
 
 

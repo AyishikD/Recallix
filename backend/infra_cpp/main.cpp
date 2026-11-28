@@ -1,14 +1,14 @@
-// Recallix vector engine service.
+// Recallic vector engine service.
 //
 // Configuration (environment):
-//   RECALLIX_INTERNAL_KEY   required. Shared secret; every request except
+//   RECALLIC_INTERNAL_KEY   required. Shared secret; every request except
 //                           GET /health must send it as X-Internal-Key.
-//   RECALLIX_ENGINE_HOST    bind address (default 127.0.0.1)
-//   RECALLIX_ENGINE_PORT    port (default 8080)
-//   RECALLIX_HNSW_M, RECALLIX_HNSW_EF_CONSTRUCTION, RECALLIX_HNSW_EF_SEARCH
+//   RECALLIC_ENGINE_HOST    bind address (default 127.0.0.1)
+//   RECALLIC_ENGINE_PORT    port (default 8080)
+//   RECALLIC_HNSW_M, RECALLIC_HNSW_EF_CONSTRUCTION, RECALLIC_HNSW_EF_SEARCH
 //                           initial index parameters; the Python service also
 //                           pushes config.yaml values via POST /configure.
-//   RECALLIX_MAX_PAYLOAD_MB request body limit (default 256)
+//   RECALLIC_MAX_PAYLOAD_MB request body limit (default 256)
 //
 // API (JSON). Every vector operation is scoped to a namespace.
 //   POST /configure   {M, efConstruction, efSearch}
@@ -30,6 +30,7 @@
 #include "vector_engine.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <random>
 #include <sstream>
@@ -38,13 +39,21 @@ using json = nlohmann::json;
 
 namespace {
 
-std::string envOr(const char *name, const std::string &fallback) {
+// RECALLIC_X, or RECALLIX_X (the name before the project was renamed) when only that one is set.
+const char *envCompat(const char *name) {
   const char *v = std::getenv(name);
+  if ((!v || !*v) && std::strncmp(name, "RECALLIC_", 9) == 0)
+    v = std::getenv((std::string("RECALLIX_") + (name + 9)).c_str());
+  return v;
+}
+
+std::string envOr(const char *name, const std::string &fallback) {
+  const char *v = envCompat(name);
   return (v && *v) ? std::string(v) : fallback;
 }
 
 int envInt(const char *name, int fallback) {
-  const char *v = std::getenv(name);
+  const char *v = envCompat(name);
   if (!v || !*v)
     return fallback;
   try {
@@ -98,18 +107,18 @@ template <typename F> httplib::Server::Handler jsonHandler(F f) {
 } // namespace
 
 int main() {
-  const std::string key = envOr("RECALLIX_INTERNAL_KEY", "");
+  const std::string key = envOr("RECALLIC_INTERNAL_KEY", "");
   if (key.size() < 16) {
-    std::cerr << "RECALLIX_INTERNAL_KEY must be set (>= 16 chars). "
+    std::cerr << "RECALLIC_INTERNAL_KEY must be set (>= 16 chars). "
                  "Generate one with: python -m backend.tools.setup_env" << std::endl;
     return 1;
   }
-  const std::string host = envOr("RECALLIX_ENGINE_HOST", "127.0.0.1");
-  const int port = envInt("RECALLIX_ENGINE_PORT", 8080);
+  const std::string host = envOr("RECALLIC_ENGINE_HOST", "127.0.0.1");
+  const int port = envInt("RECALLIC_ENGINE_PORT", 8080);
   const std::string instance = randomHex(8);
 
-  IndexRegistry registry({envInt("RECALLIX_HNSW_M", 16), envInt("RECALLIX_HNSW_EF_CONSTRUCTION", 100),
-                          envInt("RECALLIX_HNSW_EF_SEARCH", 50)});
+  IndexRegistry registry({envInt("RECALLIC_HNSW_M", 16), envInt("RECALLIC_HNSW_EF_CONSTRUCTION", 100),
+                          envInt("RECALLIC_HNSW_EF_SEARCH", 50)});
   httplib::Server svr;
 
   svr.set_pre_routing_handler([&](const httplib::Request &req, httplib::Response &res) {
@@ -211,9 +220,9 @@ int main() {
     reply(res, 200, {{"status", "healthy"}, {"simd", simdBackend()}});
   });
 
-  svr.set_payload_max_length((std::size_t)envInt("RECALLIX_MAX_PAYLOAD_MB", 256) * 1024 * 1024);
+  svr.set_payload_max_length((std::size_t)envInt("RECALLIC_MAX_PAYLOAD_MB", 256) * 1024 * 1024);
 
-  std::cout << "Recallix vector engine on http://" << host << ":" << port << " (SIMD " << simdBackend()
+  std::cout << "Recallic vector engine on http://" << host << ":" << port << " (SIMD " << simdBackend()
             << ", instance " << instance << ")" << std::endl;
   if (!svr.listen(host, port)) {
     std::cerr << "Failed to bind " << host << ":" << port << std::endl;

@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "recallix-adk"
-version = "0.1.1"
-description = "Recallix as the memory service of Google ADK agents: self-hosted, no LLM calls for memory, says when it has no record."
+name = "recallic-adk"
+version = "0.2.0"
+description = "Recallic as the memory service of Google ADK agents: self-hosted, no LLM calls for memory, says when it has no record."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["google-adk>=2.0", "recallix>=0.2.6"]
+dependencies = ["google-adk>=2.0", "recallic>=0.3.0"]
 
 [project.urls]
 Homepage = "https://github.com/Recallic/Recallic/tree/main/integrations/google-adk"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/recallix_adk"]
+packages = ["src/recallic_adk"]

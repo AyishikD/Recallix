@@ -1,5 +1,5 @@
-"""Recallix memory for Google ADK agents."""
-from .memory_service import RecallixMemoryService
+"""Recallic memory for Google ADK agents."""
+from .memory_service import RecallicMemoryService
 
-__all__ = ["RecallixMemoryService"]
-__version__ = "0.1.0"
+__all__ = ["RecallicMemoryService"]
+__version__ = "0.2.0"

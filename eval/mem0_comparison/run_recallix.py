@@ -1,5 +1,5 @@
 """
-Recallix side of the comparison (PROTOCOL.md "Systems", amendment 1). Runs in the Recallix environment, no LLM.
+Recallic side of the comparison (PROTOCOL.md "Systems", amendment 1). Runs in the Recallic environment, no LLM.
 
     python run_recallix.py --data data.json --out OUT/recallix.json [--deep-out OUT/recallix_deep.json] [--convs conv-47]
 

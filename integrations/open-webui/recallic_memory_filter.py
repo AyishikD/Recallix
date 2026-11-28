@@ -1,19 +1,19 @@
 """
-title: Recallix Memory
-author: Recallix
+title: Recallic Memory
+author: Recallic
 author_url: https://github.com/Recallic/Recallic
 version: 0.1.1
 license: Apache-2.0
 required_open_webui_version: 0.6.0
-description: Long-term memory for every chat, from a self-hosted Recallix server. No LLM calls for memory: it recalls what each user told any model before, says when it has no record instead of guessing, and stores new messages. Your data stays on your server.
+description: Long-term memory for every chat, from a self-hosted Recallic server. No LLM calls for memory: it recalls what each user told any model before, says when it has no record instead of guessing, and stores new messages. Your data stays on your server.
 """
 # Open WebUI filter (Admin Panel > Functions > Import from URL, or paste this file). For each chat turn:
 #   1. recall what this user said before that bears on their new message (POST /memory/recall),
 #   2. give the model those memories as a short system note, with the sources shown in the chat,
-#      and, when Recallix has no record, tell the model so instead of letting it guess,
+#      and, when Recallic has no record, tell the model so instead of letting it guess,
 #   3. store the user's new message (POST /memory/store), after recalling so a question does not recall itself.
-# One Recallix "service" key serves every Open WebUI user; each user's memories are kept apart by their user id.
-# Any Recallix failure is reported as a status line and the chat goes on without memory.
+# One Recallic "service" key serves every Open WebUI user; each user's memories are kept apart by their user id.
+# Any Recallic failure is reported as a status line and the chat goes on without memory.
 
 import asyncio
 from datetime import datetime, timezone
@@ -22,7 +22,7 @@ from typing import Literal, Optional
 import requests
 from pydantic import BaseModel, Field
 
-MARKER = "### Recallix memory"
+MARKER = "### Recallic memory"
 
 
 def _text(content):
@@ -54,30 +54,30 @@ def _when(memory):
 class Filter:
     class Valves(BaseModel):
         priority: int = Field(default=0, description="Lower runs first among filters.")
-        recallix_url: str = Field(default="http://localhost:8000",
-                                  description="Recallix API. From an Open WebUI container to a host install: http://host.docker.internal:8000")
-        api_key: str = Field(default="", description="A Recallix key with role 'service': python -m backend.tools.keys create --user open-webui --role service")
-        agent_id: str = Field(default="open-webui", description="Recallix agent id for memories written and read here.")
+        recallic_url: str = Field(default="http://localhost:8000",
+                                  description="Recallic API. From an Open WebUI container to a host install: http://host.docker.internal:8000")
+        api_key: str = Field(default="", description="A Recallic key with role 'service': python -m backend.tools.keys create --user open-webui --role service")
+        agent_id: str = Field(default="open-webui", description="Recallic agent id for memories written and read here.")
         mode: Literal["cautious", "balanced", "helpful"] = Field(
             default="balanced", description="How readily recall answers: cautious checks every answer twice; helpful answers more counting, ordering and time questions.")
         limit: int = Field(default=5, ge=1, le=20, description="Memories given to the model per turn.")
-        store_user_messages: bool = Field(default=True, description="Store each new user message in Recallix.")
+        store_user_messages: bool = Field(default=True, description="Store each new user message in Recallic.")
         store_assistant_replies: bool = Field(default=False, description="Also store the model's replies (off: memories are what the user said).")
-        tell_model_on_decline: bool = Field(default=True, description="When Recallix has no answering memory, tell the model not to guess about the user's past.")
+        tell_model_on_decline: bool = Field(default=True, description="When Recallic has no answering memory, tell the model not to guess about the user's past.")
         show_sources: bool = Field(default=True, description="Show recalled memories as sources under the reply.")
-        timeout_seconds: float = Field(default=8.0, description="Per request. The first request after Recallix starts can take longer while its models load.")
+        timeout_seconds: float = Field(default=8.0, description="Per request. The first request after Recallic starts can take longer while its models load.")
 
     class UserValves(BaseModel):
-        enabled: bool = Field(default=True, description="Use Recallix memory in my chats.")
+        enabled: bool = Field(default=True, description="Use Recallic memory in my chats.")
         mode: Literal["", "cautious", "balanced", "helpful"] = Field(default="", description="Overrides the admin's mode for me (empty: admin's).")
 
     def __init__(self):
         self.valves = self.Valves()
 
-    # ---------------------------------------------------------------- Recallix calls
+    # ---------------------------------------------------------------- Recallic calls
 
     def _post(self, path, payload):
-        r = requests.post(self.valves.recallix_url.rstrip("/") + path, json=payload,
+        r = requests.post(self.valves.recallic_url.rstrip("/") + path, json=payload,
                           headers={"X-API-Key": self.valves.api_key}, timeout=self.valves.timeout_seconds)
         r.raise_for_status()
         return r.json().get("data", {})
@@ -137,8 +137,8 @@ class Filter:
         try:
             out = await self._call("/memory/recall", {"query": text[:2000], "user_id": user["id"], "agent_id": self.valves.agent_id,
                                                        "limit": self.valves.limit, "mode": mode})
-        except Exception as e:  # Recallix down, wrong key, timeout: the chat goes on without memory
-            await status(f"Recallix memory unavailable ({type(e).__name__})")
+        except Exception as e:  # Recallic down, wrong key, timeout: the chat goes on without memory
+            await status(f"Recallic memory unavailable ({type(e).__name__})")
             out = None
 
         if out is not None:
@@ -151,11 +151,11 @@ class Filter:
                 if self.valves.show_sources and __event_emitter__:
                     for m in memories[: self.valves.limit]:
                         await __event_emitter__({"type": "source", "data": {
-                            "source": {"name": f"Recallix memory {m.get('id')}", "id": str(m.get("id"))},
+                            "source": {"name": f"Recallic memory {m.get('id')}", "id": str(m.get("id"))},
                             "document": [m.get("content_resolved") or m.get("content", "")],
-                            "metadata": [{"source": "Recallix", "name": _when(m) or "memory"}]}})
+                            "metadata": [{"source": "Recallic", "name": _when(m) or "memory"}]}})
             else:
-                await status("No memory answers this (Recallix)")
+                await status("No memory answers this (Recallic)")
 
         if self.valves.store_user_messages:
             try:

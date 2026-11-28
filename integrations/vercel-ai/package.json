@@ -1,7 +1,7 @@
 {
-    "name": "recallix-ai-sdk",
-    "version": "0.1.0",
-    "description": "Recallix memory for the Vercel AI SDK: self-hosted, no LLM calls for memory, says when it has no record",
+    "name": "recallic-ai-sdk",
+    "version": "0.2.0",
+    "description": "Recallic memory for the Vercel AI SDK: self-hosted, no LLM calls for memory, says when it has no record",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -31,7 +31,7 @@
         "node": ">=18"
     },
     "dependencies": {
-        "recallix": "^0.2.7"
+        "recallic": "^0.3.0"
     },
     "peerDependencies": {
         "ai": ">=6"

@@ -106,7 +106,7 @@ def main():
             md.append(f"| {name} | {r['overall']['recall@5']:.3f} | {r['overall']['recall@10']:.3f} | {r['overall']['hit@10']:.3f} | "
                       + " | ".join(f"{r[t]['recall@10']:.3f}" for t in types) + " |")
         a = lm["abstention"]
-        md.append(f"\nRecallix declined {a['unanswerable_declined']:.1%} of {a['n_unanswerable']} unanswerable questions and wrongly "
+        md.append(f"\nRecallic declined {a['unanswerable_declined']:.1%} of {a['n_unanswerable']} unanswerable questions and wrongly "
                   f"declined {a['answerable_wrongly_declined']:.1%} of {a['n_answerable']} answerable ones "
                   f"(AUC: answer margin {a['auc_answer_margin']:.3f}, top relevance {a['auc_top_relevance']:.3f}).")
     for lc in summary["locomo"]:
@@ -122,7 +122,7 @@ def main():
             md.append(f"| {name} | {r['overall']['recall@5']:.3f} | {r['overall']['recall@10']:.3f} | {r['overall']['hit@10']:.3f} | "
                       + " | ".join(f"{r[c]['recall@10']:.3f}" for c in cats) + " |")
         a = lc["abstention"]
-        md.append(f"\nRecallix declined {a['adversarial_declined']:.1%} of {a['n_adversarial']} adversarial (unanswerable) questions "
+        md.append(f"\nRecallic declined {a['adversarial_declined']:.1%} of {a['n_adversarial']} adversarial (unanswerable) questions "
                   f"and wrongly declined {a['answerable_wrongly_declined']:.1%} of {a['n_answerable']} answerable ones.")
     with open(RESULTS / "RESULTS.md", "w") as f:
         f.write("\n".join(md) + "\n")

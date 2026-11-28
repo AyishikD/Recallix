@@ -1,5 +1,5 @@
 @startuml Technical_Depth
-title Recallix — store and recall pipelines
+title Recallic — store and recall pipelines
 
 partition "POST /memory/store" {
   :acting user from API key (service/admin may pass user_id);

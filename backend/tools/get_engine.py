@@ -44,13 +44,13 @@ def target():
 
 
 def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "recallix-get-engine"})
+    req = urllib.request.Request(url, headers={"User-Agent": "recallic-get-engine"})
     with urllib.request.urlopen(req, timeout=120) as r:
         return r.read()
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="Download the prebuilt Recallix vector engine for this machine.")
+    ap = argparse.ArgumentParser(description="Download the prebuilt Recallic vector engine for this machine.")
     ap.add_argument("--tag", default=None, help="release tag (default: the latest release)")
     ap.add_argument("--target", default=None, help="override the detected build, e.g. linux-x86_64-noavx2")
     ap.add_argument("--base-url", default=None, help=argparse.SUPPRESS)  # tests: a local folder of release files
@@ -64,13 +64,21 @@ def main(argv=None):
                  "-DCMAKE_BUILD_TYPE=Release && cmake --build backend/infra_cpp/build -j")
     base = args.base_url or (f"https://github.com/{REPO}/releases/download/{args.tag}" if args.tag
                              else f"https://github.com/{REPO}/releases/latest/download")
-    name = f"recallix-engine-{tgt}"
-    print(f"downloading {name} from {base}")
+    archive = None
+    for name in (f"recallic-engine-{tgt}", f"recallix-engine-{tgt}"):  # releases made before the rename use recallix-
+        print(f"downloading {name} from {base}")
+        try:
+            archive = fetch(f"{base}/{name}.tar.gz")
+            break
+        except urllib.error.HTTPError as e:
+            if e.code != 404:
+                sys.exit(f"download failed ({e.code})")
+    if archive is None:
+        sys.exit(f"download failed: is there a release{' ' + args.tag if args.tag else ''} with recallic-engine-{tgt}.tar.gz?")
     try:
-        archive = fetch(f"{base}/{name}.tar.gz")
         sums = fetch(f"{base}/SHA256SUMS").decode()
     except urllib.error.HTTPError as e:
-        sys.exit(f"download failed ({e.code}): is there a release{' ' + args.tag if args.tag else ''} with {name}.tar.gz?")
+        sys.exit(f"download failed ({e.code}) for SHA256SUMS")
 
     expected = {parts[-1].lstrip("*"): parts[0] for parts in (line.split() for line in sums.splitlines()) if len(parts) >= 2}
     got = hashlib.sha256(archive).hexdigest()

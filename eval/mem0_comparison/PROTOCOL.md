@@ -1,9 +1,9 @@
-# Recallix vs Mem0 on LoCoMo: protocol
+# Recallic vs Mem0 on LoCoMo: protocol
 
 Written 2026-11-23, before any run. Not edited after results exist (changes would be appended with a reason).
 
 ## Question
-On the same conversations and questions, how do Recallix and Mem0 compare on:
+On the same conversations and questions, how do Recallic and Mem0 compare on:
 
 - answer accuracy;
 - declining questions that have no answer;
@@ -14,13 +14,13 @@ On the same conversations and questions, how do Recallix and Mem0 compare on:
 - **Conversations:** LoCoMo (locomo10.json), the held-out **test** split, conversations 5-9 (conv-44, -47, -48, -49, -50):
   3,122 messages and 987 questions. Of the questions, 763 are answerable (categories 1-4) and 224 are adversarial
   (category 5, no answer in the conversation).
-- **Who has seen it:** Recallix was never tuned on this split. Mem0 is used as shipped.
+- **Who has seen it:** Recallic was never tuned on this split. Mem0 is used as shipped.
 - **Input text:** every message is given to both systems as the same text, `[session date] Speaker: message`
   (plus any image caption), as eval/benchmarks/locomo.py builds it. Both therefore see the dates in the text.
   - This avoids a known pitfall: Mem0 otherwise stamps memories with today's date (mem0 issue #3944).
 
 ## Systems
-- **Recallix:** as shipped (config.yaml, 2026-11-23): local embeddings BAAI/bge-small-en-v1.5, answer check on,
+- **Recallic:** as shipped (config.yaml, 2026-11-23): local embeddings BAAI/bge-small-en-v1.5, answer check on,
   no LLM. One user per conversation. Recall `limit=10`.
 - **Mem0:** open source `mem0ai` 2.2.1, `Memory.from_config` with library defaults except:
   - LLM `gpt-4o-mini`. The library default is `gpt-5-mini`. gpt-4o-mini is what Mem0's own benchmark
@@ -36,7 +36,7 @@ On the same conversations and questions, how do Recallix and Mem0 compare on:
   - system: "You answer questions about a user's conversations using only the memories provided. If the memories
     do not contain the answer, reply exactly: I don't know. Otherwise answer in a short phrase."
   - user: "Memories:\n- <memory 1>\n- ...\n\nQuestion: <question>\nAnswer:"
-  - A system that returns no memories (Recallix ABSTAINED / NO_MATCH) gets the answer "I don't know" with no call.
+  - A system that returns no memories (Recallic ABSTAINED / NO_MATCH) gets the answer "I don't know" with no call.
 - **Answerable questions (categories 1-4):**
   - Judge `gpt-4o-mini`, temperature 0: "Question, gold answer, generated answer. Is the generated answer
     correct, i.e. it states the same fact as the gold answer (dates and numbers may be written differently)?
@@ -47,9 +47,9 @@ On the same conversations and questions, how do Recallix and Mem0 compare on:
 
 ## Measured
 - **Accuracy:** overall, per category, answerable only, and adversarial declined.
-- **Cost to store:** LLM calls, tokens and dollars. Recallix: 0 LLM calls.
+- **Cost to store:** LLM calls, tokens and dollars. Recallic: 0 LLM calls.
 - **Speed:** median and p95 milliseconds to store one message and to recall one question. Wall-clock includes
-  network for Mem0; Recallix runs on an Apple M4.
+  network for Mem0; Recallic runs on an Apple M4.
 - **Answer and judge cost:** reported separately; this is the same for both systems by design.
 
 ## Budget
@@ -69,17 +69,17 @@ On the same conversations and questions, how do Recallix and Mem0 compare on:
 
 ## Amendment 1 (2026-11-24, before any run)
 
-Corrections from reading mem0ai 2.2.1's source, plus one Recallix change measured on dev data only:
+Corrections from reading mem0ai 2.2.1's source, plus one Recallic change measured on dev data only:
 
 - **Dates for Mem0:** Mem0's open-source `add()` rejects `timestamp` ("Platform-only temporal parameter. Not
   supported in OSS"). Mem0 therefore gets each message's date only inside the text (`[session date] Speaker:
-  message`), the same text Recallix gets.
-- **Dates for Recallix:** Recallix also receives each message's session time as its `timestamp`, which its API
+  message`), the same text Recallic gets.
+- **Dates for Recallic:** Recallic also receives each message's session time as its `timestamp`, which its API
   accepts, plus one second per turn to keep order.
-  - Recallix has resolved relative dates since 2026-11-24 (`memory.resolve_dates`, on by default).
+  - Recallic has resolved relative dates since 2026-11-24 (`memory.resolve_dates`, on by default).
   - Measured on LoCoMo **dev** only (eval/results/date_resolution/).
   - The answer passed to the answer model is each memory's `content_resolved` when present, else `content`:
-    what Recallix returns to any caller.
+    what Recallic returns to any caller.
 - **Mem0 search:** `m.search(question, filters={"user_id": conv}, top_k=10)`, which is the 2.2.1 signature
   (`limit` is not a parameter). The default threshold of 0.1 is kept.
 
@@ -96,10 +96,10 @@ Corrections from reading mem0ai 2.2.1's source, plus one Recallix change measure
 
 ## Amendment 3: aborted first start (2026-11-24)
 - **What happened:** the first main-run start was stopped after about 2 minutes, with no results looked at. The
-  Recallix side's offline setting (`HF_HUB_OFFLINE=1`) had leaked into the Mem0 processes, so Mem0 could not load its
+  Recallic side's offline setting (`HF_HUB_OFFLINE=1`) had leaked into the Mem0 processes, so Mem0 could not load its
   BM25 keyword-search model and would have run handicapped.
 - **Cost:** about $0.07 was spent and counts toward the cap.
-- **Fix:** the restart uses fresh storage, with the offline setting applied to the Recallix process only. Mem0 was
+- **Fix:** the restart uses fresh storage, with the offline setting applied to the Recallic process only. Mem0 was
   verified to load BM25 first.
 
 ## Amendment 4: cost overrun on conv-47 (2026-11-24, during storage, before any answers)
@@ -107,14 +107,14 @@ Corrections from reading mem0ai 2.2.1's source, plus one Recallix change measure
   because its prompts grow with stored memories. Storing both conversations would have reached the $2.85 stop
   with nothing left for answering.
 - **conv-47:** stopped after 80 of 689 messages. Its storage is saved and can be resumed.
-- **Judging scope:** only conversations both systems fully completed are judged, so Recallix is never scored on
+- **Judging scope:** only conversations both systems fully completed are judged, so Recallic is never scored on
   questions Mem0 did not get.
 
-## Amendment 5: conv-47 with the current Recallix and deep recall (2026-11-24, before any conv-47 answers)
+## Amendment 5: conv-47 with the current Recallic and deep recall (2026-11-24, before any conv-47 answers)
 - **Why:** conv-44 was inspected question by question while designing the 2026-11-24 retrieval fixes, so it is
   development data now. conv-47 was never inspected; it is the held-out comparison.
-- **Recallix:** the version shipped on 2026-11-24 evening (second pass, non-statement filter, resolved dates),
-  default settings (`keep_on_decline` off). A second Recallix system, `recallix_deep`, recalls every question with
+- **Recallic:** the version shipped on 2026-11-24 evening (second pass, non-statement filter, resolved dates),
+  default settings (`keep_on_decline` off). A second Recallic system, `recallix_deep`, recalls every question with
   `deep=True`. Each variant stores its own fresh copy of the conversation (a recall reinforces what it returns).
 - **Mem0:** unchanged setup, resumed from its saved conv-47 storage (80 of 689 messages).
 - **Answering and judging:** unchanged (gpt-4o-mini, same prompts, same rules for all three systems; a decline

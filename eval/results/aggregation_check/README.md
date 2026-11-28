@@ -94,7 +94,7 @@ question's own subject, and a statement about a memory's speaker is also read in
 only, with deliberate distractors in every scenario: a cancelled plan, someone else's event of the same
 kind, a similar-but-different event, a follow-up message, and events worded differently in the question
 and the message. A separate agent audited the answer keys (hard_review.jsonl: 3 accepted, 9 fixed; all four
-ordering scenarios had a "trap" that was answerable). Recallix was then measured ONCE before anyone read the
+ordering scenarios had a "trap" that was answerable). Recallic was then measured ONCE before anyone read the
 questions (`hard/before.json`, `hard/after_first_run.json`); after that the failures were read and the
 rules extended, so the last row is development data.
 

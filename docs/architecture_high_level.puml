@@ -1,5 +1,5 @@
 @startuml High_Level_Architecture
-title Recallix — high-level architecture (no LLM in the memory pipeline)
+title Recallic — high-level architecture (no LLM in the memory pipeline)
 
 actor "Client / Agent\n(SDK, RAG app, dashboard)" as Client
 

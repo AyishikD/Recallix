@@ -224,4 +224,4 @@ def test_no_llm_on_any_path(client, api_keys):
         assert client.get(path, headers=a).status_code == 200, path
     for job in ("state_inference", "prediction", "replay", "forgetting"):
         assert client.post("/internal/jobs/run", json={"job": job}, headers=h).status_code == 200, job
-    assert os.environ.get("RECALLIX_INTERNAL_KEY")
+    assert os.environ.get("RECALLIC_INTERNAL_KEY")

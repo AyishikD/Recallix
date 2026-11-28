@@ -1,12 +1,12 @@
-// Recallix API client for the dashboard pages.
+// Recallic API client for the dashboard pages.
 // Configure at build time (never commit keys):
-//   NEXT_PUBLIC_RECALLIX_API_URL  e.g. http://localhost:8000
-//   NEXT_PUBLIC_RECALLIX_API_KEY  a *user* key for the local dashboard
+//   NEXT_PUBLIC_RECALLIC_API_URL  e.g. http://localhost:8000
+//   NEXT_PUBLIC_RECALLIC_API_KEY  a *user* key for the local dashboard
 //                                 (python -m backend.tools.keys create --user you)
 // Note: NEXT_PUBLIC_* values are embedded in the static bundle. Do not set a
 // key for a publicly deployed build.
-export const API_BASE = process.env.NEXT_PUBLIC_RECALLIX_API_URL || "http://localhost:8000";
-const API_KEY = process.env.NEXT_PUBLIC_RECALLIX_API_KEY || "";
+export const API_BASE = process.env.NEXT_PUBLIC_RECALLIC_API_URL || process.env.NEXT_PUBLIC_RECALLIX_API_URL || "http://localhost:8000";
+const API_KEY = process.env.NEXT_PUBLIC_RECALLIC_API_KEY || process.env.NEXT_PUBLIC_RECALLIX_API_KEY || "";
 
 /** The API's envelope; `data` is null when the server could not be reached. */
 export interface Envelope<T> { status: string; data: T | null; timestamp: string }

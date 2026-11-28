@@ -1,5 +1,5 @@
 """
-An isolated Recallix memory for tools: replay, memory tests, calibration, evaluation.
+An isolated Recallic memory for tools: replay, memory tests, calibration, evaluation.
 
     with Sandbox(embedder="configured") as box:
         box.mm.store("u", "I live in Pune.")
@@ -119,14 +119,14 @@ class Sandbox:
         self._saved = {}
 
     def __enter__(self):
-        self.tmp = tempfile.mkdtemp(prefix="recallix_sandbox_")
-        for key, value in (("RECALLIX_STORAGE_ROOT", self.tmp),
-                           ("RECALLIX_INTERNAL_KEY", os.environ.get("RECALLIX_INTERNAL_KEY") or "sandbox-not-a-secret")):
+        self.tmp = tempfile.mkdtemp(prefix="recallic_sandbox_")
+        for key, value in (("RECALLIC_STORAGE_ROOT", self.tmp),
+                           ("RECALLIC_INTERNAL_KEY", os.environ.get("RECALLIC_INTERNAL_KEY") or "sandbox-not-a-secret")):
             self._saved[key] = os.environ.get(key)
             os.environ[key] = value
         if self.answer_check is not None:
-            self._saved["RECALLIX_ANSWER_CHECK"] = os.environ.get("RECALLIX_ANSWER_CHECK")
-            os.environ["RECALLIX_ANSWER_CHECK"] = "1" if self.answer_check else "0"
+            self._saved["RECALLIC_ANSWER_CHECK"] = os.environ.get("RECALLIC_ANSWER_CHECK")
+            os.environ["RECALLIC_ANSWER_CHECK"] = "1" if self.answer_check else "0"
         from backend import settings
         settings.reload()
 

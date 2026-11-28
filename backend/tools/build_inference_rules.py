@@ -6,7 +6,7 @@ Build the commonsense rule index for implicit facts from ATOMIC 2020.
 ATOMIC 2020 (Hwang et al., AAAI 2021; CC BY 4.0) is a knowledge graph of everyday
 if-then knowledge: "PersonX attends PersonY's wedding" -> oEffect -> "PersonY gets
 married". Download it from the official link in https://github.com/allenai/comet-atomic-2020
-(the data is not redistributed with Recallix; this tool builds a derived index locally).
+(the data is not redistributed with Recallic; this tool builds a derived index locally).
 
 Kept: event knowledge that can make a stated memory imply another fact —
   xEffect / oEffect   what follows for the people involved

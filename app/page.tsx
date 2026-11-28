@@ -10,9 +10,9 @@ import { DemoVideo } from "@/components/site/DemoVideo";
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
 const quickstart = `import os
-from recallix import Memory
+from recallic import Memory
 
-mem = Memory(api_key=os.environ["RECALLIX_API_KEY"])
+mem = Memory(api_key=os.environ["RECALLIC_API_KEY"])
 
 mem.store("The Atlas launch moved to July 14.")
 out = mem.recall("When does Atlas launch?")
@@ -29,13 +29,13 @@ function HeroTerminal() {
         <div className="tone-navy mx-auto max-w-[820px] text-left rounded-[18px] bg-code overflow-hidden border border-white/10">
             <div className="flex items-center gap-2 px-4 h-10 border-b border-line">
                 <span className="h-3 w-3 rounded-full bg-[#ff5f57]" /><span className="h-3 w-3 rounded-full bg-[#febc2e]" /><span className="h-3 w-3 rounded-full bg-[#28c840]" />
-                <span className="ml-3 font-mono text-[12px] text-ink-3">recallix — python</span>
+                <span className="ml-3 font-mono text-[12px] text-ink-3">recallic — python</span>
             </div>
             <pre className="p-5 md:p-6 text-[13px] leading-[1.7] overflow-x-auto">
                 <code>
                     <span className="text-ink-3">import</span> os{"\n"}
-                    <span className="text-ink-3">from</span> recallix <span className="text-ink-3">import</span> Memory{"\n"}
-                    mem = Memory(api_key=os.environ[<span className="text-good">&quot;RECALLIX_API_KEY&quot;</span>]){"\n\n"}
+                    <span className="text-ink-3">from</span> recallic <span className="text-ink-3">import</span> Memory{"\n"}
+                    mem = Memory(api_key=os.environ[<span className="text-good">&quot;RECALLIC_API_KEY&quot;</span>]){"\n\n"}
                     {ex?.stores?.slice(0, 3).map(s => (
                         <span key={s.content}>mem.store(<span className="text-good">&quot;{s.content}&quot;</span>){"\n"}</span>
                     ))}
@@ -61,11 +61,11 @@ const memoryTest = `# tests/memory/example.yaml — runs in CI, same result ever
 $ python -m backend.tools.memtest tests/memory/*.yaml`;
 
 const mcpConfig = `"mcpServers": {
-  "recallix": {
-    "command": "recallix-mcp",
+  "recallic": {
+    "command": "recallic-mcp",
     "env": {
-      "RECALLIX_API_KEY": "rx_...",
-      "RECALLIX_AGENT_ID": "claude-desktop"
+      "RECALLIC_API_KEY": "rx_...",
+      "RECALLIC_AGENT_ID": "claude-desktop"
     }
   }
 }`;
@@ -137,7 +137,7 @@ export default function HomePage() {
             {/* Hero */}
             <Section hero className="text-center" backdrop={<MemoryField />}>
                 <ScrollFade>
-                <Reveal from="fade"><p className="mb-3 text-[17px] font-semibold text-ink-2">Recallix</p></Reveal>
+                <Reveal from="fade"><p className="mb-3 text-[17px] font-semibold text-ink-2">Recallic</p></Reveal>
                 <Headline as="h1">
                     <Reveal as="span" delay={0.08}>Memory for AI agents.</Reveal>
                     <Reveal as="span" delay={0.22} className="text-sheen">Without the guesswork.</Reveal>
@@ -169,8 +169,8 @@ export default function HomePage() {
                     </Lede>
                 </Reveal>
                 <Reveal from="scale" delay={0.1}>
-                    <DemoVideo className="mt-10" src="/videos/recallix-demo.mp4" poster="/videos/recallix-demo-poster.jpg"
-                        label="Recallix demo: casual messages stored over a week, three questions answered from them, and one question declined because nothing answers it" />
+                    <DemoVideo className="mt-10" src="/videos/recallic-demo.mp4" poster="/videos/recallic-demo-poster.jpg"
+                        label="Recallic demo: casual messages stored over a week, three questions answered from them, and one question declined because nothing answers it" />
                     <p className="mt-4 text-[12px] text-ink-3">Narration: Gemini text-to-speech (voice Sulafat). Sound: “Swoosh.wav” by Brsjak (<a className="underline" href="https://freesound.org/people/Brsjak/sounds/482880">freesound</a>), CC BY 4.0.</p>
                 </Reveal>
             </Section>
@@ -178,7 +178,7 @@ export default function HomePage() {
             {/* Statement — words light up as you scroll */}
             <Section>
                 <ScrollWords className="type-headline max-w-[900px]"
-                    text="Recallix remembers what your users tell their agents, keeps every fact current, and says “I don’t know” when nothing it holds is an answer." />
+                    text="Recallic remembers what your users tell their agents, keeps every fact current, and says “I don’t know” when nothing it holds is an answer." />
             </Section>
 
             {/* Pinned, scroll-scrubbed walk through one real run */}
@@ -197,7 +197,7 @@ export default function HomePage() {
                 <div className="mt-14 grid gap-5 md:grid-cols-2">
                     {bench && <><Reveal from="left"><Tile>
                         <Stat value={gain !== undefined ? <CountUp value={signedPct(gain)} /> : "—"} label="more evidence ranked into the top 10 than vector search"
-                            sub={bench ? `Ranking recall@10 ${pct(bench.ranked, 1)} vs ${pct(bench.dense, 1)} with the same embeddings (BM25 ${pct(bench.bm25, 1)}). What Recallix serves after its answer check is lower, ${pct(bench.served, 1)}: on this dataset the check declines too often.` : undefined} />
+                            sub={bench ? `Ranking recall@10 ${pct(bench.ranked, 1)} vs ${pct(bench.dense, 1)} with the same embeddings (BM25 ${pct(bench.bm25, 1)}). What Recallic serves after its answer check is lower, ${pct(bench.served, 1)}: on this dataset the check declines too often.` : undefined} />
                     </Tile></Reveal>
                     <Reveal from="right" delay={0.08}><Tile>
                         <Stat value={<CountUp value={pct(bench?.declined)} />} label="of unanswerable questions declined"
@@ -232,7 +232,7 @@ export default function HomePage() {
             <Section tone="night">
                 <Reveal>
                     <Eyebrow>Truth over time</Eyebrow>
-                    <Headline className="max-w-[760px]">Facts change. Recallix keeps up.</Headline>
+                    <Headline className="max-w-[760px]">Facts change. Recallic keeps up.</Headline>
                     <Lede dark className="mt-5">
                         When a fact is restated, the newer value wins. When something is denied, only the denied value goes —
                         so “not December 12” never erases December 18.
@@ -264,7 +264,7 @@ export default function HomePage() {
                         <Headline>It reads before it answers.</Headline>
                         <Lede className="mt-5">
                             A small reading-comprehension model, trained to recognise questions a passage cannot answer,
-                            checks the memories Recallix is about to return. If none of them answers, you get nothing — not a guess.
+                            checks the memories Recallic is about to return. If none of them answers, you get nothing — not a guess.
                         </Lede>
                         <p className="mt-5 text-[15px] text-ink-2 max-w-[520px]">
                             It runs locally on the CPU. The trade-off between declining and answering is a single, documented setting.
@@ -325,7 +325,7 @@ export default function HomePage() {
                         <Eyebrow>Verifiable</Eyebrow>
                         <Headline>Memory you can test.</Headline>
                         <Lede dark className="mt-5">
-                            No LLM writes Recallix’s memory, so the same messages always produce the same memory. That makes it
+                            No LLM writes Recallic’s memory, so the same messages always produce the same memory. That makes it
                             something you can test in CI, replay after an upgrade, and audit line by line.
                         </Lede>
                     </Reveal>
@@ -361,7 +361,7 @@ export default function HomePage() {
                             {[
                                 ["Every MCP client", "Claude Desktop, Cursor and any other Model Context Protocol client — one config entry."],
                                 ["Open export", "All your memories in an open, documented format, from the API or the SDK."],
-                                ["Bring what you have", "Import from a Recallix export, a Mem0 export, or a plain list of memories."],
+                                ["Bring what you have", "Import from a Recallic export, a Mem0 export, or a plain list of memories."],
                             ].map(([t, d]) => (
                                 <li key={t} className="flex gap-3">
                                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />

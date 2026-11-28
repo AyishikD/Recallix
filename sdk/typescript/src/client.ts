@@ -3,7 +3,7 @@ export interface MemoryConfig {
     baseUrl?: string;
 }
 
-export class RecallixError extends Error {
+export class RecallicError extends Error {
     constructor(public status: number, public detail: string) {
         super(`HTTP ${status}: ${detail}`);
     }
@@ -20,7 +20,7 @@ export class MemoryClient {
     }
 
     /**
-     * Returns the response's `data`; throws RecallixError on HTTP errors.
+     * Returns the response's `data`; throws RecallicError on HTTP errors.
      * Responses default to `any` so callers can read fields (`out.memories[0].content`) without
      * declaring types; pass `T` to type them.
      */
@@ -33,7 +33,7 @@ export class MemoryClient {
             body,
         });
         const json: { data?: unknown; detail?: string } = await response.json().catch(() => ({}));
-        if (!response.ok) throw new RecallixError(response.status, json.detail ?? response.statusText);
+        if (!response.ok) throw new RecallicError(response.status, json.detail ?? response.statusText);
         return json.data as T;
     }
 }

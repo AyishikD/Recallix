@@ -62,15 +62,15 @@ def test_engine_requires_internal_key(engine):
 
 def test_engine_refuses_to_start_without_key(engine_process):
     import os
-    env = {k: v for k, v in os.environ.items() if k != "RECALLIX_INTERNAL_KEY"}
+    env = {k: v for k, v in os.environ.items() if k != "RECALLIC_INTERNAL_KEY"}
     proc = subprocess.run([engine_process.binary], env=env, capture_output=True, timeout=10)
     assert proc.returncode != 0
-    assert b"RECALLIX_INTERNAL_KEY" in proc.stderr
+    assert b"RECALLIC_INTERNAL_KEY" in proc.stderr
 
 
 def test_no_hardcoded_secrets_in_repository():
     # Former hardcoded values, assembled so this file does not contain them literally.
-    banned = ["Recallix-Core-" + "8892", "local_" + "dev_key"]
+    banned = ["Recallic-Core-" + "8892", "local_" + "dev_key"]
     tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.split()
     offenders = []
     for path in tracked:

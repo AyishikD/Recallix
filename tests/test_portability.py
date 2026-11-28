@@ -23,16 +23,16 @@ def test_export_import_roundtrip_preserves_everything_derived():
                 box.mm.store("alice", m, timestamp=1_700_000_000 + i, memory_type="shared")
             exported = portable.export_user(box.mm, "alice")
             json.dumps(exported)  # plain JSON
-            result = portable.import_items(box.mm, "bob", portable.parse(exported, "recallix"))
+            result = portable.import_items(box.mm, "bob", portable.parse(exported, "recallic"))
             assert result == {"stored": len(MESSAGES), "skipped_duplicates": 0}
-            again = portable.import_items(box.mm, "bob", portable.parse(exported, "recallix"))
+            again = portable.import_items(box.mm, "bob", portable.parse(exported, "recallic"))
             assert again["stored"] == 0  # duplicates are skipped
         snap = replay.snapshot(box.mm.episodic.db_path)
     by_user = {}
     for m in snap["memories"]:
         by_user.setdefault(m["user"], []).append((m["content"], m["timestamp"], m["facts"], m["schemas"]))
     assert by_user["alice"] == by_user["bob"]  # same messages, same timestamps -> same derived memory
-    assert exported["format"] == "recallix-memory" and exported["version"] == 1
+    assert exported["format"] == "recallic-memory" and exported["version"] == 1
 
 
 def test_import_from_mem0_and_plain_text():
@@ -44,7 +44,7 @@ def test_import_from_mem0_and_plain_text():
     assert items[0]["timestamp"] == 1735787045.0 and items[1]["metadata"] == {"source": "chat"}
     text = portable.parse("- I live in Pune.\n\n• I'm allergic to peanuts.\n", "text")
     assert [i["content"] for i in text] == ["I live in Pune.", "I'm allergic to peanuts."]
-    for bad, fmt in (({"format": "other"}, "recallix"), ("x", "nope")):
+    for bad, fmt in (({"format": "other"}, "recallic"), ("x", "nope")):
         try:
             portable.parse(bad, fmt)
             raise AssertionError("expected ValueError")
@@ -58,12 +58,12 @@ def test_export_import_api(client, api_keys):
         assert client.post("/memory/store", json={"content": m}, headers=alice).status_code == 200
     exported = client.get("/memory/export", headers=alice).json()["data"]
     assert [m["content"] for m in exported["memories"]] == MESSAGES
-    r = client.post("/memory/import", json={"format": "recallix", "data": exported, "user_id": "carol"}, headers=admin)
+    r = client.post("/memory/import", json={"format": "recallic", "data": exported, "user_id": "carol"}, headers=admin)
     assert r.status_code == 200 and r.json()["data"]["stored"] == len(MESSAGES)
     # a user key cannot import into someone else's memory
     r = client.post("/memory/import", json={"format": "text", "data": "hello", "user_id": "carol"}, headers=alice)
     assert r.status_code == 403
-    assert client.post("/memory/import", json={"format": "recallix", "data": {"format": "x"}}, headers=alice).status_code == 422
+    assert client.post("/memory/import", json={"format": "recallic", "data": {"format": "x"}}, headers=alice).status_code == 422
 
 
 # --------------------------------------------------------------------------- MCP server
@@ -91,7 +91,7 @@ class FakeMemory:
         return {"status": "edited", "memory_id": memory_id + 100, "previous_memory_id": memory_id}
 
     def export(self):
-        return {"format": "recallix-memory", "memories": []}
+        return {"format": "recallic-memory", "memories": []}
 
 
 def _session(server, messages):
@@ -102,9 +102,9 @@ def _session(server, messages):
 
 def test_mcp_handshake_tools_and_calls():
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from recallix.mcp_server import RecallixMCP
+    from recallic.mcp_server import RecallicMCP
     mem = FakeMemory()
-    replies = _session(RecallixMCP(mem, agent_id="claude-desktop"), [
+    replies = _session(RecallicMCP(mem, agent_id="claude-desktop"), [
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "capabilities": {}}},
         {"jsonrpc": "2.0", "method": "notifications/initialized"},
         {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
@@ -125,16 +125,16 @@ def test_mcp_handshake_tools_and_calls():
 
 def test_mcp_update_memory_tool():
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from recallix.mcp_server import RecallixMCP, TOOLS
+    from recallic.mcp_server import RecallicMCP, TOOLS
     assert "update_memory" in {t["name"] for t in TOOLS}
     mem = FakeMemory()
-    text = RecallixMCP(mem).call_tool("update_memory", {"memory_id": 7, "content": "I moved to Mumbai, not Pune."})
+    text = RecallicMCP(mem).call_tool("update_memory", {"memory_id": 7, "content": "I moved to Mumbai, not Pune."})
     assert mem.calls[-1] == ("update", 7, "I moved to Mumbai, not Pune.") and "memory 7 is now memory 107" in text
 
 
 def test_mcp_unknown_protocol_version_gets_latest_supported():
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from recallix.mcp_server import RecallixMCP, SUPPORTED_VERSIONS
-    r = RecallixMCP(FakeMemory()).handle({"jsonrpc": "2.0", "id": 1, "method": "initialize",
+    from recallic.mcp_server import RecallicMCP, SUPPORTED_VERSIONS
+    r = RecallicMCP(FakeMemory()).handle({"jsonrpc": "2.0", "id": 1, "method": "initialize",
                                           "params": {"protocolVersion": "1999-01-01"}})
     assert r["result"]["protocolVersion"] == SUPPORTED_VERSIONS[0]

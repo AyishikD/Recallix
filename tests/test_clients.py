@@ -28,7 +28,7 @@ def live_server(engine):
 
 def test_python_sdk_roundtrip(live_server, api_keys):
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from recallix import Memory, RecallixError
+    from recallic import Memory, RecallicError
     mem = Memory(api_key=api_keys["alice"]["X-API-Key"], base_url=live_server)
 
     stored = mem.store("The Orion launch date is March 4.", agent_id="planner", memory_type="shared")
@@ -39,7 +39,7 @@ def test_python_sdk_roundtrip(live_server, api_keys):
     assert mem.timeline()[0]["content"].startswith("The Orion")
     assert mem.delete(stored["memory_id"])["deleted"] == stored["memory_id"]
 
-    with pytest.raises(RecallixError) as e:
+    with pytest.raises(RecallicError) as e:
         mem.recall("x", user_id="bob")  # user key may not act for another user
     assert e.value.status == 403
 

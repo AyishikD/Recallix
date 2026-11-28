@@ -1,5 +1,5 @@
 # ============================================================================
-# Recallix Configuration
+# Recallic Configuration
 # ============================================================================
 # This is the single source of truth for all model and infrastructure settings.
 # Edit this file to switch between providers, models, or tune performance.
@@ -26,7 +26,7 @@ models:
   # Embeddings: "local" (in-process sentence-transformers, fully offline; needs requirements-local.txt),
   # "ollama", or any OpenAI-compatible provider below. The shipped ranking, answer-check and trust
   # fits were made with the local default model; with another model, refit (eval/README.md).
-  # Env RECALLIX_EMBEDDING_PROVIDER overrides.
+  # Env RECALLIC_EMBEDDING_PROVIDER overrides.
   embedding_provider: "local"
 
   # --- Local (in-process, offline) ---
@@ -84,15 +84,15 @@ models:
 # Storage (SQLite databases, API key hashes, learned model files)
 # ============================================================================
 storage:
-  root: "backend/storage"   # relative to the project root; env RECALLIX_STORAGE_ROOT overrides
+  root: "backend/storage"   # relative to the project root; env RECALLIC_STORAGE_ROOT overrides
 
 # ============================================================================
 # Vector engine (C++ service, backend/infra_cpp)
-# The shared secret is NOT configured here: set RECALLIX_INTERNAL_KEY in the
+# The shared secret is NOT configured here: set RECALLIC_INTERNAL_KEY in the
 # environment / .env (python -m backend.tools.setup_env creates one).
 # ============================================================================
 engine:
-  url: "http://127.0.0.1:8080"   # env RECALLIX_ENGINE_URL overrides
+  url: "http://127.0.0.1:8080"   # env RECALLIC_ENGINE_URL overrides
   timeout_seconds: 10
   bulk_batch_size: 1000          # vectors per request when rebuilding an index
 

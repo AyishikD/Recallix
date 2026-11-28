@@ -10,7 +10,7 @@ from backend.tools import get_engine
 
 
 def fake_release(folder, target="linux-arm64", payload=b"#!engine", sums_override=None):
-    name = f"recallix-engine-{target}"
+    name = f"recallic-engine-{target}"
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode="w:gz") as tar:
         info = tarfile.TarInfo(f"{name}/memory_service")

@@ -1,4 +1,4 @@
-"""The Open WebUI filter (integrations/open-webui), run as Open WebUI runs it, against the real Recallix API."""
+"""The Open WebUI filter (integrations/open-webui), run as Open WebUI runs it, against the real Recallic API."""
 import asyncio
 import importlib.util
 from pathlib import Path
@@ -9,8 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def load_filter():
-    spec = importlib.util.spec_from_file_location("recallix_memory_filter",
-                                                  ROOT / "integrations/open-webui/recallix_memory_filter.py")
+    spec = importlib.util.spec_from_file_location("recallic_memory_filter",
+                                                  ROOT / "integrations/open-webui/recallic_memory_filter.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -30,7 +30,7 @@ class Response:
 
 @pytest.fixture
 def owui(client, monkeypatch):
-    """The filter module, with its HTTP calls answered by the test Recallix server, and a service key."""
+    """The filter module, with its HTTP calls answered by the test Recallic server, and a service key."""
     from backend.api import keys
     mod = load_filter()
     monkeypatch.setattr(mod.requests, "post",
@@ -75,7 +75,7 @@ def test_users_never_see_each_others_memories(owui):
     assert "Pune" not in notes[0]
 
 
-def test_one_note_per_turn_and_the_chat_survives_recallix_being_down(owui):
+def test_one_note_per_turn_and_the_chat_survives_recallic_being_down(owui):
     mod, f = owui
     turn(f, "u-1", "I moved to Pune in March for my new job.")
     out, notes, _ = turn(f, "u-1", "Which city did I move to for my new job?", history=[{"role": "system", "content": f"{mod.MARKER}\nold note"}])

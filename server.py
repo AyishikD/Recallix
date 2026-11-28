@@ -1,8 +1,8 @@
 """
-Recallix API server.
+Recallic API server.
 
   python -m backend.tools.setup_env     # once: creates .env (engine secret) and an admin API key
-  ./backend/infra_cpp/build/memory_service &   # vector engine (reads RECALLIX_* from the environment)
+  ./backend/infra_cpp/build/memory_service &   # vector engine (reads RECALLIC_* from the environment)
   python server.py                      # or: uvicorn server:app
 
 Startup: verify the engine is reachable, push HNSW parameters, rebuild any
@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
     get_scheduler().stop()
 
 
-app = FastAPI(title="Recallix API", lifespan=lifespan)
+app = FastAPI(title="Recallic API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins(),
@@ -56,7 +56,7 @@ app.include_router(internal_router)
 
 @app.get("/")
 def root():
-    return {"service": "recallix", "status": "running"}
+    return {"service": "recallic", "status": "running"}
 
 
 @app.get("/health")
@@ -79,5 +79,5 @@ def health():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=os.environ.get("RECALLIX_API_HOST", "127.0.0.1"),
-                port=int(os.environ.get("RECALLIX_API_PORT", "8000")))
+    uvicorn.run(app, host=os.environ.get("RECALLIC_API_HOST", "127.0.0.1"),
+                port=int(os.environ.get("RECALLIC_API_PORT", "8000")))

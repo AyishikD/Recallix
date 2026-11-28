@@ -1,6 +1,6 @@
 """
-Live tests against a running Recallix:
-    RECALLIX_URL=http://127.0.0.1:8000 RECALLIX_SERVICE_KEY=rx_... pytest tests
+Live tests against a running Recallic:
+    RECALLIC_URL=http://127.0.0.1:8000 RECALLIC_SERVICE_KEY=rx_... pytest tests
 """
 import asyncio
 import os
@@ -11,14 +11,14 @@ import pytest
 from llama_index.core.base.llms.types import ChatMessage, CompletionResponse, LLMMetadata
 from llama_index.core.llms.custom import CustomLLM
 from llama_index.core.memory import Memory
-from llama_index.memory.recallix import RecallixMemoryBlock
+from llama_index.memory.recallic import RecallicMemoryBlock
 
-URL, KEY = os.environ.get("RECALLIX_URL"), os.environ.get("RECALLIX_SERVICE_KEY")
-pytestmark = pytest.mark.skipif(not (URL and KEY), reason="needs RECALLIX_URL and RECALLIX_SERVICE_KEY")
+URL, KEY = os.environ.get("RECALLIC_URL"), os.environ.get("RECALLIC_SERVICE_KEY")
+pytestmark = pytest.mark.skipif(not (URL and KEY), reason="needs RECALLIC_URL and RECALLIC_SERVICE_KEY")
 
 
 def _block(user, **kw):
-    return RecallixMemoryBlock(api_key=KEY, base_url=URL, user_id=user, agent_id="li-test", timeout=120, **kw)
+    return RecallicMemoryBlock(api_key=KEY, base_url=URL, user_id=user, agent_id="li-test", timeout=120, **kw)
 
 
 def _memory(user, **kw):
@@ -62,7 +62,7 @@ def test_the_question_is_not_recalled_as_its_own_answer():
 def test_no_decline_note_when_turned_off():
     user = f"li-{uuid.uuid4().hex[:8]}"
     out = asyncio.run(_memory(user, tell_model_on_decline=False).aget(input="What is my brother's name?"))
-    assert "Recallix" not in _system_text(out) and "record" not in _system_text(out)
+    assert "Recallic" not in _system_text(out) and "record" not in _system_text(out)
 
 
 class RecordingLLM(CustomLLM):

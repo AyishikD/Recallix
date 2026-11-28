@@ -27,7 +27,7 @@ jobs:
             cmake_extra: ""
           - target: linux-x86_64-noavx2   # older x86-64 CPUs; slower dot product
             os: ubuntu-22.04
-            cmake_extra: "-DRECALLIX_DISABLE_AVX2=ON"
+            cmake_extra: "-DRECALLIC_DISABLE_AVX2=ON"
           - target: linux-arm64           # NEON (Graviton, Ampere, Raspberry Pi 4/5 with a 64-bit OS)
             os: ubuntu-22.04-arm
             cmake_extra: ""
@@ -44,17 +44,17 @@ jobs:
         run: |
           LINK=""
           if [ "$RUNNER_OS" = "Linux" ]; then LINK="-static-libstdc++ -static-libgcc"; fi
-          cmake -S backend/infra_cpp -B build -DCMAKE_BUILD_TYPE=Release -DRECALLIX_TSAN=OFF \
+          cmake -S backend/infra_cpp -B build -DCMAKE_BUILD_TYPE=Release -DRECALLIC_TSAN=OFF \
                 -DCMAKE_EXE_LINKER_FLAGS="$LINK" ${{ matrix.cmake_extra }}
           cmake --build build -j 4 --target memory_service test_vector_engine
       - name: Unit tests
         run: ctest --test-dir build --output-on-failure
       - name: Start once and answer /health and /status
         run: |
-          export RECALLIX_INTERNAL_KEY=smoke-test-only-not-a-secret RECALLIX_ENGINE_PORT=18080
+          export RECALLIC_INTERNAL_KEY=smoke-test-only-not-a-secret RECALLIC_ENGINE_PORT=18080
           ./build/memory_service > engine.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:18080/health >/dev/null && break; sleep 1; done
-          H="X-Internal-Key: $RECALLIX_INTERNAL_KEY"
+          H="X-Internal-Key: $RECALLIC_INTERNAL_KEY"
           curl -sf -H "$H" http://127.0.0.1:18080/status | tee status.json
           curl -sf -H "$H" -H "Content-Type: application/json" -d '{"namespace":"smoke","id":"a","vector":[1,0,0,0]}' http://127.0.0.1:18080/add
           curl -sf -H "$H" -H "Content-Type: application/json" -d '{"namespace":"smoke","id":"b","vector":[0,1,0,0]}' http://127.0.0.1:18080/add
@@ -66,15 +66,15 @@ jobs:
           if [ "$RUNNER_OS" = "Linux" ]; then ldd build/memory_service; else otool -L build/memory_service; fi
       - name: Package
         run: |
-          name=recallix-engine-${{ matrix.target }}
+          name=recallic-engine-${{ matrix.target }}
           mkdir "$name"
           cp build/memory_service "$name/"
           cp LICENSE* "$name/" 2>/dev/null || true
           tar -czf "$name.tar.gz" "$name"
       - uses: actions/upload-artifact@v7
         with:
-          name: recallix-engine-${{ matrix.target }}
-          path: recallix-engine-${{ matrix.target }}.tar.gz
+          name: recallic-engine-${{ matrix.target }}
+          path: recallic-engine-${{ matrix.target }}.tar.gz
           if-no-files-found: error
 
   release:

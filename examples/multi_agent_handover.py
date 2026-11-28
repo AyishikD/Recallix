@@ -1,14 +1,14 @@
 """
-Multi-agent handover through Recallix.
+Multi-agent handover through Recallic.
 
 Agent A (an LLM) invents a fact and stores it as a *shared* memory; agent B (an
-LLM) recalls it through Recallix and answers from it. Distractors with the same
-shape are stored first. Recallix itself makes no LLM calls; only the two agents
+LLM) recalls it through Recallic and answers from it. Distractors with the same
+shape are stored first. Recallic itself makes no LLM calls; only the two agents
 do, via the provider in config.yaml `models.provider`.
 
 Environment:
-  RECALLIX_API_URL   default http://127.0.0.1:8000
-  RECALLIX_API_KEY   a service key (python -m backend.tools.keys create --user demo --role service)
+  RECALLIC_API_URL   default http://127.0.0.1:8000
+  RECALLIC_API_KEY   a service key (python -m backend.tools.keys create --user demo --role service)
   <PROVIDER>_API_KEY for the agents' LLM provider (e.g. NVIDIA_API_KEY)
 
 Run:  python examples/multi_agent_handover.py [--trials 5]
@@ -25,8 +25,8 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from backend.brain.models.model_router import ModelRouter  # noqa: E402
 
-API = os.environ.get("RECALLIX_API_URL", "http://127.0.0.1:8000")
-KEY = os.environ.get("RECALLIX_API_KEY")
+API = os.environ.get("RECALLIC_API_URL", "http://127.0.0.1:8000")
+KEY = os.environ.get("RECALLIC_API_KEY")
 
 
 def call(path, payload):
@@ -57,7 +57,7 @@ def main():
     ap.add_argument("--trials", type=int, default=5)
     args = ap.parse_args()
     if not KEY:
-        raise SystemExit("Set RECALLIX_API_KEY to a service key.")
+        raise SystemExit("Set RECALLIC_API_KEY to a service key.")
     router = ModelRouter()
     ok = 0
     for i in range(args.trials):

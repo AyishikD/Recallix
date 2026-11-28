@@ -1,7 +1,7 @@
 """
 Curate the ATOMIC rule index for implicit facts (the Phase 4 follow-up).
 
-    RECALLIX_STORAGE_ROOT=<with inference_rules/ built> python phase6/curate_atomic.py
+    RECALLIC_STORAGE_ROOT=<with inference_rules/ built> python phase6/curate_atomic.py
 
 ATOMIC effects are crowd-sourced *likely* consequences; implicit facts need *certain* ones.
 For the event patterns that real messages reach (top matches of the phase-6 message pool —
@@ -25,7 +25,7 @@ SYSTEM = """You judge commonsense inferences for a memory system that must never
 For each event and each listed effect, decide: if the event happened exactly as stated, is the effect
 CERTAINLY true (true in essentially every case, a definitional or unavoidable consequence)?
 Likely, typical, emotional, intentional or future consequences are NOT certain.
-Examples (none of these come from Recallix's evaluation sentences):
+Examples (none of these come from Recallic's evaluation sentences):
 "PersonX gets a puppy" -> "has a dog": yes.   "PersonX books a flight" -> "flies": no (not yet / may cancel).
 "PersonX wins the lottery" -> "receives money": yes.   "PersonX orders a pizza" -> "enjoys the pizza": no.
 "PersonX breaks PersonX's arm" -> "is injured": yes.   "PersonX joins a choir" -> "becomes a good singer": no.

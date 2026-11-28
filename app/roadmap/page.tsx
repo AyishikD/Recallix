@@ -39,7 +39,7 @@ const GROUPS: { title: string; lede: string; items: { name: string; detail: stri
             { name: "Verifiable deletion", detail: "Deleting a memory removes every derived copy, checks each store, and returns a receipt. Receipts go into a hash-chained log that exposes any later edit and never stores the content.", status: "shipped" },
             { name: "Memory fuzzer", detail: "Generates tests from stored facts — ask it differently, ask about a stranger, change it — and writes failures as runnable memory tests. It found three real bugs, now fixed.", status: "shipped" },
             { name: "Unknown-person check", detail: "A question about someone memory has never heard of no longer returns your own facts.", status: "shipped" },
-            { name: "Trust score", detail: "Every answer carries a probability that it is right, combined from the signals Recallix already computes and checked for calibration on conversations it was not fitted on.", status: "shipped" },
+            { name: "Trust score", detail: "Every answer carries a probability that it is right, combined from the signals Recallic already computes and checked for calibration on conversations it was not fitted on.", status: "shipped" },
             { name: "Proactive recall", detail: "Given what the user just said, surface facts worth keeping in mind — an allergy when they book a restaurant — each with the reason. Small talk surfaces nothing.", status: "shipped" },
         ],
     },
@@ -93,7 +93,7 @@ export default function RoadmapPage() {
                         <Reveal as="span" delay={0.2} className="text-sheen">What isn’t.</Reveal>
                     </Headline>
                     <Reveal delay={0.34}>
-                        <Lede className="mx-auto mt-6">The honest state of Recallix — including the parts that still fall short.</Lede>
+                        <Lede className="mx-auto mt-6">The honest state of Recallic — including the parts that still fall short.</Lede>
                     </Reveal>
                 </ScrollFade>
             </Section>

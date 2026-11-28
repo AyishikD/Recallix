@@ -4,10 +4,10 @@
 #   /data/...             SQLite databases, fitted files, downloaded models (/data/models)
 set -e
 cd /app
-if [ -z "$RECALLIX_INTERNAL_KEY" ]; then
+if [ -z "$RECALLIC_INTERNAL_KEY" ]; then
   [ -s /data/.internal_key ] || python -c "import secrets; print(secrets.token_hex(32))" > /data/.internal_key
   chmod 600 /data/.internal_key
-  RECALLIX_INTERNAL_KEY=$(cat /data/.internal_key); export RECALLIX_INTERNAL_KEY
+  RECALLIC_INTERNAL_KEY=$(cat /data/.internal_key); export RECALLIC_INTERNAL_KEY
 fi
 
 # first start: create the admin API key and print it once
@@ -15,8 +15,8 @@ python - <<'PY'
 from backend.api import keys
 if not keys.list_keys():
     key = keys.create("admin", role="admin", label="docker first start")
-    print("\n" + "=" * 72 + "\n Recallix admin API key (shown ONCE - store it now):\n   " + key +
-          "\n Create user keys with:  docker compose exec recallix python -m backend.tools.keys create --user <name>\n" +
+    print("\n" + "=" * 72 + "\n Recallic admin API key (shown ONCE - store it now):\n   " + key +
+          "\n Create user keys with:  docker compose exec recallic python -m backend.tools.keys create --user <name>\n" +
           "=" * 72 + "\n", flush=True)
 PY
 

@@ -59,9 +59,9 @@ def conversations(dataset, data, split, limit):
 def make_system(name, embedder):
     from adapters import builtin
     if name == "recallix":
-        return builtin.Recallix(embedder, mode="served")
+        return builtin.Recallic(embedder, mode="served")
     if name == "recallix-ranked":
-        return builtin.Recallix(embedder, mode="ranked")
+        return builtin.Recallic(embedder, mode="ranked")
     if name == "vector-search":
         return builtin.Dense(embedder)
     if name == "bm25":

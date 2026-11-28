@@ -14,14 +14,14 @@ const n = (x: number) => Math.round(x).toLocaleString("en-US");
 /* Every number on this page is read from eval/results/summary.json (eval/publish_results.py). */
 
 const SYSTEM_LABEL: Record<string, string> = {
-    recallix: "Recallix (served, after answer check)", recallix_ranked: "Recallix ranking", dense: "Vector search", bm25: "BM25",
+    recallix: "Recallic (served, after answer check)", recallix_ranked: "Recallic ranking", dense: "Vector search", bm25: "BM25",
 };
 
 export default function BenchmarkPage() {
     const m = results.machine;
     const chart = hnsw.filter(r => r.n === 100000 && r.dim === 128).map(r => ({
         name: `${r.data}, ef ${r.efSearch}`,
-        Recallix: +(r.recall_at_10 * 100).toFixed(1),
+        Recallic: +(r.recall_at_10 * 100).toFixed(1),
         hnswlib: +((hnswReference.find(h => h.data === r.data && h.efSearch === r.efSearch && h.n === r.n)?.recall_at_10 ?? 0) * 100).toFixed(1),
     }));
 
@@ -62,7 +62,7 @@ export default function BenchmarkPage() {
                         </Lede>
                     </Reveal>
                     <div className="mt-12 grid gap-5 md:grid-cols-2">
-                        <Reveal from="left"><Tile><Stat value={<CountUp value={pct(longMemEval.systems.recallix_ranked?.overall?.["recall@10"], 1)} />} label="evidence recall@10, Recallix ranking"
+                        <Reveal from="left"><Tile><Stat value={<CountUp value={pct(longMemEval.systems.recallix_ranked?.overall?.["recall@10"], 1)} />} label="evidence recall@10, Recallic ranking"
                             sub={`Vector search ${pct(longMemEval.systems.dense?.overall?.["recall@10"], 1)} · BM25 ${pct(longMemEval.systems.bm25?.overall?.["recall@10"], 1)} · served after the answer check ${pct(longMemEval.systems.recallix?.overall?.["recall@10"], 1)}`} /></Tile></Reveal>
                         <Reveal from="right" delay={0.08}><Tile><Stat value={<CountUp value={pct(longMemEval.abstention.unanswerable_declined)} />} label="of unanswerable questions declined"
                             sub={`Wrongly declined ${pct(longMemEval.abstention.answerable_wrongly_declined, 1)} of ${longMemEval.abstention.n_answerable} answerable questions. The answer check separates the two well (AUC ${longMemEval.abstention.auc_answer_margin?.toFixed(2) ?? "—"}), but its threshold was set on LoCoMo and declines too often here; it needs calibrating per deployment.`} /></Tile></Reveal>
@@ -71,9 +71,9 @@ export default function BenchmarkPage() {
                         <DataTable head={["System", "recall@5", "recall@10", "hit@10"]}
                             rows={[...Object.entries(longMemEval.systems).map(([name, r]) => [SYSTEM_LABEL[name] ?? name,
                                 pct(r.overall["recall@5"], 1), pct(r.overall["recall@10"], 1), pct(r.overall["hit@10"], 1)]),
-                                ...([["Recallix, deep recall (served)", longMemEvalDeep],
-                                      ["Recallix, declines keep their results*", longMemEvalKeep],
-                                      ["Recallix, deep recall + declines keep their results*", longMemEvalKeepDeep]] as const)
+                                ...([["Recallic, deep recall (served)", longMemEvalDeep],
+                                      ["Recallic, declines keep their results*", longMemEvalKeep],
+                                      ["Recallic, deep recall + declines keep their results*", longMemEvalKeepDeep]] as const)
                                     .filter(([, run]) => run)
                                     .map(([label, run]) => [label, pct(run!.systems.recallix.overall["recall@5"], 1),
                                         pct(run!.systems.recallix.overall["recall@10"], 1), pct(run!.systems.recallix.overall["hit@10"], 1)])]} />
@@ -116,15 +116,15 @@ export default function BenchmarkPage() {
             <Section tone="cloud" id="head-to-head">
                 <Reveal>
                     <Eyebrow tone="muted">Head to head</Eyebrow>
-                    <Headline className="max-w-[760px]">Recallix vs an existing memory layer, same questions.</Headline>
+                    <Headline className="max-w-[760px]">Recallic vs an existing memory layer, same questions.</Headline>
                     <Lede className="mt-5 max-w-[680px]">
-                        Recallix and a widely used open-source memory layer that calls an LLM on every write both stored the same held-out LoCoMo conversation ({n(MEM0.scope.messages)} messages), never inspected while building Recallix, and answered the
+                        Recallic and a widely used open-source memory layer that calls an LLM on every write both stored the same held-out LoCoMo conversation ({n(MEM0.scope.messages)} messages), never inspected while building Recallic, and answered the
                         same {MEM0.scope.questions} questions. One model wrote every final answer and one judge marked them, so only the
                         memory layer differs. The protocol was written before the run.
                     </Lede>
                 </Reveal>
                 <Reveal from="right" className="mt-10">
-                    <DataTable head={["", "Recallix", "Recallix, deep recall", "LLM-based memory layer"]} rows={[
+                    <DataTable head={["", "Recallic", "Recallic, deep recall", "LLM-based memory layer"]} rows={[
                         ...([["Accuracy, all questions", "accuracy_overall"], ["Accuracy, answerable questions", "accuracy_answerable"],
                              ["Trick questions declined", "adversarial_declined"]] as const).map(([label, k]) =>
                             [label, pct(MEM0.accuracy.recallix[k], 1), pct(MEM0.accuracy.recallix_deep[k], 1), pct(MEM0.accuracy.mem0[k], 1)]),
@@ -138,7 +138,7 @@ export default function BenchmarkPage() {
                 </Reveal>
                 <div className="mt-6 max-w-[760px] space-y-3 text-[14px] text-ink-2">
                     <p>
-                        <strong className="text-ink">Default recall ties; deep recall leads, not yet significantly.</strong> Recallix alone was right on{" "}
+                        <strong className="text-ink">Default recall ties; deep recall leads, not yet significantly.</strong> Recallic alone was right on{" "}
                         {MEM0.significance.recallix.all.only_recallix_right} questions, the other system alone on {MEM0.significance.recallix.all.only_mem0_right}{" "}
                         (exact McNemar p = {MEM0.significance.recallix.all.p.toFixed(2)}). With deep recall: {MEM0.significance.recallix_deep.all.only_recallix_right} vs{" "}
                         {MEM0.significance.recallix_deep.all.only_mem0_right} (p = {MEM0.significance.recallix_deep.all.p.toFixed(2)}), so one conversation is not enough
@@ -148,18 +148,18 @@ export default function BenchmarkPage() {
                         <strong className="text-ink">Earlier run.</strong> On a first conversation ({n(MEM0.earlier_run.scope.questions)} questions) the result was also a
                         tie: {pct(MEM0.earlier_run.accuracy.recallix.accuracy_overall, 1)} vs {pct(MEM0.earlier_run.accuracy.mem0.accuracy_overall, 1)} (p ={" "}
                         {MEM0.earlier_run.significance.recallix.all.p.toFixed(2)}). That conversation was studied question by question afterwards to improve
-                        Recallix, so it no longer counts as held out.
+                        Recallic, so it no longer counts as held out.
                     </p>
                     <p>
-                        <strong className="text-ink">Cost and speed are not close.</strong> Recallix stores without calling an LLM; the other
+                        <strong className="text-ink">Cost and speed are not close.</strong> Recallic stores without calling an LLM; the other
                         system made about {MEM0.mem0_store_cost.llm_calls_per_message} model calls per message (measured on {n(MEM0.mem0_store_cost.messages)} messages). Writes were about {writeSpeedup(MEM0)}×
                         faster at the median. Extrapolated from its measured cost per message, a million messages would cost about
-                        ${perMillion(MEM0).toLocaleString("en-US")} in LLM calls to store; Recallix stays at $0.
+                        ${perMillion(MEM0).toLocaleString("en-US")} in LLM calls to store; Recallic stays at $0.
                     </p>
                     <p className="text-ink-3">
                         One conversation, so the error bars are wide. The other system ran its open-source release at default settings,
-                        with gpt-4o-mini extracting memories. Recallix: {MEM0.setup.recallix}. Answers and judging:{" "}
-                        {MEM0.setup.answer_and_judge}. Recallix was timed in-process on an Apple M4; the other system’s times include its
+                        with gpt-4o-mini extracting memories. Recallic: {MEM0.setup.recallix}. Answers and judging:{" "}
+                        {MEM0.setup.answer_and_judge}. Recallic was timed in-process on an Apple M4; the other system’s times include its
                         model calls. Its cost is estimated from token usage at list prices, measured on {MEM0.mem0_store_cost.measured_on}.
                     </p>
                 </div>
@@ -189,7 +189,7 @@ export default function BenchmarkPage() {
                                 <XAxis dataKey="name" stroke="#C3C7D1" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#C3C7D1" fontSize={12} unit="%" domain={[0, 100]} tickLine={false} axisLine={false} />
                                 <Tooltip contentStyle={{ background: "#1C2D52", border: "1px solid #2B3D66", borderRadius: 12, color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                                <Bar dataKey="Recallix" fill="#FF6B5B" radius={[6, 6, 0, 0]} isAnimationActive={false} />
+                                <Bar dataKey="Recallic" fill="#FF6B5B" radius={[6, 6, 0, 0]} isAnimationActive={false} />
                                 <Bar dataKey="hnswlib" fill="#8D96AB" radius={[6, 6, 0, 0]} isAnimationActive={false} />
                             </BarChart>
                         </ResponsiveContainer>
@@ -197,7 +197,7 @@ export default function BenchmarkPage() {
                 )}
                 <div className="mt-8">
                     <DataTable dark head={["Implementation", "Vectors", "Dim", "Data", "M / efC / efS", "recall@10", "Average", "p99", "Build"]}
-                        rows={[...hnsw.map(r => [`Recallix (${r.simd})`, r.n.toLocaleString(), r.dim, r.data, `${r.M} / ${r.efConstruction} / ${r.efSearch}`,
+                        rows={[...hnsw.map(r => [`Recallic (${r.simd})`, r.n.toLocaleString(), r.dim, r.data, `${r.M} / ${r.efConstruction} / ${r.efSearch}`,
                             pct(r.recall_at_10, 1), ms(r.search_avg_ms, 3), ms(r.search_p99_ms, 3), `${r.build_seconds.toFixed(1)} s`]),
                         ...hnswReference.map(r => ["hnswlib", r.n.toLocaleString(), r.dim, r.data, `${r.M} / ${r.efConstruction} / ${r.efSearch}`,
                             pct(r.recall_at_10, 1), ms(r.search_avg_ms, 3), "—", `${r.build_seconds.toFixed(1)} s`])]} />

@@ -1,4 +1,5 @@
 """The open benchmark harness runs any adapter on the same data with the same scoring."""
+# eval keeps the system names it used when the recorded results were made (recallix, recallix-ranked).
 import json
 import sys
 from pathlib import Path

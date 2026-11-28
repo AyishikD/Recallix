@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// Static export, deployed by Vercel (https://recallix.vercel.app) on every push to main.
+// Static export, deployed by Vercel (https://www.recallic.com) on every push to main.
 const nextConfig: NextConfig = {
   output: "export",
   images: {

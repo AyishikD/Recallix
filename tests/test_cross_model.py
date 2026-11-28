@@ -19,12 +19,12 @@ def _mcp_call(server, name, arguments):
 
 def test_memory_is_shared_across_models_and_clients(live_server, api_keys):  # noqa: F811
     sys.path.insert(0, str(ROOT / "sdk" / "python"))
-    from recallix import Memory
-    from recallix.mcp_server import RecallixMCP
+    from recallic import Memory
+    from recallic.mcp_server import RecallicMCP
     key = api_keys["alice"]["X-API-Key"]
 
     # "Claude Desktop" stores through MCP (shared: every agent of this user may see it) ...
-    claude = RecallixMCP(Memory(api_key=key, base_url=live_server), agent_id="claude-desktop")
+    claude = RecallicMCP(Memory(api_key=key, base_url=live_server), agent_id="claude-desktop")
     assert "stored" in _mcp_call(claude, "store_memory", {"content": "I'm allergic to peanuts.", "memory_type": "shared"})
     # ... and something only for itself.
     assert "stored" in _mcp_call(claude, "store_memory", {"content": "My diary password hint is blue whale.",

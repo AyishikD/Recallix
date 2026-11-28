@@ -1,5 +1,5 @@
 """
-Replay and diff: what Recallix derived from your messages, and what would change.
+Replay and diff: what Recallic derived from your messages, and what would change.
 
 Every memory keeps its original message, so the derived state (extracted facts,
 topics, importance) can be rebuilt by re-running the deterministic store pipeline

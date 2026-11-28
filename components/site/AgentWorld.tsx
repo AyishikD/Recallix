@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /* A small cartoon world for the footer: colourful agents wander over night hills, meet,
- * swap memories, and visit the Recallix hub. Pure canvas, no assets or libraries.
+ * swap memories, and visit the Recallic hub. Pure canvas, no assets or libraries.
  * Pauses off-screen / in background tabs; a single still frame under reduced motion. */
 
 const PALETTE = ["#FF6B5B", "#F4EDE0", "#FFB454", "#5EC8B8", "#8FB3FF", "#FF9A8B", "#F2C14E"];
@@ -239,7 +239,7 @@ export function AgentWorld({ height = 260 }: { height?: number }) {
             ctx.beginPath(); ctx.arc(hx, hy, 3, 0, Math.PI * 2); ctx.fill();
             ctx.font = "600 12px -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif";
             ctx.textAlign = "center"; ctx.fillStyle = "rgba(244,237,224,0.9)";
-            ctx.fillText("Recallix", hx, hy - 28);
+            ctx.fillText("Recallic", hx, hy - 28);
 
             // flying memory cards
             for (const f of flyers) {
@@ -287,7 +287,7 @@ export function AgentWorld({ height = 260 }: { height?: number }) {
     }, []);
 
     return (
-        <canvas ref={ref} role="img" aria-label="Animated scene: small agents walk over hills, share memories with each other and visit the Recallix hub."
+        <canvas ref={ref} role="img" aria-label="Animated scene: small agents walk over hills, share memories with each other and visit the Recallic hub."
             className="block w-full" style={{ height }} />
     );
 }

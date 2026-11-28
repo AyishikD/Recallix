@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(RecallixVectorEngine CXX)
+project(RecallicVectorEngine CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,33 +17,33 @@ include(CheckCXXCompilerFlag)
 set(SIMD_FLAGS "")
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     check_cxx_compiler_flag("-mavx2 -mfma" HAS_AVX2_FMA)
-    if(HAS_AVX2_FMA AND NOT RECALLIX_DISABLE_AVX2)
+    if(HAS_AVX2_FMA AND NOT RECALLIC_DISABLE_AVX2)
         set(SIMD_FLAGS -mavx2 -mfma)
     endif()
 endif()
 
 find_package(Threads REQUIRED)
 
-add_library(recallix_index STATIC vector_engine.cpp)
-target_compile_options(recallix_index PUBLIC ${SIMD_FLAGS})
-target_link_libraries(recallix_index PUBLIC Threads::Threads)
+add_library(recallic_index STATIC vector_engine.cpp)
+target_compile_options(recallic_index PUBLIC ${SIMD_FLAGS})
+target_link_libraries(recallic_index PUBLIC Threads::Threads)
 
 add_executable(memory_service main.cpp)
-target_link_libraries(memory_service PRIVATE recallix_index)
+target_link_libraries(memory_service PRIVATE recallic_index)
 
 add_executable(benchmark_hnsw benchmark_hnsw.cpp)
-target_link_libraries(benchmark_hnsw PRIVATE recallix_index)
+target_link_libraries(benchmark_hnsw PRIVATE recallic_index)
 
 enable_testing()
 add_executable(test_vector_engine test_vector_engine.cpp)
-target_link_libraries(test_vector_engine PRIVATE recallix_index)
+target_link_libraries(test_vector_engine PRIVATE recallic_index)
 add_test(NAME vector_engine COMMAND test_vector_engine)
 # A hang (e.g. a lock that starves writers) must fail fast instead of eating CI time.
 set_tests_properties(vector_engine PROPERTIES TIMEOUT 300)
 
 # Same tests under ThreadSanitizer (data-race detection).
-option(RECALLIX_TSAN "Build the ThreadSanitizer test target" ON)
-if(RECALLIX_TSAN)
+option(RECALLIC_TSAN "Build the ThreadSanitizer test target" ON)
+if(RECALLIC_TSAN)
     add_executable(test_vector_engine_tsan test_vector_engine.cpp vector_engine.cpp)
     target_compile_options(test_vector_engine_tsan PRIVATE -fsanitize=thread -O1 -g ${SIMD_FLAGS})
     target_link_options(test_vector_engine_tsan PRIVATE -fsanitize=thread)

@@ -3,19 +3,19 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "recallix-haystack"
-version = "0.1.1"
-description = "Recallix as the memory store of Haystack agents: self-hosted, no LLM calls for memory, says when it has no record."
+name = "recallic-haystack"
+version = "0.2.0"
+description = "Recallic as the memory store of Haystack agents: self-hosted, no LLM calls for memory, says when it has no record."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
-dependencies = ["haystack-ai>=2.18", "recallix>=0.2.6"]
+dependencies = ["haystack-ai>=2.18", "recallic>=0.3.0"]
 
 [project.optional-dependencies]
-agent = ["haystack-experimental>=0.15"]
+agent = ["haystack-experimental>=0.15", "haystack-ai<2.24"]  # the experimental Agent does not run on newer haystack-ai yet
 
 [project.urls]
 Homepage = "https://github.com/Recallic/Recallic/tree/main/integrations/haystack"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/recallix_haystack"]
+packages = ["src/recallic_haystack"]

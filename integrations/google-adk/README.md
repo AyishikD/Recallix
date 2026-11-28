@@ -1,11 +1,13 @@
-# recallix-adk: Recallix memory for Google ADK agents
+# recallic-adk: Recallic memory for Google ADK agents
 
-`RecallixMemoryService` plugs a self-hosted [Recallix](https://github.com/Recallic/Recallic) server into
+*Formerly `recallix-adk` (0.1.x); renamed with the project, nothing else changed.*
+
+`RecallicMemoryService` plugs a self-hosted [Recallic](https://github.com/Recallic/Recallic) server into
 [Google's Agent Development Kit](https://google.github.io/adk-docs/) as the agent's memory service.
 
-* **No LLM calls for memory.** Storing and searching use Recallix's local models; your agent's model is the
+* **No LLM calls for memory.** Storing and searching use Recallic's local models; your agent's model is the
   only one you pay for.
-* **Honest search.** When Recallix finds nothing that answers the query, `search_memory` returns no memories,
+* **Honest search.** When Recallic finds nothing that answers the query, `search_memory` returns no memories,
   so the agent is not handed near-misses to guess from.
 * **Real dates.** Each event is stored with the time it happened, even when ADK hands over a session later.
 * **Your data stays on your server**, separated per ADK user and per app.
@@ -13,10 +15,10 @@
 ## Install
 
 ```bash
-pip install recallix-adk          # brings google-adk and the recallix SDK
+pip install recallic-adk          # brings google-adk and the recallic SDK
 ```
 
-Run Recallix ([quickstart](../../docs/quickstart.md)) and create one key with role `service`, which acts for
+Run Recallic ([quickstart](../../docs/quickstart.md)) and create one key with role `service`, which acts for
 each of your ADK users:
 
 ```bash
@@ -32,9 +34,9 @@ from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.adk.tools import load_memory
-from recallix_adk import RecallixMemoryService
+from recallic_adk import RecallicMemoryService
 
-memory = RecallixMemoryService(api_key=os.environ["RECALLIX_SERVICE_KEY"],
+memory = RecallicMemoryService(api_key=os.environ["RECALLIC_SERVICE_KEY"],
                                base_url="http://localhost:8000",
                                mode="balanced")            # or "cautious" / "helpful"
 agent = Agent(name="assistant", model="gemini-2.5-flash", instruction="...", tools=[load_memory])
@@ -52,19 +54,19 @@ await memory.add_session_to_memory(session)
 
 What maps to what:
 
-| ADK | Recallix |
+| ADK | Recallic |
 |---|---|
 | `user_id` | user (a service key acts for each user) |
 | `app_name` | agent id, so each app reads back what it wrote |
 | `add_session_to_memory` / `add_events_to_memory` / `add_memory` | `store`, one memory per text event, with its original time; storing a session again stores nothing twice |
 | `search_memory` | `recall`; `MemoryEntry.custom_metadata` carries the relevance, trust and receipt |
-| `delete_memory` | `delete`, with a deletion receipt in Recallix |
+| `delete_memory` | `delete`, with a deletion receipt in Recallic |
 
-Needs Recallix server 0.2.5 or newer (for `mode` and original timestamps). A session is stored in one request per
+Needs Recallic server 0.2.5 or newer (for `mode` and original timestamps). A session is stored in one request per
 100 events on server 0.2.6 or newer, and one request per event before that.
 
 ## Tests
 
-Against a running Recallix: `RECALLIX_URL=http://127.0.0.1:8000 RECALLIX_SERVICE_KEY=rx_... pytest tests`.
+Against a running Recallic: `RECALLIC_URL=http://127.0.0.1:8000 RECALLIC_SERVICE_KEY=rx_... pytest tests`.
 
 Licence: Apache-2.0.
