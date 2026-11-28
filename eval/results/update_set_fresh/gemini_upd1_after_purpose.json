@@ -1,0 +1,333 @@
+{
+ "summary": {
+  "update": {
+   "wrong": 2,
+   "correct": 6,
+   "declined": 2,
+   "other": 2,
+   "n": 12
+  },
+  "both_true": {
+   "correct": 6,
+   "declined": 2,
+   "other": 1,
+   "n": 9
+  },
+  "unrelated": {
+   "wrong": 1,
+   "declined": 1,
+   "correct": 6,
+   "other": 1,
+   "n": 9
+  },
+  "all": {
+   "wrong": 3,
+   "correct": 18,
+   "declined": 5,
+   "other": 4,
+   "n": 30
+  }
+ },
+ "rows": [
+  {
+   "name": "update_commute",
+   "group": "update",
+   "question": "How do I commute to Hitec City for work now?",
+   "status": "CONSISTENT",
+   "answer": "metro",
+   "first_memory_answer": "metro",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_gym",
+   "group": "update",
+   "question": "Which gym do I go to?",
+   "status": "CONSISTENT",
+   "answer": "iron parish gym",
+   "first_memory_answer": "iron parish gym",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_pediatrician",
+   "group": "update",
+   "question": "Who is Aarav's pediatrician currently?",
+   "status": "CONSISTENT",
+   "answer": "dr kalyan",
+   "first_memory_answer": "dr kalyan",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_phone",
+   "group": "update",
+   "question": "What phone am I using right now?",
+   "status": "CONSISTENT",
+   "answer": "oneplus 12",
+   "first_memory_answer": "pixel 7",
+   "result": "correct",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "update_dog_food",
+   "group": "update",
+   "question": "What brand of dog food do we give Bruno?",
+   "status": "CONSISTENT",
+   "answer": "farmina n&d pumpkin lamb",
+   "first_memory_answer": "canin",
+   "result": "correct",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "update_broadband",
+   "group": "update",
+   "question": "Which broadband connection do I have at home?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "update_milk",
+   "group": "update",
+   "question": "Which milk brand do we get delivered at home?",
+   "status": "CONSISTENT",
+   "answer": "buffalo",
+   "first_memory_answer": "buffalo",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "update_bus_stop",
+   "group": "update",
+   "question": "Where does Aarav's school bus drop him?",
+   "status": "CONSISTENT",
+   "answer": "my home bhel gate",
+   "first_memory_answer": "my home bhel gate",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_kolkata_flight",
+   "group": "update",
+   "question": "Which airline is my flight to Kolkata on?",
+   "status": "CONSISTENT",
+   "answer": "india express",
+   "first_memory_answer": "india express",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "update_car_service",
+   "group": "update",
+   "question": "Which service center do I use for my car?",
+   "status": "CONSISTENT",
+   "answer": "garuda motors madhapur",
+   "first_memory_answer": "garuda motors madhapur",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "update_desk_location",
+   "group": "update",
+   "question": "Where is my desk located at the office?",
+   "status": "CONSISTENT",
+   "answer": null,
+   "first_memory_answer": "pantry",
+   "result": "declined",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "update_cook_salary",
+   "group": "update",
+   "question": "How much do we pay the cook per month?",
+   "status": "CONSISTENT",
+   "answer": "7000 rs",
+   "first_memory_answer": "8500 rs",
+   "result": "wrong",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_credit_card",
+   "group": "both_true",
+   "question": "Which credit card do I use for booking flights?",
+   "status": "CONSISTENT",
+   "answer": "hdfc regalia",
+   "first_memory_answer": "sbi cashback card",
+   "result": "correct",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "both_true_streaming",
+   "group": "both_true",
+   "question": "Which streaming service did I renew for the whole year?",
+   "status": "CONSISTENT",
+   "answer": "prime video",
+   "first_memory_answer": "prime video",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_bank_account",
+   "group": "both_true",
+   "question": "Which bank receives my monthly salary?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "both_true_kids_classes",
+   "group": "both_true",
+   "question": "What class does Aarav attend on Saturdays?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "both_true_shoes",
+   "group": "both_true",
+   "question": "Which shoes did I buy for morning runs?",
+   "status": "CONSISTENT",
+   "answer": "asics kayano",
+   "first_memory_answer": "asics kayano",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_beverage",
+   "group": "both_true",
+   "question": "What coffee do I drink in the mornings?",
+   "status": "CONSISTENT",
+   "answer": "strong blue",
+   "first_memory_answer": "strong blue",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "both_true_vehicles",
+   "group": "both_true",
+   "question": "Which vehicle do I take for quick grocery runs?",
+   "status": "CONSISTENT",
+   "answer": "ather 450x",
+   "first_memory_answer": "ather 450x",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_laptops",
+   "group": "both_true",
+   "question": "What laptop was issued to me by company for work?",
+   "status": "CONSISTENT",
+   "answer": "macbook m3 pro",
+   "first_memory_answer": "macbook m3 pro",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "both_true_doctors",
+   "group": "both_true",
+   "question": "Who is my dentist in Kondapur?",
+   "status": "CONSISTENT",
+   "answer": "dr srinivas",
+   "first_memory_answer": "dr srinivas",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_blood_group",
+   "group": "unrelated",
+   "question": "What is my blood group?",
+   "status": "CONSISTENT",
+   "answer": "b negative",
+   "first_memory_answer": "b negative",
+   "result": "wrong",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "unrelated_workplace",
+   "group": "unrelated",
+   "question": "Where is my office located?",
+   "status": "ABSTAINED",
+   "answer": null,
+   "first_memory_answer": null,
+   "result": "declined",
+   "first_memory_result": "declined"
+  },
+  {
+   "name": "unrelated_parents_medication",
+   "group": "unrelated",
+   "question": "What medicine did I order for Ma?",
+   "status": "CONSISTENT",
+   "answer": "thyronorm",
+   "first_memory_answer": "thyronorm",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_eye_checkup",
+   "group": "unrelated",
+   "question": "What is my spectacle power?",
+   "status": "CONSISTENT",
+   "answer": "minus 2.5",
+   "first_memory_answer": "minus 2.5",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_sports_hobby",
+   "group": "unrelated",
+   "question": "Which sport do I play on Friday evenings?",
+   "status": "CONSISTENT",
+   "answer": "badminton",
+   "first_memory_answer": "badminton",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_shoe_size",
+   "group": "unrelated",
+   "question": "What is my shoe size in UK?",
+   "status": "CONSISTENT",
+   "answer": "9",
+   "first_memory_answer": "9",
+   "result": "other",
+   "first_memory_result": "other"
+  },
+  {
+   "name": "unrelated_birthday",
+   "group": "unrelated",
+   "question": "When is Aarav's birthday?",
+   "status": "CONSISTENT",
+   "answer": "14th november",
+   "first_memory_answer": "22nd march",
+   "result": "correct",
+   "first_memory_result": "wrong"
+  },
+  {
+   "name": "unrelated_colleague_role",
+   "group": "unrelated",
+   "question": "Who is my manager?",
+   "status": "CONSISTENT",
+   "answer": "venkat",
+   "first_memory_answer": "venkat",
+   "result": "correct",
+   "first_memory_result": "correct"
+  },
+  {
+   "name": "unrelated_pet_care",
+   "group": "unrelated",
+   "question": "Where did I take Bruno for his booster vaccine?",
+   "status": "CONSISTENT",
+   "answer": "pet care clinic madhapur",
+   "first_memory_answer": "pet care clinic madhapur",
+   "result": "correct",
+   "first_memory_result": "correct"
+  }
+ ]
+}

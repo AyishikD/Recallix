@@ -35,7 +35,7 @@ from ..features.facts import EXTRACTOR_VERSION
 from . import freshness
 from ..features import trust
 from ..features import dates as date_resolution
-from .updates import _norm_answer, about_the_user, asks_about_now, ended_values, promote_updates, resolve_answer_conflicts, states_a_change, user_perspective, without_other_people
+from .updates import _norm_answer, about_the_user, asks_about_now, ended_values, matches_purpose, promote_updates, purpose_stems, resolve_answer_conflicts, states_a_change, user_perspective, without_other_people
 
 _INTERNAL_KEYS = ("_query_slot", "_slot_id", "_slot_value", "features", "semantic_score", "bm25_score",
                   "symbolic_match", "pool", "_answer_ok", "_counts")
@@ -767,6 +767,12 @@ class RecallEngine:
             confident = max(accepted, key=lambda p: p[0].get("answer_margin", float("-inf")))
             pool = [p for p in accepted if p is confident or
                     (about_the_user(p[0].get("content")) and float(p[0].get("answer_margin") or -99) >= floor)]
+            # "Which credit card do I use for booking flights?": when the question narrows the topic and some memories
+            # match it ("hdfc regalia for all flight bookings"), a later one that does not ("sbi cashback card for
+            # swiggy orders") is a different fact, not an update. eval/results/update_set_fresh
+            stems = purpose_stems(query)
+            if any(matches_purpose(p[0].get("content"), stems) for p in pool):
+                pool = [p for p in pool if matches_purpose(p[0].get("content"), stems)]
             if len(answers) > 1 and len(pool) > 1:
                 m, out = max(pool, key=lambda p: float(p[0].get("timestamp") or 0))
                 return {"text": m["answer"], "memory_id": out.get("id"), "margin": m.get("answer_margin")}

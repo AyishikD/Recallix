@@ -172,6 +172,26 @@ def asks_about_now(query):
     return bool(_FIRST_PERSON.search(q) and _PRESENT.search(q) and not _HISTORY.search(q) and not asks_for_earlier(q))
 
 
+_FOR_WHAT = re.compile(r"\bfor\s+(.+?)\s*[?.!]*$", re.I)
+
+
+def purpose_stems(query):
+    """
+    "Which credit card do I use for booking flights?" -> {"book", "flig"}: what the question narrows the topic to (the
+    words after "for"), as 4-letter stems so "flight bookings" matches. Empty when there is no such phrase.
+    """
+    m = _FOR_WHAT.search(str(query or ""))
+    if not m:
+        return set()
+    stop = _stopwords() | _FIRST_PERSON_WORDS
+    return {w[:4] for w in _WORD.findall(m.group(1).lower()) if len(w) >= 3 and w not in stop}
+
+
+def matches_purpose(content, stems):
+    return bool(stems) and any(w[:4] in stems for w in _WORD.findall(str(content or "").lower()) if len(w) >= 3)
+
+
+_FIRST_PERSON_WORDS = {"i", "my", "me", "mine", "we", "our", "us", "now", "currently", "today", "these", "days", "right"}
 _CHANGED = re.compile(r"\b(?:shift(?:ed|ing)|switch(?:ed|ing)|transferr(?:ed|ing)|moved|changed|instead)\b", re.I)
 
 

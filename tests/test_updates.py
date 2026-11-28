@@ -288,3 +288,12 @@ def test_a_stated_change_for_the_person_asked_about():
     assert not s("arjun goes to inventure academy", "meera goes to dps whitefield", q)  # no change stated
     assert not s("tara moved to inventure academy", "meera goes to dps whitefield", q)  # someone else
     assert not s("shifted meera to inventure academy", "meera goes to dps whitefield", "Which school did Meera go to first?")
+
+
+def test_a_purpose_in_the_question_narrows_which_memories_compete():
+    from backend.brain.memory.updates import matches_purpose, purpose_stems
+    s = purpose_stems("Which credit card do I use for booking flights?")
+    assert matches_purpose("using hdfc regalia for all flight bookings and lounge access", s)
+    assert not matches_purpose("got sbi cashback card today specifically for swiggy and amazon orders", s)
+    assert purpose_stems("Where do I live?") == set()
+    assert purpose_stems("How do I commute to Hitec City for work now?") == {"work"}
