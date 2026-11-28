@@ -111,3 +111,25 @@ order / buy?": past-tense questions, where the latest purchase is the answer), u
 Declines are high in the unrelated group (5 of 9).
 
 Files: gemini_upd3.json (first score), gemini_upd3_before_fixes.json, gemini_upd3_at_42e0c258.json.
+
+## LLM reference (gpt-oss-120b on Groq, 2026-11-28)
+
+`eval/llm_ceiling.py`: the model reads all of a scenario's messages (in order, with day numbers) and the question, and
+answers with a short phrase from the messages or "unknown"; same scoring. One prompt, temperature 0, reasoning effort
+low, 29,043 tokens for the 90 scenarios of gemini_upd1-3. File: llm_ceiling_gpt-oss-120b.json.
+
+| | update (36) correct / wrong / declined / other | both_true (27) | unrelated (27) | all (90) |
+|---|---|---|---|---|
+| LLM | 26 / 8 / 0 / 2 | 27 / 0 / 0 / 0 | 23 / 0 / 0 / 4 | 76 / 8 / 0 / 6 |
+| Recallic, first scores (unseen) | 18 / 8 / 6 / 4 | 21 / 1 / 3 / 2 | 15 / 1 / 6 / 5 | 54 / 10 / 15 / 11 |
+| Recallic, current code (tuned on batches 1-2) | 20 / 5 / 7 / 4 | 22 / 0 / 3 / 2 | 15 / 0 / 6 / 6 | 57 / 5 / 16 / 12 |
+
+Read by hand, the LLM's "other" answers are mostly right in a different form ("302", "16000", "-2.5", "carpool"); one is
+wrong ("acer" for the car service). Findings:
+* Where the LLM is far ahead is answering at all: it never declines, and it is right on every both_true and unrelated
+  scenario, where Recallic declines 9 of 54 and gives partial spans.
+* On updates the LLM is wrong as often as Recallic was unseen (8 of 36 vs 8): it answered the outdated value for the milk
+  brand, the school-bus stop, both flights, the desk, the consulting fee, the spectacles and the duty day. Recallic
+  (current code) gets four of those right (bus stop, consulting fee, Mumbai flight, car service).
+* For a learned update model, the labels should come from how the scenarios are built (the generator knows which
+  message replaces which), not from an LLM answering them: on updates the LLM is right only about 3 times in 4.
